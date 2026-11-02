@@ -1,0 +1,9 @@
+{
+  "itemGroup.kurumimnmod.main": "Kurumimnmod",
+
+  "kurumimnmod.configuration.title": "Kurumimnmod の設定",
+  "kurumimnmod.configuration.section.kurumimnmod.synced.toml": "Kurumimnmod の設定",
+  "kurumimnmod.configuration.section.kurumimnmod.synced.toml.title": "Kurumimnmod の設定",
+  "kurumimnmod.configuration.general": "一般",
+  "kurumimnmod.configuration.debugLogging": "デバッグログを出力"
+}
