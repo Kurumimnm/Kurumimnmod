@@ -23,3 +23,18 @@ jobs:
 
       - name: Build with Gradle
         run: ./gradlew build
+
+      # データ生成を実行し、src/generated の内容がコミット済みのものと一致するか確認する
+      # （runData の実行し忘れ・生成ファイルのコミット忘れを検出）
+      - name: Run data generation
+        run: ./gradlew runData
+
+      - name: Check generated resources are up to date
+        run: |
+          if [ -n "$(git status --porcelain -- src/generated)" ]; then
+            echo "::error::src/generated is out of date. Run ./gradlew runData and commit the result."
+            git status --porcelain -- src/generated
+            git diff -- src/generated
+            git ls-files --others --exclude-standard -- src/generated | while read -r f; do echo "===== $f"; cat "$f"; done
+            exit 1
+          fi
