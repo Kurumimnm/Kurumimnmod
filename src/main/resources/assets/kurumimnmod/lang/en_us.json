@@ -1,0 +1,9 @@
+{
+  "itemGroup.kurumimnmod.main": "Kurumimnmod",
+
+  "kurumimnmod.configuration.title": "Kurumimnmod Configs",
+  "kurumimnmod.configuration.section.kurumimnmod.synced.toml": "Kurumimnmod Configs",
+  "kurumimnmod.configuration.section.kurumimnmod.synced.toml.title": "Kurumimnmod Configs",
+  "kurumimnmod.configuration.general": "General",
+  "kurumimnmod.configuration.debugLogging": "Debug Logging"
+}
