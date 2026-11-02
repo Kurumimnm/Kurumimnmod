@@ -37,6 +37,10 @@ src/main/java/io/github/kurumimnm/kurumimnmod/
 ├── KurumimnmodClient.java    … クライアント専用処理
 ├── client/
 │   └── ModEntityRenderers.java … エンティティレンダラー登録（GeckoLib）
+├── datagen/
+│   ├── ModDataGenerators.java     … runData のエントリーポイント
+│   ├── ModModelProvider.java      … モデル JSON 生成
+│   └── ModEnUsLanguageProvider.java … en_us.json 生成
 ├── config/
 │   ├── ModConfigs.java       … ゲーム中に調整する値（kurumimnmod-synced.toml）
 │   └── ModConstants.java     … 登録時に決まる固定値（耐久値・攻撃力など）
@@ -46,9 +50,8 @@ src/main/java/io/github/kurumimnm/kurumimnmod/
     ├── ModBlocks.java
     ├── ModEntities.java      … エンティティ登録・属性登録（追加手順はJavadoc参照）
     └── ModCreativeTabs.java  … ModItems の全アイテムを自動で並べる MOD タブ
-src/main/resources/assets/kurumimnmod/lang/
-├── en_us.json
-└── ja_jp.json
+src/main/resources/assets/kurumimnmod/lang/ja_jp.json … 日本語（手書き）
+src/generated/resources/ … runData の出力（en_us.json・モデル等。手で編集しない）
 src/main/templates/META-INF/neoforge.mods.toml … gradle.properties の値が埋め込まれる
 ```
 
@@ -64,6 +67,16 @@ Blockbench で「GeckoLib Animated Model」として作成し、書き出した�
 
 ファイル名をエンティティの登録名と揃えると、`GeoEntityRenderer` が自動でパスを解決します。
 `.bbmodel`（Blockbench のプロジェクトファイル）はリポジトリに置いても jar には含まれません。
+
+## データ生成（runData）
+
+英語の言語ファイルとアイテム・ブロックのモデル JSON は `datagen/` のコードから自動生成します。
+
+1. `datagen/` の Provider に追記する（日本語は `ja_jp.json` に手書き）
+2. `./gradlew runData` を実行する
+3. `src/generated/resources` の変更もコミットする
+
+GitHub Actions で runData の結果とコミット内容を比較しているので、実行し忘れるとビルドが失敗します。
 
 ## 数値の調整場所
 
