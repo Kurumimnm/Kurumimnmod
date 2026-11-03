@@ -2,6 +2,7 @@ package io.github.kurumimnm.kurumimnmod.item;
 
 import io.github.kurumimnm.kurumimnmod.config.ModConfigs;
 import io.github.kurumimnm.kurumimnmod.entity.IceIcicleEntity;
+import io.github.kurumimnm.kurumimnmod.magic.MagicDamageSource;
 import io.github.kurumimnm.kurumimnmod.magic.MagicWand;
 import io.github.kurumimnm.kurumimnmod.status.StatManager;
 import net.minecraft.ChatFormatting;
@@ -27,13 +28,24 @@ import net.minecraft.world.level.Level;
  * </ul>
  * 氷柱の動き・ダメージ処理は {@link IceIcicleEntity}。
  */
-public class IceWandItem extends Item implements MagicWand {
+public class IceWandItem extends Item implements MagicWand, MagicDamageSource {
 
     /** 照準を出し続けられる時間（実質無制限。弓などと同じ値）。 */
     private static final int AIM_DURATION = 72000;
 
     public IceWandItem(Properties properties) {
         super(properties);
+    }
+
+    // =====================================================================
+    // HUD のダメージ表示（client/hud/WeaponDamageHud）
+    // =====================================================================
+
+    /** 中心ダメージが最大、範囲の端が最小。どちらも知力の倍率込み。 */
+    @Override
+    public DamageRange magicDamage(Player player, ItemStack stack) {
+        float max = (float) (ModConfigs.iceWandDamage() * StatManager.magicMultiplier(player));
+        return new DamageRange(max * (float) ModConfigs.iceWandEdgeDamageRatio(), max);
     }
 
     // =====================================================================
