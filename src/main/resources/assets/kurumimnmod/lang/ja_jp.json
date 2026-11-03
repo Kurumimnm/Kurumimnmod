@@ -125,7 +125,7 @@
 
   "message.kurumimnmod.scarecrow.op_only": "OP権限が必要です",
   "message.kurumimnmod.scarecrow.no_space": "ここにはカカシを召喚できません（スペースが足りません）",
-  "message.kurumimnmod.scarecrow.too_far": "カカシが遠すぎます",
+  "message.kurumimnmod.scarecrow.not_found": "カカシが見つかりません",
   "message.kurumimnmod.scarecrow.saved": "カカシの設定を保存しました",
   "message.kurumimnmod.scarecrow.deleted": "カカシを削除しました",
   "message.kurumimnmod.scarecrow.damage_taken": "カカシの攻撃: %s ダメージ（軽減前 %s）",

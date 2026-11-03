@@ -49,8 +49,12 @@ public final class ModConstants {
     public static final double SCARECROW_COUNTER_INTERVAL_MAX = 60.0;
     public static final double SCARECROW_COUNTER_RANGE_MIN = 0.5;
     public static final double SCARECROW_COUNTER_RANGE_MAX = 16.0;
-    /** 設定画面を開く・保存・削除できる距離（ブロック。不正なパケット対策）。 */
-    public static final double SCARECROW_INTERACT_DISTANCE = 16.0;
+    /**
+     * 設定用ステッキでカカシを狙える距離（ブロック）。
+     * 通常の攻撃の届く距離に関係なく、クロスヘアが合っていればこの距離まで設定画面を開ける
+     * （実際には描画距離内＝クライアントに見えているカカシのみ）。
+     */
+    public static final double SCARECROW_CONFIG_PICK_RANGE = 256.0;
     /** 召喚位置からこれ以上離れていたら戻る（ブロック）。 */
     public static final double SCARECROW_HOME_EPSILON = 0.02;
     /** 召喚時の向きを丸める角度（度。アーマースタンドと同じ 22.5°刻み）。 */

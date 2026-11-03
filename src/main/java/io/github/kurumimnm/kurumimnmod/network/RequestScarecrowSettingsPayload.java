@@ -14,7 +14,7 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 /**
  * クライアント → サーバー：設定用ステッキでカカシを左クリックした。設定画面を開きたい。
- * サーバーは距離をチェックしてから {@link OpenScarecrowSettingsPayload} を返す。
+ * サーバーはカカシが存在することを確認してから {@link OpenScarecrowSettingsPayload} を返す（距離は問わない）。
  *
  * @param entityId カカシのエンティティ ID
  */

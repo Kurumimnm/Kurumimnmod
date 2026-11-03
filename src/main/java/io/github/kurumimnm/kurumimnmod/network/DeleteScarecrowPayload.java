@@ -46,7 +46,7 @@ public record DeleteScarecrowPayload(int entityId) implements CustomPacketPayloa
         }
         ScarecrowEntity scarecrow = ScarecrowPermissions.findTarget(player, payload.entityId());
         if (scarecrow == null) {
-            player.sendOverlayMessage(Component.translatable("message.kurumimnmod.scarecrow.too_far")
+            player.sendOverlayMessage(Component.translatable("message.kurumimnmod.scarecrow.not_found")
                     .withStyle(ChatFormatting.RED));
             return;
         }

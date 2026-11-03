@@ -1,6 +1,5 @@
 package io.github.kurumimnm.kurumimnmod.scarecrow;
 
-import io.github.kurumimnm.kurumimnmod.config.ModConstants;
 import io.github.kurumimnm.kurumimnmod.entity.ScarecrowEntity;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.permissions.Permissions;
@@ -23,15 +22,12 @@ public final class ScarecrowPermissions {
     }
 
     /**
-     * クライアントから送られてきたエンティティ ID のカカシを取得する。
-     * 存在しない・カカシではない・遠すぎる（{@link ModConstants#SCARECROW_INTERACT_DISTANCE} より先）場合は null。
+     * クライアントから送られてきたエンティティ ID のカカシを取得する（プレイヤーと同じディメンションのもの）。
+     * 存在しない・カカシではない場合は null。
+     * 設定用ステッキは距離に関係なく使える仕様なので、距離はチェックしない。
      */
     public static ScarecrowEntity findTarget(ServerPlayer player, int entityId) {
         Entity entity = player.level().getEntity(entityId);
-        if (!(entity instanceof ScarecrowEntity scarecrow) || !scarecrow.isAlive()) {
-            return null;
-        }
-        double max = ModConstants.SCARECROW_INTERACT_DISTANCE;
-        return player.distanceToSqr(scarecrow) <= max * max ? scarecrow : null;
+        return entity instanceof ScarecrowEntity scarecrow && scarecrow.isAlive() ? scarecrow : null;
     }
 }

@@ -39,7 +39,7 @@ import net.neoforged.neoforge.client.network.ClientPacketDistributor;
  * ・項目名にカーソルを合わせると説明（入力できる範囲）が出る
  * ・数値として読めない／範囲外の入力は赤字になり、その間は保存できない
  * ・削除は誤操作防止のため 2 回押し（1 回目で「本当に削除？」に変わる）
- * ・カカシが消えた／遠く離れたら自動で閉じる
+ * ・カカシが消えた（削除・描画距離の外へ出た）ら自動で閉じる
  */
 public class ScarecrowSettingsScreen extends Screen {
 
@@ -278,17 +278,15 @@ public class ScarecrowSettingsScreen extends Screen {
     // 毎 tick・描画
     // =====================================================================
 
-    /** カカシが消えた・遠くへ離れたら閉じる。 */
+    /** カカシが消えたら閉じる（距離は問わない）。 */
     @Override
     public void tick() {
         super.tick();
-        if (this.minecraft == null || this.minecraft.level == null || this.minecraft.player == null) {
+        if (this.minecraft == null || this.minecraft.level == null) {
             return;
         }
         Entity entity = this.minecraft.level.getEntity(this.entityId);
-        double max = ModConstants.SCARECROW_INTERACT_DISTANCE;
-        if (!(entity instanceof ScarecrowEntity) || !entity.isAlive()
-                || this.minecraft.player.distanceToSqr(entity) > max * max) {
+        if (!(entity instanceof ScarecrowEntity) || !entity.isAlive()) {
             onClose();
         }
     }

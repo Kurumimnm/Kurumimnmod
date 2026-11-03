@@ -16,7 +16,7 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 /**
  * クライアント → サーバー：設定画面で「保存」した。
- * 設定の変更は誰でもできる（距離だけチェック）。値の範囲はサーバー側で丸め直す。
+ * 設定の変更は誰でもできる（距離も問わない）。値の範囲はサーバー側で丸め直す。
  *
  * @param entityId カカシのエンティティ ID
  * @param settings 新しい設定
@@ -43,7 +43,7 @@ public record UpdateScarecrowSettingsPayload(int entityId, ScarecrowSettings set
         }
         ScarecrowEntity scarecrow = ScarecrowPermissions.findTarget(player, payload.entityId());
         if (scarecrow == null) {
-            player.sendOverlayMessage(Component.translatable("message.kurumimnmod.scarecrow.too_far")
+            player.sendOverlayMessage(Component.translatable("message.kurumimnmod.scarecrow.not_found")
                     .withStyle(ChatFormatting.RED));
             return;
         }

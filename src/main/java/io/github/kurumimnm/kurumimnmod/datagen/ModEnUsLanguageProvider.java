@@ -105,7 +105,7 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         // ---- カカシ（メッセージ） ----
         add("message." + MOD_ID + ".scarecrow.op_only", "Only operators can do this.");
         add("message." + MOD_ID + ".scarecrow.no_space", "Not enough space to summon a scarecrow here.");
-        add("message." + MOD_ID + ".scarecrow.too_far", "The scarecrow is too far away.");
+        add("message." + MOD_ID + ".scarecrow.not_found", "The scarecrow could not be found.");
         add("message." + MOD_ID + ".scarecrow.saved", "Scarecrow settings saved.");
         add("message." + MOD_ID + ".scarecrow.deleted", "Scarecrow removed.");
         add("message." + MOD_ID + ".scarecrow.damage_taken", "Scarecrow hit you: %s damage (%s before reduction)");
