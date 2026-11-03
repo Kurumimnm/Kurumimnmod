@@ -100,9 +100,16 @@ public final class ModConfigs {
                     "(damaged / debuffed the mob, or buffed a player who damaged it).")
             .defineInRange("assistExpRatio", 0.5, 0.0, 100.0);
 
-    /** アシストが有効な時間（秒）。関わるたびに数え直し。 */
+    /** ボスのアシストでもらえる経験値の倍率。 */
+    public static final ModConfigSpec.DoubleValue BOSS_ASSIST_EXP_RATIO = SYNCED_BUILDER
+            .comment("Multiplier of a boss's exp given to each assisting player.",
+                    "For bosses, any contribution before the boss dies counts (no time limit).")
+            .defineInRange("bossAssistExpRatio", 1.0, 0.0, 100.0);
+
+    /** アシストが有効な時間（秒）。関わるたびに数え直し。ボスには適用しない。 */
     public static final ModConfigSpec.IntValue ASSIST_WINDOW_SECONDS = SYNCED_BUILDER
-            .comment("How long (seconds) a contribution counts as an assist. Refreshed on every new contribution.")
+            .comment("How long (seconds) a contribution counts as an assist. Refreshed on every new contribution.",
+                    "Not applied to bosses.")
             .defineInRange("assistWindowSeconds", 60, 1, 3600);
 
     /** 経験値獲得時にアクションバーへ「+100 EXP」を表示するか。 */
@@ -126,6 +133,7 @@ public final class ModConfigs {
     public static int maxLevel() { return value(MAX_LEVEL); }
     public static double killerExpRatio() { return value(KILLER_EXP_RATIO); }
     public static double assistExpRatio() { return value(ASSIST_EXP_RATIO); }
+    public static double bossAssistExpRatio() { return value(BOSS_ASSIST_EXP_RATIO); }
     public static int assistWindowSeconds() { return value(ASSIST_WINDOW_SECONDS); }
     public static boolean showExpMessages() { return value(SHOW_EXP_MESSAGES); }
 

@@ -83,6 +83,7 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         add(MOD_ID + ".configuration.maxLevel", "Max Level (0 = No Limit)");
         add(MOD_ID + ".configuration.killerExpRatio", "Killer Exp Multiplier");
         add(MOD_ID + ".configuration.assistExpRatio", "Assist Exp Multiplier");
+        add(MOD_ID + ".configuration.bossAssistExpRatio", "Boss Assist Exp Multiplier");
         add(MOD_ID + ".configuration.assistWindowSeconds", "Assist Duration (Seconds)");
         add(MOD_ID + ".configuration.showExpMessages", "Show Exp Gain Messages");
         add(MOD_ID + ".configuration.enemyHealthBar", "Enemy Health Bar");

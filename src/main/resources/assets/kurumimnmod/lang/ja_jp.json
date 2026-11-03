@@ -48,6 +48,7 @@
   "kurumimnmod.configuration.maxLevel": "最大レベル（0で上限なし）",
   "kurumimnmod.configuration.killerExpRatio": "キル時の経験値倍率",
   "kurumimnmod.configuration.assistExpRatio": "アシスト時の経験値倍率",
+  "kurumimnmod.configuration.bossAssistExpRatio": "ボスのアシスト時の経験値倍率",
   "kurumimnmod.configuration.assistWindowSeconds": "アシストの有効時間（秒）",
   "kurumimnmod.configuration.showExpMessages": "経験値獲得メッセージを表示",
   "kurumimnmod.configuration.enemyHealthBar": "敵のHPバー",

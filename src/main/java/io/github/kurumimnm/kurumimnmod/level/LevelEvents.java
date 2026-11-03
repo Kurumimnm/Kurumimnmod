@@ -30,6 +30,12 @@ import org.jspecify.annotations.Nullable;
  *   <li>ダメージ・デバフ・バフで「誰が関わったか」を記録する</li>
  *   <li>Mob が倒されたら、キルした人に 100%・アシストした人に 50% の経験値を配る</li>
  * </ol>
+ * <pre>
+ *            キル   アシスト  アシストの条件
+ * 通常 Mob   100%    50%     直近 60 秒以内に関わった（関わるたびに更新）
+ * ボス       100%   100%     倒されるまでに 1 度でも関わった
+ * </pre>
+ * 倍率・秒数は Config の [level] で調整できる。
  */
 @EventBusSubscriber(modid = Kurumimnmod.MOD_ID)
 public final class LevelEvents {
@@ -64,8 +70,20 @@ public final class LevelEvents {
             return;
         }
         ServerPlayer attacker = asRealPlayer(event.getSource().getEntity());
-        if (attacker != null && attacker != victim) {
-            victim.getData(ModAttachments.KILL_CONTRIBUTION).recordDamage(attacker.getUUID(), victim.level().getGameTime());
+        if (attacker == null || attacker == victim) {
+            return;
+        }
+        long now = victim.level().getGameTime();
+        KillContribution contribution = victim.getData(ModAttachments.KILL_CONTRIBUTION);
+        contribution.recordDamage(attacker.getUUID(), now);
+
+        // ボスの場合：攻撃した時点で攻撃者にバフをくれていた人も、ボス側に記録しておく
+        // （ボスは戦闘が長いので、倒した瞬間ではなく「関わった時点」で支援者を確定させる）
+        if (MobExperience.of(victim.getType()).boss()) {
+            KillContribution support = attacker.getExistingDataOrNull(ModAttachments.KILL_CONTRIBUTION);
+            if (support != null) {
+                contribution.recordSupports(support.recentSupporters(now, assistWindowTicks()), now);
+            }
         }
     }
 
@@ -112,10 +130,12 @@ public final class LevelEvents {
         if (level.isClientSide() || level.getServer() == null) {
             return;
         }
-        int baseExp = MobExperience.of(victim.getType());
+        MobExperience mobExp = MobExperience.of(victim.getType());
+        int baseExp = mobExp.experience();
         if (baseExp <= 0) {
             return; // 経験値が設定されていない Mob
         }
+        boolean boss = mobExp.boss();
 
         // ---- キルした人（直接倒した人。落下死などの場合は直前に攻撃していた人） ----
         ServerPlayer killer = asRealPlayer(event.getSource().getEntity());
@@ -124,15 +144,19 @@ public final class LevelEvents {
         }
 
         // ---- アシストした人 ----
+        // 通常 Mob は直近 assistWindowSeconds 秒以内、ボスは時間制限なし
         long now = level.getGameTime();
-        long window = assistWindowTicks();
+        long window = boss ? Long.MAX_VALUE : assistWindowTicks();
         Set<UUID> assists = new HashSet<>();
         KillContribution contribution = victim.getExistingDataOrNull(ModAttachments.KILL_CONTRIBUTION);
         if (contribution != null) {
             Set<UUID> damagers = contribution.recentDamagers(now, window);
             assists.addAll(damagers);
             assists.addAll(contribution.recentDebuffers(now, window));
-            // ダメージを与えた人（＋キルした人）にバフをくれた人もアシスト
+            if (boss) {
+                assists.addAll(contribution.recentSupporters(now, window)); // 攻撃時点で記録した支援者
+            }
+            // ダメージを与えた人（＋キルした人）に、直近でバフをくれた人もアシスト
             Set<UUID> attackers = new HashSet<>(damagers);
             if (killer != null) {
                 attackers.add(killer.getUUID());
@@ -141,16 +165,16 @@ public final class LevelEvents {
                 ServerPlayer attacker = level.getServer().getPlayerList().getPlayer(attackerId);
                 KillContribution support = attacker == null ? null : attacker.getExistingDataOrNull(ModAttachments.KILL_CONTRIBUTION);
                 if (support != null) {
-                    assists.addAll(support.recentSupporters(now, window));
+                    assists.addAll(support.recentSupporters(now, assistWindowTicks()));
                 }
             }
         }
         if (killer != null) {
-            assists.remove(killer.getUUID()); // キルした人は 100% のみ（重複して受け取らない）
+            assists.remove(killer.getUUID()); // キルした人はキル分のみ（重複して受け取らない）
             LevelManager.addExp(killer, scale(baseExp, ModConfigs.killerExpRatio()), LevelManager.Reason.KILL);
         }
 
-        long assistExp = scale(baseExp, ModConfigs.assistExpRatio());
+        long assistExp = scale(baseExp, boss ? ModConfigs.bossAssistExpRatio() : ModConfigs.assistExpRatio());
         for (UUID id : assists) {
             ServerPlayer player = level.getServer().getPlayerList().getPlayer(id);
             if (player != null) { // ログアウト中のプレイヤーには配らない

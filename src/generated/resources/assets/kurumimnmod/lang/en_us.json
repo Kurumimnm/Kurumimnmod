@@ -10,6 +10,7 @@
   "kurumimnmod.configuration.assistExpRatio": "Assist Exp Multiplier",
   "kurumimnmod.configuration.assistWindowSeconds": "Assist Duration (Seconds)",
   "kurumimnmod.configuration.baseExp": "Base Required Exp",
+  "kurumimnmod.configuration.bossAssistExpRatio": "Boss Assist Exp Multiplier",
   "kurumimnmod.configuration.debugLogging": "Debug Logging",
   "kurumimnmod.configuration.disableHunger": "Disable Hunger",
   "kurumimnmod.configuration.disableVanillaExperience": "Disable Vanilla Experience",

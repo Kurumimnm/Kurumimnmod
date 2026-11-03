@@ -22,6 +22,7 @@ import org.jspecify.annotations.Nullable;
  * {
  *   "values": {
  *     "kurumimnmod:walnut_mob": { "experience": 100 },
+ *     "kurumimnmod:walnut_king": { "experience": 5000, "boss": true },
  *     "minecraft:zombie":       { "experience": 20 }
  *   }
  * }
@@ -29,23 +30,30 @@ import org.jspecify.annotations.Nullable;
  * MOD の Mob を追加したら、datagen（DataMapProvider）でこの JSON を生成する予定。
  * サーバー管理者もデータパックで上書き・追加できる。
  *
- * @param experience キルしたプレイヤーがもらえる基本経験値（アシストはこの assistExpRatio 倍）
+ * @param experience キルしたプレイヤーがもらえる基本経験値
+ * @param boss       ボス扱いにするか（省略時 false）。
+ *                   ボスはアシストも bossAssistExpRatio 倍（既定 100%）で、
+ *                   倒されるまでに 1 度でも関わればアシストになる（60 秒の時間制限なし）
  */
 @EventBusSubscriber(modid = Kurumimnmod.MOD_ID)
-public record MobExperience(int experience) {
+public record MobExperience(int experience, boolean boss) {
+
+    /** 経験値が設定されていない Mob。 */
+    public static final MobExperience NONE = new MobExperience(0, false);
 
     public static final Codec<MobExperience> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            Codec.intRange(0, Integer.MAX_VALUE).fieldOf("experience").forGetter(MobExperience::experience)
+            Codec.intRange(0, Integer.MAX_VALUE).fieldOf("experience").forGetter(MobExperience::experience),
+            Codec.BOOL.optionalFieldOf("boss", false).forGetter(MobExperience::boss)
     ).apply(instance, MobExperience::new));
 
     /** データマップの種類（ID: kurumimnmod:experience）。 */
     public static final DataMapType<EntityType<?>, MobExperience> DATA_MAP = DataMapType.builder(
             Identifier.fromNamespaceAndPath(Kurumimnmod.MOD_ID, "experience"), Registries.ENTITY_TYPE, CODEC).build();
 
-    /** エンティティの種類から基本経験値を取得する（未設定なら 0）。 */
-    public static int of(EntityType<?> type) {
+    /** エンティティの種類から経験値の設定を取得する（未設定なら {@link #NONE}）。 */
+    public static MobExperience of(EntityType<?> type) {
         @Nullable MobExperience data = type.builtInRegistryHolder().getData(DATA_MAP);
-        return data == null ? 0 : data.experience();
+        return data == null ? NONE : data;
     }
 
     @SubscribeEvent

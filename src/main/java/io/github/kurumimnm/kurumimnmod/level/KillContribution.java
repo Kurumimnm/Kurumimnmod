@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
  *   <li>敵側 {@code damagers}  … その敵にダメージを与えたプレイヤー</li>
  *   <li>敵側 {@code debuffers} … その敵にデバフ（有害なエフェクト）を付けたプレイヤー</li>
  *   <li>プレイヤー側 {@code supporters} … そのプレイヤーにバフ（有益なエフェクト）を付けた他のプレイヤー</li>
+ *   <li>ボス側 {@code supporters} … ボスを攻撃した人にバフを付けていたプレイヤー（攻撃した時点で記録）</li>
  * </ul>
  * 時刻はワールドのゲーム時間（tick）。同じプレイヤーが再び関わると時刻が上書きされ、
  * 有効時間（Config: assistWindowSeconds）がそこから数え直しになる。
@@ -36,6 +37,13 @@ public final class KillContribution {
     public void recordSupport(UUID player, long gameTime, long windowTicks) {
         supporters.values().removeIf(time -> gameTime - time > windowTicks);
         supporters.put(player, gameTime);
+    }
+
+    /** 支援者をまとめて記録する（ボス用。時間で掃除しない）。 */
+    public void recordSupports(Set<UUID> players, long gameTime) {
+        for (UUID player : players) {
+            supporters.put(player, gameTime);
+        }
     }
 
     /** 有効時間内にダメージを与えたプレイヤー。 */
