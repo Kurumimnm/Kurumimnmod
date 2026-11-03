@@ -20,9 +20,9 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
 /**
  * レベル関連のコマンド（OP 権限レベル 2 以上）。
  * <pre>
- * /kurumimnmod exp add &lt;対象&gt; &lt;量&gt;     … 経験値を付与（レベルアップ処理あり）
- * /kurumimnmod level set &lt;対象&gt; &lt;レベル&gt; … レベルを直接設定（経験値は 0 に戻る）
- * /kurumimnmod level query &lt;対象&gt;       … レベルと経験値を表示
+ * /kmod exp add &lt;対象&gt; &lt;量&gt;     … 経験値を付与（レベルアップ処理あり）
+ * /kmod level set &lt;対象&gt; &lt;レベル&gt; … レベルを直接設定（経験値は 0 に戻る）
+ * /kmod level query &lt;対象&gt;       … レベルと経験値を表示
  * </pre>
  */
 @EventBusSubscriber(modid = Kurumimnmod.MOD_ID)
@@ -30,27 +30,30 @@ public final class LevelCommand {
 
     private LevelCommand() {}
 
+    /** コマンド名（/kmod）。今後ほかの MOD コマンドもこの下にまとめる。 */
+    public static final String COMMAND_NAME = "kmod";
+
     @SubscribeEvent
     static void onRegisterCommands(RegisterCommandsEvent event) {
         register(event.getDispatcher());
     }
 
     private static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-        dispatcher.register(Commands.literal(Kurumimnmod.MOD_ID)
+        dispatcher.register(Commands.literal(COMMAND_NAME)
                 .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
-                // ---- /kurumimnmod exp add <targets> <amount> ----
+                // ---- /kmod exp add <targets> <amount> ----
                 .then(Commands.literal("exp")
                         .then(Commands.literal("add")
                                 .then(Commands.argument("targets", EntityArgument.players())
                                         .then(Commands.argument("amount", LongArgumentType.longArg(1))
                                                 .executes(LevelCommand::addExp)))))
                 .then(Commands.literal("level")
-                        // ---- /kurumimnmod level set <targets> <level> ----
+                        // ---- /kmod level set <targets> <level> ----
                         .then(Commands.literal("set")
                                 .then(Commands.argument("targets", EntityArgument.players())
                                         .then(Commands.argument("level", IntegerArgumentType.integer(ModConstants.INITIAL_LEVEL))
                                                 .executes(LevelCommand::setLevel))))
-                        // ---- /kurumimnmod level query <target> ----
+                        // ---- /kmod level query <target> ----
                         .then(Commands.literal("query")
                                 .then(Commands.argument("target", EntityArgument.player())
                                         .executes(LevelCommand::query)))));
