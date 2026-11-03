@@ -3,6 +3,7 @@ package io.github.kurumimnm.kurumimnmod.level;
 import io.github.kurumimnm.kurumimnmod.Kurumimnmod;
 import io.github.kurumimnm.kurumimnmod.config.ModConfigs;
 import io.github.kurumimnm.kurumimnmod.registry.ModAttachments;
+import io.github.kurumimnm.kurumimnmod.registry.ModTags;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -33,7 +34,7 @@ import org.jspecify.annotations.Nullable;
  * <pre>
  *            キル   アシスト  アシストの条件
  * 通常 Mob   100%    50%     直近 60 秒以内に関わった（関わるたびに更新）
- * ボス       100%   100%     倒されるまでに 1 度でも関わった
+ * ボス       100%   100%     倒されるまでに 1 度でも関わった（タグ kurumimnmod:bosses）
  * </pre>
  * 倍率・秒数は Config の [level] で調整できる。
  */
@@ -79,7 +80,7 @@ public final class LevelEvents {
 
         // ボスの場合：攻撃した時点で攻撃者にバフをくれていた人も、ボス側に記録しておく
         // （ボスは戦闘が長いので、倒した瞬間ではなく「関わった時点」で支援者を確定させる）
-        if (MobExperience.of(victim.getType()).boss()) {
+        if (ModTags.Entities.isBoss(victim)) {
             KillContribution support = attacker.getExistingDataOrNull(ModAttachments.KILL_CONTRIBUTION);
             if (support != null) {
                 contribution.recordSupports(support.recentSupporters(now, assistWindowTicks()), now);
@@ -130,12 +131,11 @@ public final class LevelEvents {
         if (level.isClientSide() || level.getServer() == null) {
             return;
         }
-        MobExperience mobExp = MobExperience.of(victim.getType());
-        int baseExp = mobExp.experience();
+        int baseExp = MobExperience.of(victim.getType()).experience();
         if (baseExp <= 0) {
             return; // 経験値が設定されていない Mob
         }
-        boolean boss = mobExp.boss();
+        boolean boss = ModTags.Entities.isBoss(victim); // タグ kurumimnmod:bosses
 
         // ---- キルした人（直接倒した人。落下死などの場合は直前に攻撃していた人） ----
         ServerPlayer killer = asRealPlayer(event.getSource().getEntity());

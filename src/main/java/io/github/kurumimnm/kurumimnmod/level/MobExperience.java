@@ -22,7 +22,7 @@ import org.jspecify.annotations.Nullable;
  * {
  *   "values": {
  *     "kurumimnmod:walnut_mob": { "experience": 100 },
- *     "kurumimnmod:walnut_king": { "experience": 5000, "boss": true },
+ *     "kurumimnmod:walnut_king": { "experience": 5000 },
  *     "minecraft:zombie":       { "experience": 20 }
  *   }
  * }
@@ -30,20 +30,19 @@ import org.jspecify.annotations.Nullable;
  * MOD の Mob を追加したら、datagen（DataMapProvider）でこの JSON を生成する予定。
  * サーバー管理者もデータパックで上書き・追加できる。
  *
+ * ボスかどうかはここではなく、エンティティタグ {@code kurumimnmod:bosses}
+ * （{@link io.github.kurumimnm.kurumimnmod.registry.ModTags.Entities#BOSSES}）で判定する。
+ *
  * @param experience キルしたプレイヤーがもらえる基本経験値
- * @param boss       ボス扱いにするか（省略時 false）。
- *                   ボスはアシストも bossAssistExpRatio 倍（既定 100%）で、
- *                   倒されるまでに 1 度でも関わればアシストになる（60 秒の時間制限なし）
  */
 @EventBusSubscriber(modid = Kurumimnmod.MOD_ID)
-public record MobExperience(int experience, boolean boss) {
+public record MobExperience(int experience) {
 
     /** 経験値が設定されていない Mob。 */
-    public static final MobExperience NONE = new MobExperience(0, false);
+    public static final MobExperience NONE = new MobExperience(0);
 
     public static final Codec<MobExperience> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            Codec.intRange(0, Integer.MAX_VALUE).fieldOf("experience").forGetter(MobExperience::experience),
-            Codec.BOOL.optionalFieldOf("boss", false).forGetter(MobExperience::boss)
+            Codec.intRange(0, Integer.MAX_VALUE).fieldOf("experience").forGetter(MobExperience::experience)
     ).apply(instance, MobExperience::new));
 
     /** データマップの種類（ID: kurumimnmod:experience）。 */
