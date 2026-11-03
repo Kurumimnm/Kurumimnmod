@@ -254,9 +254,72 @@ public final class ModConfigs {
             .comment("MP regenerated per second, as a ratio of max MP (0.01 = 1%).")
             .defineInRange("mpRegenPerSecond", 0.01, 0.0, 1.0);
 
+    /** 知力 1 ごとの魔法ダメージ倍率の上昇（0.1 = +10%）。魔法ダメージ = 元のダメージ ×(1 + (知力 - 1) × この値) */
+    public static final ModConfigSpec.DoubleValue INTELLIGENCE_MAGIC_BONUS_PER_POINT = SYNCED_BUILDER
+            .comment("Magic damage multiplier added per Intelligence above 1 (0.1 = +10%).",
+                    "Magic damage = original damage * (1 + (intelligence - 1) * this).",
+                    "Magic damage is NOT affected by Attack.")
+            .defineInRange("intelligenceMagicBonus", 0.1, 0.0, 100.0);
+
     static {
         SYNCED_BUILDER.pop();
         SYNCED_BUILDER.pop(); // status
+    }
+
+    // ---- magic セクション（魔法の杖） ----
+    static {
+        SYNCED_BUILDER.push("magic");
+        SYNCED_BUILDER.push("iceWand");
+    }
+
+    // ---- 氷柱の杖（頭上から大きな氷柱を 1 本撃ち出す） ----
+    /** 1 回の発射に必要な MP。 */
+    public static final ModConfigSpec.DoubleValue ICE_WAND_MP_COST = SYNCED_BUILDER
+            .comment("MP consumed per cast.")
+            .defineInRange("mpCost", 4.0, 0.0, 1_000_000.0);
+    /** 着弾地点の中心での最大ダメージ（知力の倍率がかかる前の値）。 */
+    public static final ModConfigSpec.DoubleValue ICE_WAND_DAMAGE = SYNCED_BUILDER
+            .comment("Damage at the center of the impact (before the Intelligence multiplier).",
+                    "Enemies pierced on the way also take this damage.")
+            .defineInRange("damage", 7.0, 0.0, 1_000_000.0);
+    /** 着弾範囲（サークル）の半径（ブロック）。 */
+    public static final ModConfigSpec.DoubleValue ICE_WAND_RADIUS = SYNCED_BUILDER
+            .comment("Radius (blocks) of the impact area.")
+            .defineInRange("radius", 3.0, 0.1, 32.0);
+    /** 範囲の端でのダメージの割合（0.5 = 中心の 50%）。中心から端まで直線的に下がる。 */
+    public static final ModConfigSpec.DoubleValue ICE_WAND_EDGE_DAMAGE_RATIO = SYNCED_BUILDER
+            .comment("Damage ratio at the edge of the impact area (0.5 = 50% of the center damage).",
+                    "Damage decreases linearly from the center to the edge.")
+            .defineInRange("edgeDamageRatio", 0.5, 0.0, 1.0);
+    /** 狙える最大距離（ブロック）。何もない方向を狙うと、この距離で着弾する。 */
+    public static final ModConfigSpec.DoubleValue ICE_WAND_RANGE = SYNCED_BUILDER
+            .comment("Max aiming distance (blocks). Aiming at nothing makes the icicle land at this distance.")
+            .defineInRange("castRange", 32.0, 1.0, 128.0);
+    /** 氷柱の飛ぶ速さ（ブロック / tick）。 */
+    public static final ModConfigSpec.DoubleValue ICE_WAND_SPEED = SYNCED_BUILDER
+            .comment("Icicle speed (blocks per tick).")
+            .defineInRange("projectileSpeed", 1.5, 0.1, 10.0);
+    /** 頭のてっぺんから、氷柱が出現する位置までの高さ（ブロック）。 */
+    public static final ModConfigSpec.DoubleValue ICE_WAND_SPAWN_HEIGHT = SYNCED_BUILDER
+            .comment("Height (blocks) above the player's head where the icicle appears.")
+            .defineInRange("spawnHeight", 1.0, 0.0, 8.0);
+    /** 発射後のクールダウン（tick。20 = 1 秒）。 */
+    public static final ModConfigSpec.IntValue ICE_WAND_COOLDOWN = SYNCED_BUILDER
+            .comment("Cooldown after casting (ticks, 20 = 1 second).")
+            .defineInRange("cooldownTicks", 10, 0, 1200);
+
+    /** 当たった敵に付ける鈍足の時間（tick。0 = 付けない）。 */
+    public static final ModConfigSpec.IntValue ICE_WAND_SLOWNESS_DURATION = SYNCED_BUILDER
+            .comment("Duration (ticks) of Slowness applied to enemies hit (pierce and impact). 0 = no Slowness.")
+            .defineInRange("slownessDuration", 60, 0, 12000);
+    /** 鈍足の強さ（0 = 鈍足 I、1 = 鈍足 II …）。 */
+    public static final ModConfigSpec.IntValue ICE_WAND_SLOWNESS_AMPLIFIER = SYNCED_BUILDER
+            .comment("Slowness level - 1 (0 = Slowness I, 1 = Slowness II, ...).")
+            .defineInRange("slownessAmplifier", 0, 0, 9);
+
+    static {
+        SYNCED_BUILDER.pop(); // iceWand
+        SYNCED_BUILDER.pop(); // magic
     }
 
     // ---- 安全な取得（読み込み前はデフォルト値） ----
@@ -285,11 +348,22 @@ public final class ModConfigs {
     public static double critDamagePerPoint() { return value(CRIT_DAMAGE_PER_POINT); }
     public static double luckAttributePerPoint() { return value(LUCK_ATTRIBUTE_PER_POINT); }
     public static double mpRegenPerSecond() { return value(MP_REGEN_PER_SECOND); }
+    public static double intelligenceMagicBonusPerPoint() { return value(INTELLIGENCE_MAGIC_BONUS_PER_POINT); }
+    public static double iceWandMpCost() { return value(ICE_WAND_MP_COST); }
+    public static double iceWandDamage() { return value(ICE_WAND_DAMAGE); }
+    public static double iceWandRadius() { return value(ICE_WAND_RADIUS); }
+    public static double iceWandEdgeDamageRatio() { return value(ICE_WAND_EDGE_DAMAGE_RATIO); }
+    public static double iceWandRange() { return value(ICE_WAND_RANGE); }
+    public static double iceWandSpeed() { return value(ICE_WAND_SPEED); }
+    public static double iceWandSpawnHeight() { return value(ICE_WAND_SPAWN_HEIGHT); }
+    public static int iceWandCooldown() { return value(ICE_WAND_COOLDOWN); }
+    public static int iceWandSlownessDuration() { return value(ICE_WAND_SLOWNESS_DURATION); }
+    public static int iceWandSlownessAmplifier() { return value(ICE_WAND_SLOWNESS_AMPLIFIER); }
 
     /** Config 値（int / double）を安全に取得する（StatType 等から使う）。 */
     public static <T> T get(ModConfigSpec.ConfigValue<T> config) { return value(config); }
 
-    // ※ 機能追加時はここにセクション（例: "mobs", "items"）を追加していく。
+    // ※ 機能追加時は上にセクション（例: "mobs", "items"）を追加していく。
 
     public static final ModConfigSpec SYNCED_SPEC = SYNCED_BUILDER.build();
 
