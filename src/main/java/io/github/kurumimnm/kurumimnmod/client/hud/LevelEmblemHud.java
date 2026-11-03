@@ -35,7 +35,7 @@ final class LevelEmblemHud {
 
         int size = ModConstants.LEVEL_EMBLEM_SIZE;
         float r = size / 2f;
-        int x = screenW / 2 + 91 + ModConstants.LEVEL_EMBLEM_MARGIN + rightSideOffset(mc);
+        int x = left(mc, screenW);
         int y = screenH - size;
         float cx = x + r;
         float cy = y + r;
@@ -106,6 +106,16 @@ final class LevelEmblemHud {
         HudDraw.outlinedText(g, font, lv, -font.width(lv) / 2 + 1, -4, ModConstants.LEVEL_COLOR_TEXT,
                 ModConstants.LEVEL_COLOR_TEXT_OUTLINE);
         g.pose().popMatrix();
+    }
+
+    /** エンブレムの左端の X 座標。 */
+    static int left(Minecraft mc, int screenW) {
+        return screenW / 2 + 91 + ModConstants.LEVEL_EMBLEM_MARGIN + rightSideOffset(mc);
+    }
+
+    /** エンブレムの右端の X 座標（右隣に並べる表示の基準）。 */
+    static int right(Minecraft mc, int screenW) {
+        return left(mc, screenW) + ModConstants.LEVEL_EMBLEM_SIZE;
     }
 
     /**
