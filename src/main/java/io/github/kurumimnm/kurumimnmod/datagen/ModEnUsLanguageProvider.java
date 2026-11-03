@@ -232,7 +232,7 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         add(MOD_ID + ".configuration.scarecrowArmor", "Initial Armor");
         add(MOD_ID + ".configuration.scarecrowMagicResistance", "Initial Magic Resistance (%)");
         add(MOD_ID + ".configuration.scarecrowKnockbackResistance", "Initial Knockback Resistance (%)");
-        add(MOD_ID + ".configuration.scarecrowNoKnockback", "Initial No Knockback");
+        add(MOD_ID + ".configuration.scarecrowKnockbackImmune", "Initial No Knockback");
         add(MOD_ID + ".configuration.scarecrowCounterEnabled", "Initial Counterattack");
         add(MOD_ID + ".configuration.scarecrowCounterDamage", "Initial Counterattack Damage");
         add(MOD_ID + ".configuration.scarecrowCounterInterval", "Initial Counterattack Interval (Seconds)");
