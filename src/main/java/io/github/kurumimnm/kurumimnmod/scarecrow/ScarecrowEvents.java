@@ -3,15 +3,12 @@ package io.github.kurumimnm.kurumimnmod.scarecrow;
 import io.github.kurumimnm.kurumimnmod.Kurumimnmod;
 import io.github.kurumimnm.kurumimnmod.config.ModConfigs;
 import io.github.kurumimnm.kurumimnmod.entity.ScarecrowEntity;
+import io.github.kurumimnm.kurumimnmod.registry.ModTags;
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.DamageTypeTags;
-import net.minecraft.tags.TagKey;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.bus.api.EventPriority;
@@ -39,14 +36,6 @@ import net.neoforged.neoforge.event.entity.player.CriticalHitEvent;
 public final class ScarecrowEvents {
 
     private ScarecrowEvents() {}
-
-    /**
-     * 魔法攻撃のダメージタイプタグ（kurumimnmod:magic_attack）。
-     * TODO: 魔法（feature/magic）と統合したら ModTags.DamageTypes.MAGIC_ATTACK に置き換える
-     *       （同じ ID なので中身の JSON は共通。このブランチ単体ではバニラの魔法だけが対象）
-     */
-    private static final TagKey<DamageType> MAGIC_ATTACK = TagKey.create(Registries.DAMAGE_TYPE,
-            Identifier.fromNamespaceAndPath(Kurumimnmod.MOD_ID, "magic_attack"));
 
     // =====================================================================
     // クリティカルの記録
@@ -124,7 +113,7 @@ public final class ScarecrowEvents {
 
     /** 魔法攻撃か（MOD の魔法タグ・バニラの魔法ダメージ）。 */
     private static boolean isMagic(DamageSource source) {
-        return source.is(MAGIC_ATTACK) || source.is(DamageTypes.MAGIC) || source.is(DamageTypes.INDIRECT_MAGIC);
+        return source.is(ModTags.DamageTypes.MAGIC_ATTACK) || source.is(DamageTypes.MAGIC) || source.is(DamageTypes.INDIRECT_MAGIC);
     }
 
     // =====================================================================
