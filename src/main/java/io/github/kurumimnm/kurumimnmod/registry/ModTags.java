@@ -40,7 +40,7 @@ public final class ModTags {
 
         /** ボスかどうか。 */
         public static boolean isBoss(Entity entity) {
-            return entity.getType().is(BOSSES);
+            return entity.getType().builtInRegistryHolder().is(BOSSES);
         }
     }
 }
