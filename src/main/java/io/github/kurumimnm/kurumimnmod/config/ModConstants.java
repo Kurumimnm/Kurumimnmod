@@ -94,6 +94,21 @@ public final class ModConstants {
     public static final int LEVEL_COLOR_TEXT_OUTLINE = 0xFF3A2400;
 
     // =====================================================================
+    // 武器ダメージ表示（レベルエンブレムの右）
+    // =====================================================================
+    /** レベルエンブレムとの間隔。 */
+    public static final int DAMAGE_DISPLAY_MARGIN = 4;
+    /** アイコンと数値の間隔。 */
+    public static final int DAMAGE_DISPLAY_ICON_GAP = 2;
+    /**
+     * 攻撃のクールダウンが溜まっていないときのダメージ倍率の下限（バニラの仕様と同じ 0.2）。
+     * バニラは「ダメージ × (0.2 + 溜まり具合² × 0.8)」なので、最小 = 最大 × 0.2 になる。
+     */
+    public static final float ATTACK_MIN_CHARGE_RATIO = 0.2f;
+    public static final int DAMAGE_COLOR_PHYSICAL = 0xFFFFE0C0;  // 物理ダメージの数値（淡いオレンジ）
+    public static final int DAMAGE_COLOR_MAGIC = 0xFFE0B8FF;     // 魔法ダメージの数値（淡い紫）
+
+    // =====================================================================
     // 敵の頭上 HP バー
     // 単位はブロック。
     // =====================================================================
