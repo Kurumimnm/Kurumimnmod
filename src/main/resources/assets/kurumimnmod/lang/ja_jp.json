@@ -1,9 +1,38 @@
 {
   "itemGroup.kurumimnmod.main": "Kurumimnmod",
 
+  "key.category.kurumimnmod.main": "Kurumimnmod",
+  "key.kurumimnmod.open_status": "ステータス画面を開く",
+
+  "screen.kurumimnmod.status": "ステータス",
+  "screen.kurumimnmod.status.level": "レベル %s",
+  "screen.kurumimnmod.status.next_level": "次のレベルまで %s%%",
+  "screen.kurumimnmod.status.hp": "HP %s / %s",
+  "screen.kurumimnmod.status.mp": "MP %s / %s",
+  "screen.kurumimnmod.status.points": "残りポイント: %s",
+
+  "stat.kurumimnmod.str": "STR",
+  "stat.kurumimnmod.str.desc": "筋力：物理攻撃力が上がる",
+  "stat.kurumimnmod.vit": "VIT",
+  "stat.kurumimnmod.vit.desc": "体力：最大HPが上がる",
+  "stat.kurumimnmod.int": "INT",
+  "stat.kurumimnmod.int.desc": "知力：最大MPと魔法攻撃力が上がる",
+  "stat.kurumimnmod.dex": "DEX",
+  "stat.kurumimnmod.dex.desc": "器用さ：命中率とクリティカル率が上がる",
+  "stat.kurumimnmod.agi": "AGI",
+  "stat.kurumimnmod.agi.desc": "敏捷：移動速度と攻撃速度が上がる",
+
   "kurumimnmod.configuration.title": "Kurumimnmod の設定",
   "kurumimnmod.configuration.section.kurumimnmod.synced.toml": "Kurumimnmod の設定",
   "kurumimnmod.configuration.section.kurumimnmod.synced.toml.title": "Kurumimnmod の設定",
+  "kurumimnmod.configuration.section.kurumimnmod.client.toml": "Kurumimnmod のクライアント設定",
+  "kurumimnmod.configuration.section.kurumimnmod.client.toml.title": "Kurumimnmod のクライアント設定",
   "kurumimnmod.configuration.general": "一般",
-  "kurumimnmod.configuration.debugLogging": "デバッグログを出力"
+  "kurumimnmod.configuration.debugLogging": "デバッグログを出力",
+  "kurumimnmod.configuration.player": "プレイヤー",
+  "kurumimnmod.configuration.disableHunger": "空腹システムを無効化",
+  "kurumimnmod.configuration.enemyHealthBar": "敵のHPバー",
+  "kurumimnmod.configuration.enabled": "表示する",
+  "kurumimnmod.configuration.range": "表示距離",
+  "kurumimnmod.configuration.hostileOnly": "敵対モブのみ"
 }
