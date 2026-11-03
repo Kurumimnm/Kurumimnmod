@@ -6,12 +6,17 @@ import io.github.kurumimnm.kurumimnmod.config.ModConstants;
 /**
  * レベルアップに必要な経験値の計算。
  * <pre>
- *   必要経験値(Lv) = baseExp × Lv ^ exponent   （小数は四捨五入、最低 1）
+ *   必要経験値(Lv) = baseExp + growth × (Lv - 1) ^ exponent   （小数は四捨五入、最低 1）
  *
- *   デフォルト（baseExp = 100, exponent = 1.5）の目安:
- *     Lv1 → 2 :    100     Lv10 → 11 :  3,162
- *     Lv2 → 3 :    283     Lv20 → 21 :  8,944
- *     Lv5 → 6 :  1,118     Lv50 → 51 : 35,355
+ *   baseExp  … Lv1 → 2 に必要な経験値
+ *   growth   … 1 レベルごとの増え方の大きさ
+ *   exponent … 増え方のカーブ（1.0 = 一定ペース、大きいほど高レベルで重くなる）
+ *
+ *   デフォルト（baseExp = 12, growth = 4, exponent = 1.5）の目安:
+ *     Lv1 → 2 :  12     Lv5  → 6  :    44
+ *     Lv2 → 3 :  16     Lv10 → 11 :   120
+ *     Lv3 → 4 :  23     Lv20 → 21 :   343
+ *     Lv4 → 5 :  33     Lv50 → 51 : 1,384
  * </pre>
  * 係数は Config（kurumimnmod-synced.toml の [level]）で調整できる。
  * クライアントにも同期されるので、HUD の進捗表示もサーバーと同じ計算になる。
@@ -22,7 +27,8 @@ public final class LevelCurve {
 
     /** 指定レベルから次のレベルへ上がるのに必要な経験値。 */
     public static long requiredExp(int level) {
-        double value = ModConfigs.levelBaseExp() * Math.pow(Math.max(1, level), ModConfigs.levelExponent());
+        int steps = Math.max(0, level - ModConstants.INITIAL_LEVEL);
+        double value = ModConfigs.levelBaseExp() + ModConfigs.levelGrowth() * Math.pow(steps, ModConfigs.levelExponent());
         return Math.max(1L, Math.round(value));
     }
 

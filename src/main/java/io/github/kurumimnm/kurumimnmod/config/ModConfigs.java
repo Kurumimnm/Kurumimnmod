@@ -74,14 +74,20 @@ public final class ModConfigs {
             .comment("If true, vanilla experience orbs are never spawned (mobs, mining, smelting, fishing, breeding, trading, etc.).")
             .define("disableVanillaExperience", true);
 
-    /** 必要経験値の基本値。必要経験値(Lv) = baseExp × Lv ^ exponent */
+    /** Lv1 → 2 に必要な経験値。必要経験値(Lv) = baseExp + growth × (Lv - 1) ^ exponent */
     public static final ModConfigSpec.DoubleValue LEVEL_BASE_EXP = SYNCED_BUILDER
-            .comment("Base value of the level curve. Required exp to level up = baseExp * level ^ exponent.")
-            .defineInRange("baseExp", 100.0, 1.0, 1_000_000.0);
+            .comment("Exp required to go from level 1 to 2.",
+                    "Required exp to level up = baseExp + growth * (level - 1) ^ exponent.")
+            .defineInRange("baseExp", 12.0, 1.0, 1_000_000.0);
 
-    /** 必要経験値の伸び方（大きいほど高レベルで上がりにくくなる）。 */
+    /** 1 レベルごとの必要経験値の増え方の大きさ。 */
+    public static final ModConfigSpec.DoubleValue LEVEL_GROWTH = SYNCED_BUILDER
+            .comment("How much the required exp grows per level (multiplier of (level - 1) ^ exponent).")
+            .defineInRange("growth", 4.0, 0.0, 1_000_000.0);
+
+    /** 必要経験値の伸び方（1.0 = 一定ペース、大きいほど高レベルで上がりにくくなる）。 */
     public static final ModConfigSpec.DoubleValue LEVEL_EXPONENT = SYNCED_BUILDER
-            .comment("Exponent of the level curve. Larger values make high levels harder to reach. 1.0 = linear.")
+            .comment("Curve of the required exp growth. 1.0 = linear, larger values make high levels harder to reach.")
             .defineInRange("exponent", 1.5, 0.0, 5.0);
 
     /** 最大レベル（0 = 上限なし）。 */
@@ -129,6 +135,7 @@ public final class ModConfigs {
     public static boolean isDebugLogging() { return value(DEBUG_LOGGING); }
     public static boolean isVanillaExperienceDisabled() { return value(DISABLE_VANILLA_EXPERIENCE); }
     public static double levelBaseExp() { return value(LEVEL_BASE_EXP); }
+    public static double levelGrowth() { return value(LEVEL_GROWTH); }
     public static double levelExponent() { return value(LEVEL_EXPONENT); }
     public static int maxLevel() { return value(MAX_LEVEL); }
     public static double killerExpRatio() { return value(KILLER_EXP_RATIO); }
