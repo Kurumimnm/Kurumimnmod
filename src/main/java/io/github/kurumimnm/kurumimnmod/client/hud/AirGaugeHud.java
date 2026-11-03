@@ -30,7 +30,7 @@ public final class AirGaugeHud {
 
         var hud = mc.gui.hud;
         // HP バー右半分の上（右側の積み上げ位置）に表示する
-        int w = ModConstants.HUD_BAR_WIDTH / 2 - ModConstants.HUD_LEVEL_ICON_SIZE / 2 - 4;
+        int w = ModConstants.HUD_BAR_WIDTH / 2 - 2;
         int h = ModConstants.HUD_AIR_BAR_HEIGHT;
         int x = g.guiWidth() / 2 + ModConstants.HUD_BAR_WIDTH / 2 - w;
         int y = g.guiHeight() - hud.rightHeight + (9 - h);

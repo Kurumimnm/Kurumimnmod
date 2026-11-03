@@ -1,6 +1,7 @@
 package io.github.kurumimnm.kurumimnmod.client.hud;
 
 import io.github.kurumimnm.kurumimnmod.config.ModConstants;
+import java.util.function.IntUnaryOperator;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 
@@ -34,60 +35,105 @@ final class HudDraw {
         // 本体
         if (fillW > 0) {
             g.fill(x, y, x + fillW, y + height, fillColor);
-            // 上端に 1px のハイライトを入れて立体感を出す
-            g.fill(x, y, x + fillW, y + 1, brighten(fillColor));
+            // 上端に 1px のハイライト、下端に 1px の影を入れて立体感を出す
+            g.fill(x, y, x + fillW, y + 1, brighten(fillColor, 50));
+            if (height >= 4) {
+                g.fill(x, y + height - 1, x + fillW, y + height, darken(fillColor, 40));
+            }
         }
-    }
-
-    /** ゲージの中央に数値テキストを描く。 */
-    static void centeredLabel(GuiGraphicsExtractor g, Font font, String text, int x, int y, int width, int height) {
-        int tx = x + (width - font.width(text)) / 2;
-        // 数字のグリフは高さ 7px なので、バーの中央に来るよう調整
-        int ty = y + (height - 7) / 2;
-        g.text(font, text, tx, ty, ModConstants.HUD_COLOR_TEXT, true);
     }
 
     /**
-     * 丸いレベルアイコンを描く。下から progress の割合だけ fillColor で塗る。
-     * ピクセル単位で行ごとに fill しているので、どの GUI スケールでもくっきり表示される。
+     * ゲージの中央に数値テキストを縮小して重ねる。
+     * 細いバーでも読めるよう {@link ModConstants#HUD_BAR_TEXT_SCALE} で縮小する。
      */
-    static void levelCircle(GuiGraphicsExtractor g, int x, int y, int size, float progress, int emptyColor, int fillColor) {
-        float r = size / 2f;
-        int filledRows = Math.round(size * clamp01(progress));
-        for (int row = 0; row < size; row++) {
-            // 行の中心から円の幅を求める
-            float dy = row + 0.5f - r;
-            float half = (float) Math.sqrt(Math.max(0, r * r - dy * dy));
-            int left = Math.round(r - half);
-            int right = Math.round(r + half);
-            if (right <= left) {
+    static void centeredLabel(GuiGraphicsExtractor g, Font font, String text, int x, int y, int width, int height) {
+        float scale = ModConstants.HUD_BAR_TEXT_SCALE;
+        float cx = x + width / 2f;
+        float cy = y + height / 2f;
+        g.pose().pushMatrix();
+        g.pose().translate(cx, cy);
+        g.pose().scale(scale, scale);
+        // 数字のグリフは高さ 7px なので、縦方向は -3.5 で中央に揃う
+        g.text(font, text, -font.width(text) / 2, -4, ModConstants.HUD_COLOR_TEXT, true);
+        g.pose().popMatrix();
+    }
+
+    /**
+     * 円（またはドーナツ形）を行ごとの fill で描く。どの GUI スケールでもくっきり表示される。
+     *
+     * @param cx,cy       中心（GUI 座標）
+     * @param rOuter      外側の半径
+     * @param rInner      内側の半径（0 なら塗りつぶしの円）
+     * @param rowColor    行（0 = 一番上）ごとの色を返す関数。0 を返した行は描かない
+     */
+    static void ring(GuiGraphicsExtractor g, float cx, float cy, float rOuter, float rInner, IntUnaryOperator rowColor) {
+        int top = (int) Math.floor(cy - rOuter);
+        int bottom = (int) Math.ceil(cy + rOuter);
+        for (int py = top; py < bottom; py++) {
+            float dy = py + 0.5f - cy;
+            float outerHalf = halfWidth(rOuter, dy);
+            if (outerHalf <= 0) {
                 continue;
             }
-            // 外枠（1px）
-            g.fill(x + left, y + row, x + right, y + row + 1, ModConstants.HUD_COLOR_BORDER);
-
-            // 内側（半径 -1）
-            float ri = r - 1;
-            float half2 = (float) Math.sqrt(Math.max(0, ri * ri - dy * dy));
-            int l2 = Math.round(r - half2);
-            int r2 = Math.round(r + half2);
-            if (r2 > l2 && row > 0 && row < size - 1) {
-                boolean filled = row >= size - filledRows;
-                g.fill(x + l2, y + row, x + r2, y + row + 1, filled ? fillColor : emptyColor);
+            int color = rowColor.applyAsInt(py - top);
+            if ((color >>> 24) == 0) {
+                continue;
+            }
+            int ol = Math.round(cx - outerHalf);
+            int or = Math.round(cx + outerHalf);
+            float innerHalf = halfWidth(rInner, dy);
+            if (innerHalf <= 0) {
+                g.fill(ol, py, or, py + 1, color);
+            } else {
+                int il = Math.round(cx - innerHalf);
+                int ir = Math.round(cx + innerHalf);
+                if (il > ol) g.fill(ol, py, il, py + 1, color);
+                if (or > ir) g.fill(ir, py, or, py + 1, color);
             }
         }
+    }
+
+    /** 半径 r の円の、中心から dy 離れた行の半幅。 */
+    private static float halfWidth(float r, float dy) {
+        float v = r * r - dy * dy;
+        return v <= 0 ? 0 : (float) Math.sqrt(v);
+    }
+
+    /** 文字に 1px の縁取りを付けて描く（小さい文字でも背景に埋もれないように）。 */
+    static void outlinedText(GuiGraphicsExtractor g, Font font, String text, int x, int y, int color, int outline) {
+        g.text(font, text, x - 1, y, outline, false);
+        g.text(font, text, x + 1, y, outline, false);
+        g.text(font, text, x, y - 1, outline, false);
+        g.text(font, text, x, y + 1, outline, false);
+        g.text(font, text, x, y, color, false);
     }
 
     static float clamp01(float v) {
         return Math.clamp(v, 0f, 1f);
     }
 
+    /** アルファだけを掛けた色を返す（0〜1）。 */
+    static int withAlpha(int argb, float alpha) {
+        int a = Math.round((argb >>> 24) * clamp01(alpha));
+        return (a << 24) | (argb & 0xFFFFFF);
+    }
+
     /** 色を少し明るくする（ハイライト用）。 */
-    static int brighten(int argb) {
+    static int brighten(int argb, int amount) {
+        return shift(argb, amount);
+    }
+
+    /** 色を少し暗くする（影用）。 */
+    static int darken(int argb, int amount) {
+        return shift(argb, -amount);
+    }
+
+    private static int shift(int argb, int amount) {
         int a = argb >>> 24;
-        int r = Math.min(255, ((argb >> 16) & 0xFF) + 50);
-        int gr = Math.min(255, ((argb >> 8) & 0xFF) + 50);
-        int b = Math.min(255, (argb & 0xFF) + 50);
+        int r = Math.clamp(((argb >> 16) & 0xFF) + amount, 0, 255);
+        int gr = Math.clamp(((argb >> 8) & 0xFF) + amount, 0, 255);
+        int b = Math.clamp((argb & 0xFF) + amount, 0, 255);
         return (a << 24) | (r << 16) | (gr << 8) | b;
     }
 }

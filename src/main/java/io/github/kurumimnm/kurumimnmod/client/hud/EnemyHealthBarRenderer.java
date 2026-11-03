@@ -24,7 +24,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 /**
- * 敵の頭上に HP バー（数値なし）を表示する。
+ * 敵の頭上に HP バー（数値なし・10% ごとの目盛り付き・割合で色が変化）を表示する。
  * <p>
  * 26.x の描画は「エンティティ → RenderState（描画用スナップショット）→ 描画」の 2 段階なので、
  * <ol>
@@ -120,7 +120,15 @@ public final class EnemyHealthBarRenderer {
             quad(consumer, pose, left - b, -b, left + w + b, h + b, 0.000f, ModConstants.ENEMY_BAR_COLOR_BORDER);
             quad(consumer, pose, left, 0f, left + w, h, 0.002f, ModConstants.ENEMY_BAR_COLOR_BACKGROUND);
             if (ratio > 0f) {
-                quad(consumer, pose, left, 0f, fillRight, h, 0.004f, ModConstants.ENEMY_BAR_COLOR_FILL);
+                // HP の色は割合で 緑 → 黄 → オレンジ → 赤 に変化（プレイヤーの HP バーと共通）
+                quad(consumer, pose, left, 0f, fillRight, h, 0.004f, HealthColor.forRatio(ratio));
+            }
+            // 目盛り（HP 10% ごと）。残り HP の割合がひと目でわかるようにする
+            float step = ModConstants.ENEMY_BAR_TICK_STEP;
+            float tw = ModConstants.ENEMY_BAR_TICK_WIDTH / 2f;
+            for (float t = step; t < 1f - step / 2f; t += step) {
+                float tx = left + w * t;
+                quad(consumer, pose, tx - tw, 0f, tx + tw, h, 0.006f, ModConstants.ENEMY_BAR_COLOR_TICK);
             }
         });
         poseStack.popPose();

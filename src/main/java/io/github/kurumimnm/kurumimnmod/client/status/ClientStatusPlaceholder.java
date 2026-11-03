@@ -14,7 +14,7 @@ import net.minecraft.client.player.LocalPlayer;
  * <ul>
  *   <li>HP … バニラの体力をそのまま使用</li>
  *   <li>MP … 固定値（{@link ModConstants#PLACEHOLDER_MAX_MP}）</li>
- *   <li>レベル・経験値 … バニラの経験値レベル／進捗を流用（初期 0）</li>
+ *   <li>レベル・経験値 … バニラの経験値レベル／進捗を流用（バニラ Lv0 = 表示 Lv1）</li>
  *   <li>ステータス … クライアント側のメモリ上だけに保持（保存・同期なし）</li>
  * </ul>
  * 本実装（サーバー側のデータ保存＋同期）ができたら、このクラスの中身だけを
@@ -57,7 +57,8 @@ public final class ClientStatusPlaceholder {
 
     public static int level() {
         LocalPlayer p = player();
-        return p == null ? 0 : p.experienceLevel;
+        int base = ModConstants.INITIAL_LEVEL;
+        return p == null ? base : base + p.experienceLevel;
     }
 
     /** 次のレベルまでの進捗（0.0〜1.0）。 */
@@ -83,7 +84,9 @@ public final class ClientStatusPlaceholder {
 
     /** まだ振り分けていないポイント。 */
     public static int unspentPoints() {
-        return Math.max(0, level() * ModConstants.STAT_POINTS_PER_LEVEL - spentPoints());
+        // 初期レベルではポイントなし。1 レベル上がるごとに STAT_POINTS_PER_LEVEL もらえる
+        int levelsGained = level() - ModConstants.INITIAL_LEVEL;
+        return Math.max(0, levelsGained * ModConstants.STAT_POINTS_PER_LEVEL - spentPoints());
     }
 
     /** ポイントを 1 振る。成功したら true。 */

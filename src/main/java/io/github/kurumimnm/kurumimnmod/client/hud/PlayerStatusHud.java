@@ -10,12 +10,11 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.util.Mth;
 
 /**
- * 画面下部（ホットバーの上）に表示するプレイヤーのステータス HUD。
+ * 画面下部に表示するプレイヤーのステータス HUD。
  * <pre>
- *            ( Lv )          ← レベルアイコン（灰色 → 経験値に応じて下から黄色）
- *   [■■■■■ HP 20/20 ■■■■■]  ← HP バー（緑）
- *   [■■■■■ MP 20/20 ■■■■■]  ← MP バー（青）
- *   [      ホットバー       ]
+ *   [■■■■■ 20 / 20 ■■■■■]          ← HP バー（割合で 緑→黄→オレンジ→赤）
+ *   [■■■■■ 20 / 20 ■■■■■]          ← MP バー（青）
+ *   [      ホットバー       ]  (Lv)   ← レベルエンブレム（{@link LevelEmblemHud}）
  * </pre>
  * バニラのハート・空腹ゲージ・経験値バーの代わりに表示する（登録は {@link ModHudLayers}）。
  */
@@ -58,19 +57,17 @@ public final class PlayerStatusHud {
         int barH = ModConstants.HUD_BAR_HEIGHT;
         int x = screenW / 2 - barW / 2;
 
-        // ---- 縦の配置（下から：ホットバー → MP → HP → レベル） ----
+        // ---- 縦の配置（下から：ホットバー → MP → HP） ----
         int bottom = 22 + ModConstants.HUD_HOTBAR_MARGIN + (isJumpBarShown(mc) ? ModConstants.HUD_JUMP_BAR_OFFSET : 0);
         int mpY = screenH - bottom - barH;
         int hpY = mpY - 1 - ModConstants.HUD_BAR_GAP - 1 - barH; // 枠線 1px ずつを考慮
-        int iconSize = ModConstants.HUD_LEVEL_ICON_SIZE;
-        int iconY = hpY - 1 - ModConstants.HUD_LEVEL_ICON_GAP - iconSize;
 
         // ---- HP ----
         float hp = ClientStatusPlaceholder.health();
         float maxHp = ClientStatusPlaceholder.maxHealth();
         float hpRatio = hp / maxHp;
         updateTrail(hpRatio);
-        int hpColor = hpRatio <= ModConstants.HUD_HP_LOW_RATIO ? ModConstants.HUD_COLOR_HP_LOW : ModConstants.HUD_COLOR_HP;
+        int hpColor = HealthColor.forRatio(hpRatio);
         HudDraw.bar(g, x, hpY, barW, barH, hpRatio, hpColor, hpTrail, ModConstants.HUD_COLOR_HP_TRAIL);
         HudDraw.centeredLabel(g, font, format(hp) + " / " + format(maxHp), x, hpY, barW, barH);
 
@@ -80,12 +77,8 @@ public final class PlayerStatusHud {
         HudDraw.bar(g, x, mpY, barW, barH, mp / Math.max(1, maxMp), ModConstants.HUD_COLOR_MP, 0, 0);
         HudDraw.centeredLabel(g, font, format(mp) + " / " + format(maxMp), x, mpY, barW, barH);
 
-        // ---- レベル（丸アイコン） ----
-        int iconX = screenW / 2 - iconSize / 2;
-        HudDraw.levelCircle(g, iconX, iconY, iconSize, ClientStatusPlaceholder.levelProgress(),
-                ModConstants.HUD_COLOR_LEVEL_EMPTY, ModConstants.HUD_COLOR_LEVEL_FILL);
-        String lv = String.valueOf(ClientStatusPlaceholder.level());
-        g.text(font, lv, iconX + (iconSize - font.width(lv)) / 2 + 1, iconY + (iconSize - 7) / 2, ModConstants.HUD_COLOR_TEXT, true);
+        // ---- レベル（ホットバーの右） ----
+        LevelEmblemHud.render(g, mc, screenW, screenH);
 
         // ---- 他の HUD（酸素ゲージや他 MOD の表示）を HUD の上に積むための高さ調整 ----
         // NeoForge の Hud#leftHeight / rightHeight は「次の行を画面下端から何 px の位置に描くか」
