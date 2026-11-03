@@ -2,6 +2,7 @@ package io.github.kurumimnm.kurumimnmod.status;
 
 import io.github.kurumimnm.kurumimnmod.Kurumimnmod;
 import io.github.kurumimnm.kurumimnmod.config.ModConfigs;
+import io.github.kurumimnm.kurumimnmod.registry.ModTags;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
@@ -21,7 +22,7 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
  * <ol>
  *   <li>属性の反映（最大 HP など）… ログイン・リスポーン・ディメンション移動時と、毎秒の確認</li>
  *   <li>MP の自然回復 … 毎秒</li>
- *   <li>攻撃力 … プレイヤーが与えるダメージに倍率をかける</li>
+ *   <li>攻撃力・知力 … プレイヤーが与えるダメージに倍率をかける（魔法ダメージは知力、それ以外は攻撃力）</li>
  *   <li>防御力 … 敵から受けるダメージを固定値で減らす（防具の計算のあと）</li>
  *   <li>技量 … クリティカルを技量の確率判定に置き換える（バニラの落下クリティカルは無効）</li>
  * </ol>
@@ -83,13 +84,16 @@ public final class StatEvents {
     }
 
     // =====================================================================
-    // 3. 攻撃力（与ダメージ倍率）
+    // 3. 攻撃力・知力（与ダメージ倍率）
     // =====================================================================
 
     /**
-     * プレイヤーが原因のダメージ（近接・弓矢など）に攻撃力の倍率をかける。
+     * プレイヤーが原因のダメージに倍率をかける。
+     * <ul>
+     *   <li>魔法ダメージ（ダメージタイプタグ {@code kurumimnmod:magic_attack}。魔法の杖など）→ 知力の倍率</li>
+     *   <li>それ以外（近接・弓矢など）→ 攻撃力の倍率</li>
+     * </ul>
      * 防具などで軽減される前の値にかけるので、バニラの武器ダメージと同じ扱いになる。
-     * TODO: 魔法を実装したら、魔法ダメージは攻撃力ではなく知力で計算するよう分ける
      */
     @SubscribeEvent
     static void onIncomingDamage(LivingIncomingDamageEvent event) {
@@ -101,7 +105,9 @@ public final class StatEvents {
         if (attacker == null || attacker == victim) {
             return;
         }
-        float multiplier = StatManager.attackMultiplier(attacker);
+        float multiplier = event.getSource().is(ModTags.DamageTypes.MAGIC_ATTACK)
+                ? StatManager.magicMultiplier(attacker)
+                : StatManager.attackMultiplier(attacker);
         if (multiplier != 1f) {
             event.setAmount(event.getAmount() * multiplier);
         }

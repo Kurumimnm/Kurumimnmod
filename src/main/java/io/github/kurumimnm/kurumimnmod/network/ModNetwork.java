@@ -24,5 +24,6 @@ public final class ModNetwork {
     static void onRegisterPayloads(RegisterPayloadHandlersEvent event) {
         PayloadRegistrar registrar = event.registrar(VERSION);
         registrar.playToServer(AllocateStatsPayload.TYPE, AllocateStatsPayload.STREAM_CODEC, AllocateStatsPayload::handle);
+        registrar.playToServer(CastWandPayload.TYPE, CastWandPayload.STREAM_CODEC, CastWandPayload::handle);
     }
 }
