@@ -17,5 +17,6 @@ public final class ModRegistries {
         ModItems.ITEMS.register(modEventBus);
         ModEntities.ENTITY_TYPES.register(modEventBus);
         ModCreativeTabs.CREATIVE_MODE_TABS.register(modEventBus);
+        ModAttachments.ATTACHMENT_TYPES.register(modEventBus);
     }
 }

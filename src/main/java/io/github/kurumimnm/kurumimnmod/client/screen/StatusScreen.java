@@ -16,7 +16,7 @@ import net.minecraft.util.Mth;
  * ステータス画面（K キーで開く）。
  * <pre>
  * ┌──────────── ステータス ────────────┐
- * │ レベル 3        次のレベルまで 45%  │
+ * │ レベル 3        EXP 45 / 100 (45%)  │
  * │ HP 20 / 20      MP 20 / 20          │
  * │ 残りポイント: 2                     │
  * │ STR   0   [+]                       │
@@ -91,7 +91,8 @@ public class StatusScreen extends Screen {
         // レベル・経験値
         int y = this.top + 24;
         g.text(this.font, Component.translatable("screen.kurumimnmod.status.level", ClientStatusPlaceholder.level()), x, y, COLOR_VALUE, true);
-        Component progress = Component.translatable("screen.kurumimnmod.status.next_level",
+        Component progress = Component.translatable("screen.kurumimnmod.status.exp",
+                ClientStatusPlaceholder.exp(), ClientStatusPlaceholder.requiredExp(),
                 Mth.floor(ClientStatusPlaceholder.levelProgress() * 100));
         g.text(this.font, progress, right - this.font.width(progress), y, COLOR_LABEL, true);
 

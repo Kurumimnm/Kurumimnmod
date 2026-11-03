@@ -1,6 +1,8 @@
 package io.github.kurumimnm.kurumimnmod.client.status;
 
 import io.github.kurumimnm.kurumimnmod.config.ModConstants;
+import io.github.kurumimnm.kurumimnmod.level.LevelManager;
+import io.github.kurumimnm.kurumimnmod.level.PlayerLevel;
 import io.github.kurumimnm.kurumimnmod.status.StatType;
 import java.util.EnumMap;
 import java.util.Map;
@@ -14,7 +16,7 @@ import net.minecraft.client.player.LocalPlayer;
  * <ul>
  *   <li>HP … バニラの体力をそのまま使用</li>
  *   <li>MP … 固定値（{@link ModConstants#PLACEHOLDER_MAX_MP}）</li>
- *   <li>レベル・経験値 … バニラの経験値レベル／進捗を流用（バニラ Lv0 = 表示 Lv1）</li>
+ *   <li>レベル・経験値 … 【本実装済み】サーバーから同期された {@link PlayerLevel}（{@link LevelManager}）</li>
  *   <li>ステータス … クライアント側のメモリ上だけに保持（保存・同期なし）</li>
  * </ul>
  * 本実装（サーバー側のデータ保存＋同期）ができたら、このクラスの中身だけを
@@ -53,18 +55,30 @@ public final class ClientStatusPlaceholder {
         return ModConstants.PLACEHOLDER_MAX_MP;
     }
 
-    // ---- レベル・経験値（仮：バニラの経験値を流用） ----
+    // ---- レベル・経験値（サーバーから同期されたデータ） ----
+
+    private static PlayerLevel levelData() {
+        LocalPlayer p = player();
+        return p == null ? PlayerLevel.DEFAULT : LevelManager.get(p);
+    }
 
     public static int level() {
-        LocalPlayer p = player();
-        int base = ModConstants.INITIAL_LEVEL;
-        return p == null ? base : base + p.experienceLevel;
+        return levelData().level();
+    }
+
+    /** 現在のレベル内で貯まっている経験値。 */
+    public static long exp() {
+        return levelData().exp();
+    }
+
+    /** 次のレベルまでに必要な経験値。 */
+    public static long requiredExp() {
+        return levelData().requiredExp();
     }
 
     /** 次のレベルまでの進捗（0.0〜1.0）。 */
     public static float levelProgress() {
-        LocalPlayer p = player();
-        return p == null ? 0 : Math.clamp(p.experienceProgress, 0f, 1f);
+        return levelData().progress();
     }
 
     // ---- ステータス ----
