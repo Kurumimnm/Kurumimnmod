@@ -87,7 +87,7 @@ public final class PlayerStatusHud {
         String lv = String.valueOf(ClientStatusPlaceholder.level());
         g.text(font, lv, iconX + (iconSize - font.width(lv)) / 2 + 1, iconY + (iconSize - 7) / 2, ModConstants.HUD_COLOR_TEXT, true);
 
-        // ---- 他の HUD（防具ゲージ・乗り物の体力など）を HUD の上に積むための高さ調整 ----
+        // ---- 他の HUD（酸素ゲージや他 MOD の表示）を HUD の上に積むための高さ調整 ----
         // NeoForge の Hud#leftHeight / rightHeight は「次の行を画面下端から何 px の位置に描くか」
         int used = screenH - hpY + 2;
         topFromBottom = used;

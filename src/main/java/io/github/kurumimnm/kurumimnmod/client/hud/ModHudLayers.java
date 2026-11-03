@@ -13,12 +13,13 @@ import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
  * バニラ HUD の差し替え登録。
  * <ul>
  *   <li>ハート（PLAYER_HEALTH）      → HP/MP バー＋レベルアイコン（{@link PlayerStatusHud}）</li>
+ *   <li>防具ゲージ（ARMOR_LEVEL）     → 非表示</li>
  *   <li>空腹ゲージ（FOOD_LEVEL）      → 非表示</li>
+ *   <li>乗り物の体力（VEHICLE_HEALTH） → 非表示</li>
  *   <li>水中の泡（AIR_LEVEL）         → 酸素ゲージ（{@link AirGaugeHud}）</li>
  *   <li>経験値バー（CONTEXTUAL_INFO_BAR*） → 非表示（乗り物のジャンプゲージだけは残す）</li>
  *   <li>経験値レベルの数字（EXPERIENCE_LEVEL） → 非表示（レベルアイコンに統合）</li>
  * </ul>
- * 防具ゲージ・乗り物の体力はバニラのまま、HUD の上に積まれて表示される。
  */
 @EventBusSubscriber(modid = Kurumimnmod.MOD_ID, value = Dist.CLIENT)
 public final class ModHudLayers {
@@ -31,7 +32,9 @@ public final class ModHudLayers {
     @SubscribeEvent
     static void onRegisterGuiLayers(RegisterGuiLayersEvent event) {
         event.replaceLayer(VanillaGuiLayers.PLAYER_HEALTH, PlayerStatusHud::render);
+        event.replaceLayer(VanillaGuiLayers.ARMOR_LEVEL, NONE);
         event.replaceLayer(VanillaGuiLayers.FOOD_LEVEL, NONE);
+        event.replaceLayer(VanillaGuiLayers.VEHICLE_HEALTH, NONE);
         event.replaceLayer(VanillaGuiLayers.AIR_LEVEL, AirGaugeHud::render);
         event.replaceLayer(VanillaGuiLayers.EXPERIENCE_LEVEL, NONE);
 
