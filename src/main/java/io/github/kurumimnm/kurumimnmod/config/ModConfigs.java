@@ -41,6 +41,29 @@ public final class ModConfigs {
         SYNCED_BUILDER.pop();
     }
 
+    // ---- player セクション（プレイヤーの仕様） ----
+    static {
+        SYNCED_BUILDER.push("player");
+    }
+
+    /**
+     * 空腹システムを無効化するか。
+     * true のとき満腹度は常に最大で固定され、空腹による自然回復・餓死も発生しない。
+     */
+    public static final ModConfigSpec.BooleanValue DISABLE_HUNGER = SYNCED_BUILDER
+            .comment("If true, the hunger system is disabled: food level stays full,",
+                    "and there is no natural regeneration or starvation from hunger.")
+            .define("disableHunger", true);
+
+    static {
+        SYNCED_BUILDER.pop();
+    }
+
+    /** Config がまだ読み込まれていない（ワールド起動前など）ときはデフォルト値を返す安全な取得。 */
+    public static boolean isHungerDisabled() {
+        return SYNCED_SPEC.isLoaded() ? DISABLE_HUNGER.get() : DISABLE_HUNGER.getDefault();
+    }
+
     // ※ 機能追加時はここにセクション（例: "mobs", "items"）を追加していく。
 
     public static final ModConfigSpec SYNCED_SPEC = SYNCED_BUILDER.build();
