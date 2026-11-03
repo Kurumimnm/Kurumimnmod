@@ -42,10 +42,22 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         // ---- ステータス画面 ----
         add("screen." + MOD_ID + ".status", "Status");
         add("screen." + MOD_ID + ".status.level", "Level %s");
-        add("screen." + MOD_ID + ".status.next_level", "Next level: %s%%");
+        add("screen." + MOD_ID + ".status.exp", "EXP %s / %s (%s%%)");
         add("screen." + MOD_ID + ".status.hp", "HP %s / %s");
         add("screen." + MOD_ID + ".status.mp", "MP %s / %s");
         add("screen." + MOD_ID + ".status.points", "Unspent Points: %s");
+
+        // ---- レベル・経験値（メッセージ） ----
+        add("message." + MOD_ID + ".exp_gain", "+%s EXP");
+        add("message." + MOD_ID + ".exp_gain.assist", "+%s EXP (Assist)");
+        add("message." + MOD_ID + ".level_up", "Level up! You are now level %s.");
+
+        // ---- コマンド ----
+        add("commands." + MOD_ID + ".exp.add.single", "Gave %s exp to %s");
+        add("commands." + MOD_ID + ".exp.add.multiple", "Gave %s exp to %s players");
+        add("commands." + MOD_ID + ".level.set.single", "Set level to %s for %s");
+        add("commands." + MOD_ID + ".level.set.multiple", "Set level to %s for %s players");
+        add("commands." + MOD_ID + ".level.query", "%s: Level %s (%s / %s exp)");
 
         // ---- ステータス（StatType） ----
         addStat(StatType.STR, "STR", "Strength: increases physical attack power.");
@@ -64,6 +76,15 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         add(MOD_ID + ".configuration.debugLogging", "Debug Logging");
         add(MOD_ID + ".configuration.player", "Player");
         add(MOD_ID + ".configuration.disableHunger", "Disable Hunger");
+        add(MOD_ID + ".configuration.level", "Level");
+        add(MOD_ID + ".configuration.disableVanillaExperience", "Disable Vanilla Experience");
+        add(MOD_ID + ".configuration.baseExp", "Base Required Exp");
+        add(MOD_ID + ".configuration.exponent", "Required Exp Exponent");
+        add(MOD_ID + ".configuration.maxLevel", "Max Level (0 = No Limit)");
+        add(MOD_ID + ".configuration.killerExpRatio", "Killer Exp Multiplier");
+        add(MOD_ID + ".configuration.assistExpRatio", "Assist Exp Multiplier");
+        add(MOD_ID + ".configuration.assistWindowSeconds", "Assist Duration (Seconds)");
+        add(MOD_ID + ".configuration.showExpMessages", "Show Exp Gain Messages");
         add(MOD_ID + ".configuration.enemyHealthBar", "Enemy Health Bar");
         add(MOD_ID + ".configuration.enabled", "Enabled");
         add(MOD_ID + ".configuration.range", "Display Range");
