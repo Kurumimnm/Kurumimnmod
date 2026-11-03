@@ -195,7 +195,7 @@
   "kurumimnmod.configuration.scarecrowArmor": "アーマーの初期値",
   "kurumimnmod.configuration.scarecrowMagicResistance": "魔法耐性(%)の初期値",
   "kurumimnmod.configuration.scarecrowKnockbackResistance": "ノックバック耐性(%)の初期値",
-  "kurumimnmod.configuration.scarecrowNoKnockback": "ノックバックなしの初期値",
+  "kurumimnmod.configuration.scarecrowKnockbackImmune": "ノックバックなしの初期値",
   "kurumimnmod.configuration.scarecrowCounterEnabled": "反撃の初期値",
   "kurumimnmod.configuration.scarecrowCounterDamage": "反撃の攻撃力の初期値",
   "kurumimnmod.configuration.scarecrowCounterInterval": "反撃の攻撃間隔(秒)の初期値",

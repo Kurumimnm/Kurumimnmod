@@ -46,7 +46,7 @@ public record ScarecrowSettings(
 
     /** Config が読めないとき用の初期値（Config の既定値と同じ）。 */
     public static final ScarecrowSettings FALLBACK =
-            new ScarecrowSettings(100f, true, 1, 0f, 0f, 0f, false, false, 4f, 2f, 3f);
+            new ScarecrowSettings(100f, true, 1, 0f, 0f, 0f, true, false, 4f, 2f, 3f);
 
     /** セーブデータ用。項目が足りない古いデータでも読めるよう、すべて既定値付きにする。 */
     public static final Codec<ScarecrowSettings> CODEC = RecordCodecBuilder.create(i -> i.group(
