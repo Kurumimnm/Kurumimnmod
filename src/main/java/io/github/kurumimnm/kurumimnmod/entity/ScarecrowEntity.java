@@ -97,7 +97,7 @@ public class ScarecrowEntity extends Mob implements GeoEntity {
         scarecrow.snapTo(pos.x, pos.y, pos.z, yaw, 0f);
         scarecrow.home = pos;
         scarecrow.homeYaw = yaw;
-        scarecrow.lockRotation();
+        scarecrow.lockRotation(yaw);
         scarecrow.setSettings(ScarecrowSettings.fromConfig());
         scarecrow.setPersistenceRequired();
         if (!level.noCollision(scarecrow)) {
@@ -183,36 +183,43 @@ public class ScarecrowEntity extends Mob implements GeoEntity {
     @Override
     public void tick() {
         super.tick();
-        lockRotation();
         if (level() instanceof ServerLevel serverLevel) {
+            ensureHome();
+            lockRotation(homeYaw);
             returnHome();
             regenerate();
             counterAttack(serverLevel);
+        } else {
+            // クライアントは召喚位置を知らないので、サーバーから同期された向きに体と頭を合わせる
+            lockRotation(getYRot());
         }
     }
 
-    /** 向きを召喚時の向きに固定する（AI がないので体・頭が勝手に回らないように）。 */
-    private void lockRotation() {
-        setYRot(homeYaw);
+    /** /summon などステッキ以外で出た場合：今の位置・向きを召喚位置にし、設定は Config の初期値にする。 */
+    private void ensureHome() {
+        if (home != null) {
+            return;
+        }
+        home = position();
+        homeYaw = getYRot();
+        if (settings == ScarecrowSettings.FALLBACK) {
+            setSettings(ScarecrowSettings.fromConfig());
+        }
+    }
+
+    /** 向きを固定する（AI がないので体・頭が勝手に回らないように）。 */
+    private void lockRotation(float yaw) {
+        setYRot(yaw);
         setXRot(0f);
-        this.yRotO = homeYaw;
-        this.yBodyRot = homeYaw;
-        this.yBodyRotO = homeYaw;
-        this.yHeadRot = homeYaw;
-        this.yHeadRotO = homeYaw;
+        this.yRotO = yaw;
+        this.yBodyRot = yaw;
+        this.yBodyRotO = yaw;
+        this.yHeadRot = yaw;
+        this.yHeadRotO = yaw;
     }
 
     /** ノックバック等で召喚位置からずれたら、少し待ってから滑るように戻る。 */
     private void returnHome() {
-        if (home == null) {
-            // /summon などステッキ以外で出た場合：今の位置・向きを召喚位置にし、設定は Config の初期値にする
-            home = position();
-            homeYaw = getYRot();
-            if (settings == ScarecrowSettings.FALLBACK) {
-                setSettings(ScarecrowSettings.fromConfig());
-            }
-            return;
-        }
         Vec3 toHome = home.subtract(position());
         double distance = toHome.length();
         if (distance <= ModConstants.SCARECROW_HOME_EPSILON) {
