@@ -24,7 +24,7 @@ import net.minecraft.world.entity.player.Player;
  * 最大 MP   = 初期MP + 魔力 × 10
  * 攻撃力    = 初期値 + 攻撃力ポイント × 1   → 与ダメージ ×(1 + (攻撃力 - 1) × 10%)
  * 防御力    = 初期値 + 防御力ポイント × 1   → 敵からの被ダメージ −(防御力 - 1) × 0.5
- * 知力      = 初期値 + 知力ポイント × 1
+ * 知力      = 初期値 + 知力ポイント × 1   → 魔法ダメージ ×(1 + (知力 - 1) × 10%)（攻撃力の倍率はかからない）
  * 技量      = 初期値                        → クリ率 5% + (技量 - 1) × 0.5%、クリ倍率 1.5 + (技量 - 1) × 0.01
  * ラック    = 初期値                        → バニラの幸運 +(ラック - 1)
  * 抵抗力    = 初期値
@@ -136,6 +136,12 @@ public final class StatManager {
     /** 攻撃力による与ダメージ倍率。 */
     public static float attackMultiplier(Player player) {
         double bonus = (value(player, StatType.ATTACK) - 1) * ModConfigs.attackDamageBonusPerPoint();
+        return (float) Math.max(0, 1 + bonus);
+    }
+
+    /** 知力による魔法ダメージ倍率（魔法ダメージには攻撃力の倍率はかからない）。 */
+    public static float magicMultiplier(Player player) {
+        double bonus = (value(player, StatType.INTELLIGENCE) - 1) * ModConfigs.intelligenceMagicBonusPerPoint();
         return (float) Math.max(0, 1 + bonus);
     }
 

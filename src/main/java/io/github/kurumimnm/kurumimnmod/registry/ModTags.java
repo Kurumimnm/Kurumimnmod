@@ -5,6 +5,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.EntityType;
 
 /**
@@ -42,5 +43,22 @@ public final class ModTags {
         public static boolean isBoss(Entity entity) {
             return entity.getType().builtInRegistryHolder().is(BOSSES);
         }
+    }
+
+    /** ダメージタイプのタグ。 */
+    public static final class DamageTypes {
+
+        private DamageTypes() {}
+
+        /**
+         * 魔法攻撃（kurumimnmod:magic_attack）。
+         * <p>
+         * このタグのダメージは、攻撃力ではなく知力の倍率で計算される（StatEvents）。
+         * 中身は data/kurumimnmod/tags/damage_type/magic_attack.json
+         * （初期値: minecraft:magic, minecraft:indirect_magic）。
+         * ※ NeoForge の neoforge:is_magic は茨・毒・ウィザーも含むので使わない。
+         */
+        public static final TagKey<DamageType> MAGIC_ATTACK = TagKey.create(Registries.DAMAGE_TYPE,
+                Identifier.fromNamespaceAndPath(Kurumimnmod.MOD_ID, "magic_attack"));
     }
 }

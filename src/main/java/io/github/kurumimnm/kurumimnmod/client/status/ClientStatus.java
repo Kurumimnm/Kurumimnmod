@@ -110,6 +110,12 @@ public final class ClientStatus {
         return p == null ? 1 : StatManager.critMultiplier(p);
     }
 
+    /** 知力による魔法ダメージ倍率（ツールチップ表示用）。 */
+    public static float magicMultiplier() {
+        LocalPlayer p = player();
+        return p == null ? 1 : StatManager.magicMultiplier(p);
+    }
+
     /** 攻撃力による与ダメージ倍率（ツールチップ表示用）。 */
     public static float attackMultiplier() {
         LocalPlayer p = player();
