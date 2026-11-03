@@ -20,7 +20,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderLivingEvent;
 import net.neoforged.neoforge.client.renderstate.RegisterRenderStateModifiersEvent;
-import org.joml.Quaternionf;
+import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 /**
@@ -37,6 +37,10 @@ import org.joml.Vector3f;
 public final class EnemyHealthBarRenderer {
 
     private EnemyHealthBarRenderer() {}
+
+    /** 単色の四角形を描くための真っ白なテクスチャ（頂点カラーで色を付ける）。 */
+    private static final Identifier WHITE_TEXTURE =
+            Identifier.fromNamespaceAndPath(Kurumimnmod.MOD_ID, "textures/misc/white.png");
 
     /** HP の割合（0〜1）。バーを出さないエンティティは -1。 */
     private static final ContextKey<Float> HEALTH_RATIO =
@@ -103,7 +107,7 @@ public final class EnemyHealthBarRenderer {
         float dz = -rel.z;
         float yaw = (float) Math.atan2(dx, dz);
         float pitch = (float) -Math.atan2(dy, Math.sqrt(dx * dx + dz * dz));
-        poseStack.mulPose(new Quaternionf().rotateY(yaw).rotateX(pitch));
+        poseStack.mulPose(new Matrix4f().rotateY(yaw).rotateX(pitch));
 
         float w = ModConstants.ENEMY_BAR_WIDTH;
         float h = ModConstants.ENEMY_BAR_HEIGHT;
@@ -111,7 +115,7 @@ public final class EnemyHealthBarRenderer {
         float left = -w / 2f;
         float fillRight = left + w * ratio;
 
-        event.getSubmitNodeCollector().submitCustomGeometry(poseStack, RenderTypes.textBackground(), (pose, consumer) -> {
+        event.getSubmitNodeCollector().submitCustomGeometry(poseStack, RenderTypes.text(WHITE_TEXTURE), (pose, consumer) -> {
             // 奥から順に：枠 → 背景 → HP（z を少しずつ手前にして重なりのちらつきを防ぐ）
             quad(consumer, pose, left - b, -b, left + w + b, h + b, 0.000f, ModConstants.ENEMY_BAR_COLOR_BORDER);
             quad(consumer, pose, left, 0f, left + w, h, 0.002f, ModConstants.ENEMY_BAR_COLOR_BACKGROUND);
@@ -122,18 +126,22 @@ public final class EnemyHealthBarRenderer {
         poseStack.popPose();
     }
 
+    private static final float U = 0.5f;
+    private static final float V = 0.5f;
+
     /** 四角形を 1 枚追加する（裏面からも見えるよう両面分の頂点を出す）。 */
     private static void quad(VertexConsumer c, PoseStack.Pose pose, float x0, float y0, float x1, float y1, float z, int color) {
         int light = LightCoordsUtil.FULL_BRIGHT;
+        // テクスチャは全面白なので UV はどこでもよい（中央を指定）
         // 表
-        c.addVertex(pose, x0, y1, z).setColor(color).setLight(light);
-        c.addVertex(pose, x0, y0, z).setColor(color).setLight(light);
-        c.addVertex(pose, x1, y0, z).setColor(color).setLight(light);
-        c.addVertex(pose, x1, y1, z).setColor(color).setLight(light);
+        c.addVertex(pose, x0, y1, z).setColor(color).setUv(U, V).setLight(light);
+        c.addVertex(pose, x0, y0, z).setColor(color).setUv(U, V).setLight(light);
+        c.addVertex(pose, x1, y0, z).setColor(color).setUv(U, V).setLight(light);
+        c.addVertex(pose, x1, y1, z).setColor(color).setUv(U, V).setLight(light);
         // 裏
-        c.addVertex(pose, x1, y1, z).setColor(color).setLight(light);
-        c.addVertex(pose, x1, y0, z).setColor(color).setLight(light);
-        c.addVertex(pose, x0, y0, z).setColor(color).setLight(light);
-        c.addVertex(pose, x0, y1, z).setColor(color).setLight(light);
+        c.addVertex(pose, x1, y1, z).setColor(color).setUv(U, V).setLight(light);
+        c.addVertex(pose, x1, y0, z).setColor(color).setUv(U, V).setLight(light);
+        c.addVertex(pose, x0, y0, z).setColor(color).setUv(U, V).setLight(light);
+        c.addVertex(pose, x0, y1, z).setColor(color).setUv(U, V).setLight(light);
     }
 }
