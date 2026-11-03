@@ -3,11 +3,17 @@ package io.github.kurumimnm.kurumimnmod.client.hud;
 import io.github.kurumimnm.kurumimnmod.client.status.ClientStatus;
 import io.github.kurumimnm.kurumimnmod.config.ModConstants;
 import io.github.kurumimnm.kurumimnmod.magic.MagicDamageSource;
+import java.util.LinkedHashMap;
 import java.util.Locale;
+import java.util.Map;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ItemStack;
 
@@ -19,7 +25,7 @@ import net.minecraft.world.item.ItemStack;
  * </pre>
  * 【物理ダメージの計算】
  * <ul>
- *   <li>最大 = プレイヤーの攻撃力属性（武器の攻撃力・力のポーション等の効果込み）× ステータス「攻撃力」の倍率</li>
+ *   <li>最大 = 攻撃力属性（プレイヤーの基本値＋手に持ったアイテムの攻撃力。{@link #attackDamage}）× ステータス「攻撃力」の倍率</li>
  *   <li>最小 = 最大 × {@link ModConstants#ATTACK_MIN_CHARGE_RATIO}（クールダウンが溜まっていないとき。バニラと同じ）</li>
  *   <li>エンチャント・クリティカル・相手による増減は含めない</li>
  * </ul>
@@ -80,7 +86,7 @@ final class WeaponDamageHud {
             min = Math.min(range.min(), range.max());
             max = Math.max(range.min(), range.max());
         } else {
-            max = (float) player.getAttributeValue(Attributes.ATTACK_DAMAGE) * ClientStatus.attackMultiplier();
+            max = (float) attackDamage(player, stack) * ClientStatus.attackMultiplier();
             min = max * ModConstants.ATTACK_MIN_CHARGE_RATIO;
         }
         String text = format(min).equals(format(max)) ? format(max) : format(min) + "~" + format(max);
@@ -98,6 +104,50 @@ final class WeaponDamageHud {
         int color = magic ? ModConstants.DAMAGE_COLOR_MAGIC : ModConstants.DAMAGE_COLOR_PHYSICAL;
         // 数字のグリフは高さ 7px
         g.text(font, text, x, centerY - 3, color, true);
+    }
+
+    /**
+     * メインハンドのアイテムで攻撃したときの攻撃力属性の値。
+     * <p>
+     * 【注意】手に持ったアイテムの攻撃力（属性の上乗せ）はサーバー側でしか反映されず、
+     * クライアントの {@code player.getAttributeValue(ATTACK_DAMAGE)} は素手の値のままになる。
+     * そのため「プレイヤー側の攻撃力の修正値」に「手に持ったアイテムの修正値」を足して、
+     * バニラと同じ計算式でここで求め直す。同じ ID の修正値は上書き（二重に足さない）。
+     */
+    private static double attackDamage(LocalPlayer player, ItemStack stack) {
+        AttributeInstance instance = player.getAttribute(Attributes.ATTACK_DAMAGE);
+        if (instance == null) {
+            return 0;
+        }
+        Map<Identifier, AttributeModifier> modifiers = new LinkedHashMap<>();
+        for (AttributeModifier modifier : instance.getModifiers()) {
+            modifiers.put(modifier.id(), modifier);
+        }
+        stack.forEachModifier(EquipmentSlot.MAINHAND, (attribute, modifier) -> {
+            if (attribute.value() == Attributes.ATTACK_DAMAGE.value()) {
+                modifiers.put(modifier.id(), modifier);
+            }
+        });
+
+        // バニラの計算順：加算 → 基本値への倍率 → 全体への倍率
+        double value = instance.getBaseValue();
+        for (AttributeModifier m : modifiers.values()) {
+            if (m.operation() == AttributeModifier.Operation.ADD_VALUE) {
+                value += m.amount();
+            }
+        }
+        double result = value;
+        for (AttributeModifier m : modifiers.values()) {
+            if (m.operation() == AttributeModifier.Operation.ADD_MULTIPLIED_BASE) {
+                result += value * m.amount();
+            }
+        }
+        for (AttributeModifier m : modifiers.values()) {
+            if (m.operation() == AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL) {
+                result *= 1 + m.amount();
+            }
+        }
+        return Attributes.ATTACK_DAMAGE.value().sanitizeValue(result);
     }
 
     /** ドット絵を 1px ずつ描く（同じ色が横に続く部分はまとめて塗る）。 */
