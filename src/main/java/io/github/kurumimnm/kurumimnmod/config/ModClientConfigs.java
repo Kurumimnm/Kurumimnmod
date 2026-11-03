@@ -40,6 +40,25 @@ public final class ModClientConfigs {
         BUILDER.pop();
     }
 
+    // ---- damageNumbers セクション（カカシの頭上に出るダメージ数字） ----
+    static {
+        BUILDER.push("damageNumbers");
+    }
+
+    /** カカシに与えたダメージを数字で表示するか。 */
+    public static final ModConfigSpec.BooleanValue SHOW_DAMAGE_NUMBERS = BUILDER
+            .comment("Whether to show floating damage numbers above scarecrows.")
+            .define("showDamageNumbers", true);
+
+    /** 数字が消えるまでの時間（秒）。 */
+    public static final ModConfigSpec.DoubleValue DAMAGE_NUMBER_DURATION = BUILDER
+            .comment("How long (seconds) each damage number stays on screen.")
+            .defineInRange("damageNumberDuration", 1.2, 0.2, 10.0);
+
+    static {
+        BUILDER.pop();
+    }
+
     public static final ModConfigSpec SPEC = BUILDER.build();
 
     /** クライアントのエントリーポイントから呼び出して登録する。 */

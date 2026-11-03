@@ -1,6 +1,8 @@
 package io.github.kurumimnm.kurumimnmod.client;
 
 import io.github.kurumimnm.kurumimnmod.Kurumimnmod;
+import io.github.kurumimnm.kurumimnmod.client.scarecrow.ScarecrowRenderer;
+import io.github.kurumimnm.kurumimnmod.registry.ModEntities;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -27,5 +29,8 @@ public final class ModEntityRenderers {
     @SubscribeEvent
     static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
         // エンティティを追加したらここにレンダラーを登録する（上の Javadoc の例を参照）
+
+        // カカシ（頭上のダメージ数字も描く専用レンダラー）
+        event.registerEntityRenderer(ModEntities.SCARECROW.get(), context -> new ScarecrowRenderer<>(context));
     }
 }

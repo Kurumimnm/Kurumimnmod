@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/handheld",
+  "textures": {
+    "layer0": "kurumimnmod:item/scarecrow_summon_stick"
+  }
+}

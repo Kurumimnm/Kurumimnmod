@@ -259,6 +259,58 @@ public final class ModConfigs {
         SYNCED_BUILDER.pop(); // status
     }
 
+    // ---- scarecrow セクション（カカシ：召喚直後の初期設定と挙動） ----
+    // ※ ここは「召喚した直後の初期値」。召喚後はカカシごとに設定画面（設定用ステッキ）で変更でき、
+    //    変更した値はカカシ本体に保存される（Config を変えても既存のカカシには反映されない）。
+    static {
+        SYNCED_BUILDER.push("scarecrow");
+    }
+
+    public static final ModConfigSpec.DoubleValue SCARECROW_MAX_HEALTH = SYNCED_BUILDER
+            .comment("Initial max HP of a newly summoned scarecrow (vanilla attribute limit = 1024).")
+            .defineInRange("scarecrowMaxHealth", 100.0, ModConstants.SCARECROW_MIN_HEALTH, ModConstants.SCARECROW_MAX_HEALTH_LIMIT);
+    public static final ModConfigSpec.BooleanValue SCARECROW_INFINITE_HEALTH = SYNCED_BUILDER
+            .comment("If true, newly summoned scarecrows never lose HP (damage is still measured and shown).")
+            .define("scarecrowInfiniteHealth", true);
+    public static final ModConfigSpec.IntValue SCARECROW_DEFENSE = SYNCED_BUILDER
+            .comment("Initial Defense of a scarecrow. Works the same as the player's Defense stat",
+                    "(reduction = (defense - 1) * status.effects.defenseReduction).")
+            .defineInRange("scarecrowDefense", 1, 0, ModConstants.SCARECROW_DEFENSE_LIMIT);
+    public static final ModConfigSpec.DoubleValue SCARECROW_ARMOR = SYNCED_BUILDER
+            .comment("Initial armor points of a scarecrow (vanilla armor attribute, max 30).")
+            .defineInRange("scarecrowArmor", 0.0, 0.0, ModConstants.SCARECROW_ARMOR_LIMIT);
+    public static final ModConfigSpec.DoubleValue SCARECROW_MAGIC_RESISTANCE = SYNCED_BUILDER
+            .comment("Initial magic resistance of a scarecrow in percent (magic damage is reduced by this %).")
+            .defineInRange("scarecrowMagicResistance", 0.0, 0.0, 100.0);
+    public static final ModConfigSpec.DoubleValue SCARECROW_KNOCKBACK_RESISTANCE = SYNCED_BUILDER
+            .comment("Initial knockback resistance of a scarecrow in percent (100 = never knocked back).")
+            .defineInRange("scarecrowKnockbackResistance", 0.0, 0.0, 100.0);
+    public static final ModConfigSpec.BooleanValue SCARECROW_COUNTER_ENABLED = SYNCED_BUILDER
+            .comment("If true, newly summoned scarecrows attack nearby players.")
+            .define("scarecrowCounterEnabled", false);
+    public static final ModConfigSpec.DoubleValue SCARECROW_COUNTER_DAMAGE = SYNCED_BUILDER
+            .comment("Initial damage of the scarecrow's counterattack (before the player's armor / Defense).")
+            .defineInRange("scarecrowCounterDamage", 4.0, 0.0, ModConstants.SCARECROW_COUNTER_DAMAGE_LIMIT);
+    public static final ModConfigSpec.DoubleValue SCARECROW_COUNTER_INTERVAL = SYNCED_BUILDER
+            .comment("Initial interval (seconds) between the scarecrow's counterattacks.")
+            .defineInRange("scarecrowCounterInterval", 2.0, ModConstants.SCARECROW_COUNTER_INTERVAL_MIN, ModConstants.SCARECROW_COUNTER_INTERVAL_MAX);
+    public static final ModConfigSpec.DoubleValue SCARECROW_COUNTER_RANGE = SYNCED_BUILDER
+            .comment("Initial reach (blocks) of the scarecrow's counterattack.")
+            .defineInRange("scarecrowCounterRange", 3.0, ModConstants.SCARECROW_COUNTER_RANGE_MIN, ModConstants.SCARECROW_COUNTER_RANGE_MAX);
+    public static final ModConfigSpec.DoubleValue SCARECROW_REGEN_DELAY = SYNCED_BUILDER
+            .comment("Seconds without taking damage before a scarecrow's HP is fully restored (finite HP only).")
+            .defineInRange("scarecrowRegenDelay", 5.0, 0.0, 600.0);
+    public static final ModConfigSpec.DoubleValue SCARECROW_RETURN_DELAY = SYNCED_BUILDER
+            .comment("Seconds after being knocked back before a scarecrow starts returning to where it was summoned.")
+            .defineInRange("scarecrowReturnDelay", 0.75, 0.0, 60.0);
+    public static final ModConfigSpec.DoubleValue SCARECROW_RETURN_SPEED = SYNCED_BUILDER
+            .comment("Speed (blocks per tick) at which a scarecrow slides back to where it was summoned.")
+            .defineInRange("scarecrowReturnSpeed", 0.15, 0.01, 10.0);
+
+    static {
+        SYNCED_BUILDER.pop();
+    }
+
     // ---- 安全な取得（読み込み前はデフォルト値） ----
     private static <T> T value(ModConfigSpec.ConfigValue<T> config) {
         return SYNCED_SPEC.isLoaded() ? config.get() : config.getDefault();
@@ -285,6 +337,9 @@ public final class ModConfigs {
     public static double critDamagePerPoint() { return value(CRIT_DAMAGE_PER_POINT); }
     public static double luckAttributePerPoint() { return value(LUCK_ATTRIBUTE_PER_POINT); }
     public static double mpRegenPerSecond() { return value(MP_REGEN_PER_SECOND); }
+    public static double scarecrowRegenDelay() { return value(SCARECROW_REGEN_DELAY); }
+    public static double scarecrowReturnDelay() { return value(SCARECROW_RETURN_DELAY); }
+    public static double scarecrowReturnSpeed() { return value(SCARECROW_RETURN_SPEED); }
 
     /** Config 値（int / double）を安全に取得する（StatType 等から使う）。 */
     public static <T> T get(ModConfigSpec.ConfigValue<T> config) { return value(config); }

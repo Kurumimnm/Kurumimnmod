@@ -1,6 +1,8 @@
 package io.github.kurumimnm.kurumimnmod.datagen;
 
 import io.github.kurumimnm.kurumimnmod.Kurumimnmod;
+import io.github.kurumimnm.kurumimnmod.registry.ModEntities;
+import io.github.kurumimnm.kurumimnmod.registry.ModItems;
 import io.github.kurumimnm.kurumimnmod.status.AllocType;
 import io.github.kurumimnm.kurumimnmod.status.StatType;
 import net.minecraft.data.PackOutput;
@@ -20,6 +22,7 @@ import net.neoforged.neoforge.common.data.LanguageProvider;
 public class ModEnUsLanguageProvider extends LanguageProvider {
 
     private static final String MOD_ID = Kurumimnmod.MOD_ID;
+    private static final String SCARECROW_SCREEN = "screen." + MOD_ID + ".scarecrow";
 
     public ModEnUsLanguageProvider(PackOutput output) {
         super(output, MOD_ID, "en_us");
@@ -31,10 +34,16 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         add("itemGroup." + MOD_ID + ".main", "Kurumimnmod");
 
         // ---- アイテム ----
+        addItem(ModItems.SCARECROW_SUMMON_STICK, "Scarecrow Summoning Stick");
+        add("item." + MOD_ID + ".scarecrow_summon_stick.desc", "Right-click a block to summon a scarecrow.");
+        add("item." + MOD_ID + ".scarecrow_summon_stick.op_only", "Operators only");
+        addItem(ModItems.SCARECROW_CONFIG_STICK, "Scarecrow Settings Stick");
+        add("item." + MOD_ID + ".scarecrow_config_stick.desc", "Aim at a scarecrow and left-click to open its settings.");
 
         // ---- ブロック ----
 
         // ---- エンティティ ----
+        addEntityType(ModEntities.SCARECROW, "Scarecrow");
 
         // ---- キー割り当て ----
         add("key.category." + MOD_ID + ".main", "Kurumimnmod");
@@ -93,6 +102,46 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         addAlloc(AllocType.DEFENSE, "Defense", "Each point increases Defense by %s.");
         addAlloc(AllocType.INTELLIGENCE, "Intelligence", "Each point increases Intelligence by %s.");
 
+        // ---- カカシ（メッセージ） ----
+        add("message." + MOD_ID + ".scarecrow.op_only", "Only operators can do this.");
+        add("message." + MOD_ID + ".scarecrow.no_space", "Not enough space to summon a scarecrow here.");
+        add("message." + MOD_ID + ".scarecrow.too_far", "The scarecrow is too far away.");
+        add("message." + MOD_ID + ".scarecrow.saved", "Scarecrow settings saved.");
+        add("message." + MOD_ID + ".scarecrow.deleted", "Scarecrow removed.");
+        add("message." + MOD_ID + ".scarecrow.damage_taken", "Scarecrow hit you: %s damage (%s before reduction)");
+
+        // ---- カカシの設定画面 ----
+        add(SCARECROW_SCREEN, "Scarecrow Settings");
+        add(SCARECROW_SCREEN + ".section.defense", "When Hit");
+        add(SCARECROW_SCREEN + ".section.counter", "Counterattack");
+        add(SCARECROW_SCREEN + ".max_health", "Max HP");
+        add(SCARECROW_SCREEN + ".max_health.desc", "Max HP of the scarecrow (1 - 1024).");
+        add(SCARECROW_SCREEN + ".infinite_health", "Infinite HP");
+        add(SCARECROW_SCREEN + ".infinite_health.desc", "If checked, HP never decreases (damage is still measured and shown). If unchecked, the hit that empties its HP is shown in red and HP is fully restored.");
+        add(SCARECROW_SCREEN + ".defense", "Defense");
+        add(SCARECROW_SCREEN + ".defense.desc", "Reduces damage from attackers by a flat amount, using the same formula as the Defense stat of players (0 - 1000000).");
+        add(SCARECROW_SCREEN + ".armor", "Armor");
+        add(SCARECROW_SCREEN + ".armor.desc", "Vanilla armor points (0 - 30).");
+        add(SCARECROW_SCREEN + ".magic_resistance", "Magic Resist (%)");
+        add(SCARECROW_SCREEN + ".magic_resistance.desc", "Reduces magic damage by this percentage (0 - 100).");
+        add(SCARECROW_SCREEN + ".knockback_resistance", "Knockback Resist (%)");
+        add(SCARECROW_SCREEN + ".knockback_resistance.desc", "At 100 the scarecrow is never knocked back (0 - 100). When knocked back, it slides back to where it was summoned.");
+        add(SCARECROW_SCREEN + ".counter_enabled", "Counterattack");
+        add(SCARECROW_SCREEN + ".counter_enabled.desc", "If checked, the scarecrow attacks the nearest player in reach (survival / adventure only).");
+        add(SCARECROW_SCREEN + ".counter_damage", "Attack Damage");
+        add(SCARECROW_SCREEN + ".counter_damage.desc", "Damage before the armor and Defense of the player (0 - 1000000).");
+        add(SCARECROW_SCREEN + ".counter_interval", "Interval (sec)");
+        add(SCARECROW_SCREEN + ".counter_interval.desc", "Seconds between attacks (0.1 - 60).");
+        add(SCARECROW_SCREEN + ".counter_range", "Reach (blocks)");
+        add(SCARECROW_SCREEN + ".counter_range.desc", "How far the scarecrow can attack (0.5 - 16 blocks).");
+        add(SCARECROW_SCREEN + ".reset", "Defaults");
+        add(SCARECROW_SCREEN + ".reset.desc", "Fill in the default values from the config. Not applied until you press Save.");
+        add(SCARECROW_SCREEN + ".delete", "Remove");
+        add(SCARECROW_SCREEN + ".delete.desc", "Remove this scarecrow (operators only).");
+        add(SCARECROW_SCREEN + ".delete.confirm", "Really?");
+        add(SCARECROW_SCREEN + ".cancel", "Cancel");
+        add(SCARECROW_SCREEN + ".save", "Save");
+
         // ---- Config 画面 ----
         add(MOD_ID + ".configuration.title", "Kurumimnmod Configs");
         add(MOD_ID + ".configuration.section." + MOD_ID + ".synced.toml", "Kurumimnmod Configs");
@@ -145,6 +194,25 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         add(MOD_ID + ".configuration.enabled", "Enabled");
         add(MOD_ID + ".configuration.range", "Display Range");
         add(MOD_ID + ".configuration.hostileOnly", "Hostile Mobs Only");
+
+        // ---- Config 画面（カカシ・ダメージ数字） ----
+        add(MOD_ID + ".configuration.scarecrow", "Scarecrow");
+        add(MOD_ID + ".configuration.scarecrowMaxHealth", "Initial Max HP");
+        add(MOD_ID + ".configuration.scarecrowInfiniteHealth", "Initial Infinite HP");
+        add(MOD_ID + ".configuration.scarecrowDefense", "Initial Defense");
+        add(MOD_ID + ".configuration.scarecrowArmor", "Initial Armor");
+        add(MOD_ID + ".configuration.scarecrowMagicResistance", "Initial Magic Resistance (%)");
+        add(MOD_ID + ".configuration.scarecrowKnockbackResistance", "Initial Knockback Resistance (%)");
+        add(MOD_ID + ".configuration.scarecrowCounterEnabled", "Initial Counterattack");
+        add(MOD_ID + ".configuration.scarecrowCounterDamage", "Initial Counterattack Damage");
+        add(MOD_ID + ".configuration.scarecrowCounterInterval", "Initial Counterattack Interval (Seconds)");
+        add(MOD_ID + ".configuration.scarecrowCounterRange", "Initial Counterattack Reach (Blocks)");
+        add(MOD_ID + ".configuration.scarecrowRegenDelay", "HP Restore Delay (Seconds)");
+        add(MOD_ID + ".configuration.scarecrowReturnDelay", "Return Delay (Seconds)");
+        add(MOD_ID + ".configuration.scarecrowReturnSpeed", "Return Speed (Blocks per Tick)");
+        add(MOD_ID + ".configuration.damageNumbers", "Damage Numbers");
+        add(MOD_ID + ".configuration.showDamageNumbers", "Show Damage Numbers");
+        add(MOD_ID + ".configuration.damageNumberDuration", "Display Time (Seconds)");
     }
 
     /** ステータスの名前と説明文をまとめて追加する。 */
