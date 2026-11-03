@@ -70,6 +70,8 @@
   "kurumimnmod.configuration.section.kurumimnmod.synced.toml": "Kurumimnmod Configs",
   "kurumimnmod.configuration.section.kurumimnmod.synced.toml.title": "Kurumimnmod Configs",
   "kurumimnmod.configuration.showExpMessages": "Show Exp Gain Messages",
+  "kurumimnmod.configuration.slownessAmplifier": "Slowness Level (0 = I)",
+  "kurumimnmod.configuration.slownessDuration": "Slowness Duration (Ticks)",
   "kurumimnmod.configuration.spawnHeight": "Spawn Height above Head",
   "kurumimnmod.configuration.status": "Status",
   "kurumimnmod.configuration.title": "Kurumimnmod Configs",
@@ -127,5 +129,6 @@
   "tooltip.kurumimnmod.wand.damage": "Damage: %s (center) - %s (edge)",
   "tooltip.kurumimnmod.wand.mp_cost": "MP Cost: %s",
   "tooltip.kurumimnmod.wand.pierce": "Pierces enemies and shatters on the ground or walls",
-  "tooltip.kurumimnmod.wand.radius": "Radius: %s blocks"
+  "tooltip.kurumimnmod.wand.radius": "Radius: %s blocks",
+  "tooltip.kurumimnmod.wand.slowness": "Inflicts Slowness %s for %ss on hit"
 }

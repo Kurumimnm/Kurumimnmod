@@ -40,6 +40,12 @@ public final class WandTooltips {
         tooltip.add(Component.translatable(KEY + "radius", format(ModConfigs.iceWandRadius()))
                 .withStyle(ChatFormatting.GRAY));
         tooltip.add(Component.translatable(KEY + "pierce").withStyle(ChatFormatting.GRAY));
+        int slowness = ModConfigs.iceWandSlownessDuration();
+        if (slowness > 0) {
+            tooltip.add(Component.translatable(KEY + "slowness",
+                    Component.translatable("enchantment.level." + (ModConfigs.iceWandSlownessAmplifier() + 1)),
+                    format(slowness / 20.0)).withStyle(ChatFormatting.GRAY));
+        }
         tooltip.add(Component.translatable(KEY + "controls").withStyle(ChatFormatting.DARK_GRAY));
     }
 

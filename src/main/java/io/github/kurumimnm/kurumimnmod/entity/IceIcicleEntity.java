@@ -21,6 +21,8 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -45,6 +47,7 @@ import net.minecraft.world.phys.Vec3;
  * </ul>
  * 【着弾】半径 {@code radius} 内の敵全員にダメージ。中心ほど高く、端で {@code edgeDamageRatio} 倍まで下がる。
  * 貫通時にダメージを与えた敵には、着弾ダメージは与えない（二重ヒットなし）。
+ * 【鈍足】ダメージが入った敵（貫通・着弾とも）に鈍足を付ける（時間・強さは Config）。
  * <p>
  * ダメージは「間接魔法」扱い（kurumimnmod:magic_attack タグ）なので、
  * 知力の倍率は StatEvents で自動的にかかる。ここでは知力を考慮しない基本値を渡す。
@@ -161,7 +164,7 @@ public class IceIcicleEntity extends Projectile implements GeoEntity {
             AABB box = target.getBoundingBox().inflate(r);
             if (box.contains(from) || box.clip(from, to).isPresent()) {
                 piercedIds.add(target.getId());
-                target.hurtServer(level, damageSource(), damage);
+                hit(level, target, damage);
             }
         }
     }
@@ -195,10 +198,25 @@ public class IceIcicleEntity extends Projectile implements GeoEntity {
             }
             // 中心 = 100%、端 = edgeRatio に直線的に下がる
             double ratio = Mth.lerp(distance / radius, 1.0, edgeRatio);
-            target.hurtServer(level, damageSource(), (float) (maxDamage * ratio));
+            hit(level, target, (float) (maxDamage * ratio));
         }
 
         spawnImpactEffects(level, center, radius);
+    }
+
+    /**
+     * ダメージを与え、入ったら鈍足を付ける。
+     * 鈍足の付与者を撃った人にしておくと、アシスト判定（デバフで関わった）にも数えられる。
+     */
+    private void hit(ServerLevel level, LivingEntity target, float damage) {
+        if (!target.hurtServer(level, damageSource(), damage)) {
+            return; // 無敵時間中・無効化されたときは鈍足も付けない
+        }
+        int duration = ModConfigs.iceWandSlownessDuration();
+        if (duration > 0 && target.isAlive()) {
+            target.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, duration,
+                    ModConfigs.iceWandSlownessAmplifier()), getOwner());
+        }
     }
 
     /** 点から AABB までの最短距離（中にいれば 0）。 */

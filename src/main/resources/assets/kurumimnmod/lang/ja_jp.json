@@ -8,6 +8,7 @@
   "tooltip.kurumimnmod.wand.damage": "威力: %s（中心）〜 %s（端）",
   "tooltip.kurumimnmod.wand.radius": "範囲: 半径 %s ブロック",
   "tooltip.kurumimnmod.wand.pierce": "敵を貫通し、地面や壁に当たると砕ける",
+  "tooltip.kurumimnmod.wand.slowness": "命中した敵に鈍足 %s（%s秒）",
   "tooltip.kurumimnmod.wand.controls": "右クリック長押し: 照準 ／ 左クリック: 発射",
   "message.kurumimnmod.not_enough_mp": "MPが足りない",
 
@@ -132,6 +133,8 @@
   "kurumimnmod.configuration.projectileSpeed": "弾の速さ（ブロック/tick）",
   "kurumimnmod.configuration.spawnHeight": "頭上の出現位置の高さ",
   "kurumimnmod.configuration.cooldownTicks": "クールダウン（tick）",
+  "kurumimnmod.configuration.slownessDuration": "鈍足の時間（tick）",
+  "kurumimnmod.configuration.slownessAmplifier": "鈍足の強さ（0 = I）",
   "kurumimnmod.configuration.enemyHealthBar": "敵のHPバー",
   "kurumimnmod.configuration.enabled": "表示する",
   "kurumimnmod.configuration.range": "表示距離",

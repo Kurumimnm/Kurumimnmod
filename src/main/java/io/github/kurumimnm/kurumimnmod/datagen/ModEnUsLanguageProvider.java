@@ -45,6 +45,7 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         add("tooltip." + MOD_ID + ".wand.damage", "Damage: %s (center) - %s (edge)");
         add("tooltip." + MOD_ID + ".wand.radius", "Radius: %s blocks");
         add("tooltip." + MOD_ID + ".wand.pierce", "Pierces enemies and shatters on the ground or walls");
+        add("tooltip." + MOD_ID + ".wand.slowness", "Inflicts Slowness %s for %ss on hit");
         add("tooltip." + MOD_ID + ".wand.controls", "Hold Right-Click: Aim / Left-Click: Cast");
         add("message." + MOD_ID + ".not_enough_mp", "Not enough MP");
 
@@ -165,6 +166,8 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         add(MOD_ID + ".configuration.projectileSpeed", "Projectile Speed (Blocks/Tick)");
         add(MOD_ID + ".configuration.spawnHeight", "Spawn Height above Head");
         add(MOD_ID + ".configuration.cooldownTicks", "Cooldown (Ticks)");
+        add(MOD_ID + ".configuration.slownessDuration", "Slowness Duration (Ticks)");
+        add(MOD_ID + ".configuration.slownessAmplifier", "Slowness Level (0 = I)");
         add(MOD_ID + ".configuration.enemyHealthBar", "Enemy Health Bar");
         add(MOD_ID + ".configuration.enabled", "Enabled");
         add(MOD_ID + ".configuration.range", "Display Range");

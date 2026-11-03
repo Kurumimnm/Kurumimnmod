@@ -308,6 +308,15 @@ public final class ModConfigs {
             .comment("Cooldown after casting (ticks, 20 = 1 second).")
             .defineInRange("cooldownTicks", 10, 0, 1200);
 
+    /** 当たった敵に付ける鈍足の時間（tick。0 = 付けない）。 */
+    public static final ModConfigSpec.IntValue ICE_WAND_SLOWNESS_DURATION = SYNCED_BUILDER
+            .comment("Duration (ticks) of Slowness applied to enemies hit (pierce and impact). 0 = no Slowness.")
+            .defineInRange("slownessDuration", 60, 0, 12000);
+    /** 鈍足の強さ（0 = 鈍足 I、1 = 鈍足 II …）。 */
+    public static final ModConfigSpec.IntValue ICE_WAND_SLOWNESS_AMPLIFIER = SYNCED_BUILDER
+            .comment("Slowness level - 1 (0 = Slowness I, 1 = Slowness II, ...).")
+            .defineInRange("slownessAmplifier", 0, 0, 9);
+
     static {
         SYNCED_BUILDER.pop(); // iceWand
         SYNCED_BUILDER.pop(); // magic
@@ -348,6 +357,8 @@ public final class ModConfigs {
     public static double iceWandSpeed() { return value(ICE_WAND_SPEED); }
     public static double iceWandSpawnHeight() { return value(ICE_WAND_SPAWN_HEIGHT); }
     public static int iceWandCooldown() { return value(ICE_WAND_COOLDOWN); }
+    public static int iceWandSlownessDuration() { return value(ICE_WAND_SLOWNESS_DURATION); }
+    public static int iceWandSlownessAmplifier() { return value(ICE_WAND_SLOWNESS_AMPLIFIER); }
 
     /** Config 値（int / double）を安全に取得する（StatType 等から使う）。 */
     public static <T> T get(ModConfigSpec.ConfigValue<T> config) { return value(config); }
