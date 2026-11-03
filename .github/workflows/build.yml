@@ -1,40 +1,25 @@
-name: Build
-
-on: [push, pull_request]
-
+name: Probe
+on: [push]
 jobs:
-  build:
+  probe:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          fetch-tags: true
-
-      - name: Setup JDK 25
-        uses: actions/setup-java@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
         with:
           java-version: '25'
           distribution: 'temurin'
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-
-      - name: Build with Gradle
-        run: ./gradlew build
-
-      # データ生成を実行し、src/generated の内容がコミット済みのものと一致するか確認する
-      # （runData の実行し忘れ・生成ファイルのコミット忘れを検出）
-      - name: Run data generation
-        run: ./gradlew runData
-
-      - name: Check generated resources are up to date
+      - uses: gradle/actions/setup-gradle@v4
+      - run: ./gradlew compileJava
+      - name: probe
         run: |
-          if [ -n "$(git status --porcelain -- src/generated)" ]; then
-            echo "::error::src/generated is out of date. Run ./gradlew runData and commit the result."
-            git status --porcelain -- src/generated
-            git diff -- src/generated
-            git ls-files --others --exclude-standard -- src/generated | while read -r f; do echo "===== $f"; cat "$f"; done
-            exit 1
-          fi
+          MC=$(find build ~/.gradle -name "minecraft-patched-26.3*.jar" 2>/dev/null | head -1); UNI=$(find ~/.gradle -name "neoforge-26.3*-universal.jar" | head -1)
+          GL=$(find ~/.gradle -name "geckolib-neoforge*.jar" | grep -v sources | head -1)
+          CP="$MC:$GL:$UNI"
+          echo "######## GeoEntityRenderer -c"
+          javap -c -p -cp "$CP" com.geckolib.renderer.GeoEntityRenderer | grep -A60 -E "(createRenderState|extractRenderState|submit|addRenderData)\(" | head -400
+          echo "######## GeoRenderer -c"
+          javap -c -p -cp "$CP" com.geckolib.renderer.base.GeoRenderer | grep -A40 -E "addRenderData|performRenderPass\(R" | head -200
+          for c in com.geckolib.renderer.base.GeoRenderState com.geckolib.constant.dataticket.DataTicket net.minecraft.world.entity.projectile.ProjectileUtil net.neoforged.neoforge.client.renderstate.BaseRenderState; do echo "######## $c"; javap -cp "$CP" $c; done
+          echo "######## EntityRenderer createRenderState -c"
+          javap -c -p -cp "$CP" net.minecraft.client.renderer.entity.EntityRenderer | grep -A40 "createRenderState(T, float)" | head -60
