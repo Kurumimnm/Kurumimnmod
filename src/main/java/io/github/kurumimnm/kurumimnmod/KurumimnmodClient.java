@@ -1,5 +1,6 @@
 package io.github.kurumimnm.kurumimnmod;
 
+import io.github.kurumimnm.kurumimnmod.config.ModClientConfigs;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
@@ -24,6 +25,12 @@ public final class KurumimnmodClient {
         // MOD 一覧画面の「設定」ボタンから Config を GUI で編集できるようにする。
         // 項目名の翻訳は lang ファイルの "kurumimnmod.configuration.*" に定義する。
         container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
+
+        // クライアント専用の設定（HUD・敵 HP バーの表示設定）
+        ModClientConfigs.register(container);
+
+        // HUD（ModHudLayers / EnemyHealthBarRenderer）とキー割り当て（ModKeyMappings）は
+        // @EventBusSubscriber で自動登録される。
     }
 
     /** クライアント側のセットアップ処理。 */
