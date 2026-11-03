@@ -127,6 +127,138 @@ public final class ModConfigs {
         SYNCED_BUILDER.pop();
     }
 
+    // ---- status セクション（ステータス：初期値・振り分け・効果） ----
+    static {
+        SYNCED_BUILDER.push("status");
+    }
+
+    /** 1 レベル上がるごとにもらえるステータスポイント。 */
+    public static final ModConfigSpec.IntValue POINTS_PER_LEVEL = SYNCED_BUILDER
+            .comment("Stat points gained per level up.")
+            .defineInRange("pointsPerLevel", 1, 0, 1000);
+
+    // ---- 初期ステータス ----
+    static {
+        SYNCED_BUILDER.push("initial");
+    }
+
+    public static final ModConfigSpec.IntValue INITIAL_HP = SYNCED_BUILDER
+            .comment("Initial max HP (vanilla = 20).")
+            .defineInRange("hp", 20, 1, 1_000_000);
+    public static final ModConfigSpec.IntValue INITIAL_MP = SYNCED_BUILDER
+            .comment("Initial max MP.")
+            .defineInRange("mp", 20, 0, 1_000_000);
+    public static final ModConfigSpec.IntValue INITIAL_ATTACK = SYNCED_BUILDER
+            .comment("Initial attack.")
+            .defineInRange("attack", 1, 0, 1_000_000);
+    public static final ModConfigSpec.IntValue INITIAL_DEFENSE = SYNCED_BUILDER
+            .comment("Initial defense.")
+            .defineInRange("defense", 1, 0, 1_000_000);
+    public static final ModConfigSpec.IntValue INITIAL_INTELLIGENCE = SYNCED_BUILDER
+            .comment("Initial intelligence.")
+            .defineInRange("intelligence", 1, 0, 1_000_000);
+    public static final ModConfigSpec.IntValue INITIAL_DEXTERITY = SYNCED_BUILDER
+            .comment("Initial dexterity.")
+            .defineInRange("dexterity", 1, 0, 1_000_000);
+    public static final ModConfigSpec.IntValue INITIAL_LUCK = SYNCED_BUILDER
+            .comment("Initial luck.")
+            .defineInRange("luck", 1, 0, 1_000_000);
+    public static final ModConfigSpec.IntValue INITIAL_RESISTANCE = SYNCED_BUILDER
+            .comment("Initial resistance.")
+            .defineInRange("resistance", 1, 0, 1_000_000);
+    public static final ModConfigSpec.DoubleValue INITIAL_ATTACK_SPEED = SYNCED_BUILDER
+            .comment("Attack speed multiplier (1.0 = vanilla).")
+            .defineInRange("attackSpeed", 1.0, 0.1, 10.0);
+    public static final ModConfigSpec.DoubleValue INITIAL_MOVE_SPEED = SYNCED_BUILDER
+            .comment("Movement speed multiplier (1.0 = vanilla).")
+            .defineInRange("moveSpeed", 1.0, 0.1, 10.0);
+    public static final ModConfigSpec.DoubleValue INITIAL_JUMP_POWER = SYNCED_BUILDER
+            .comment("Jump strength multiplier (1.0 = vanilla).")
+            .defineInRange("jumpPower", 1.0, 0.1, 10.0);
+
+    static {
+        SYNCED_BUILDER.pop();
+    }
+
+    // ---- 振り分け 1 ポイントあたりの上昇量 ----
+    static {
+        SYNCED_BUILDER.push("perPoint");
+    }
+
+    public static final ModConfigSpec.IntValue VITALITY_HP_PER_POINT = SYNCED_BUILDER
+            .comment("Max HP gained per point in Vitality.")
+            .defineInRange("vitalityHp", 10, 0, 1_000_000);
+    public static final ModConfigSpec.IntValue MAGIC_MP_PER_POINT = SYNCED_BUILDER
+            .comment("Max MP gained per point in Magic.")
+            .defineInRange("magicMp", 10, 0, 1_000_000);
+    public static final ModConfigSpec.IntValue ATTACK_PER_POINT = SYNCED_BUILDER
+            .comment("Attack gained per point in Attack.")
+            .defineInRange("attack", 1, 0, 1_000_000);
+    public static final ModConfigSpec.IntValue DEFENSE_PER_POINT = SYNCED_BUILDER
+            .comment("Defense gained per point in Defense.")
+            .defineInRange("defense", 1, 0, 1_000_000);
+    public static final ModConfigSpec.IntValue INTELLIGENCE_PER_POINT = SYNCED_BUILDER
+            .comment("Intelligence gained per point in Intelligence.")
+            .defineInRange("intelligence", 1, 0, 1_000_000);
+
+    static {
+        SYNCED_BUILDER.pop();
+    }
+
+    // ---- 効果（ステータス値 → 実際の数値） ----
+    static {
+        SYNCED_BUILDER.push("effects");
+    }
+
+    /** 攻撃力 1 ごとのダメージ倍率の上昇（0.1 = +10%）。ダメージ = 元のダメージ ×(1 + (攻撃力 - 1) × この値) */
+    public static final ModConfigSpec.DoubleValue ATTACK_DAMAGE_BONUS_PER_POINT = SYNCED_BUILDER
+            .comment("Damage multiplier added per Attack above 1 (0.1 = +10%).",
+                    "Damage = original damage * (1 + (attack - 1) * this).")
+            .defineInRange("attackDamageBonus", 0.1, 0.0, 100.0);
+
+    /** 防御力 1 ごとに、敵から受けるダメージを減らす量。軽減量 = (防御力 - 1) × この値 */
+    public static final ModConfigSpec.DoubleValue DEFENSE_REDUCTION_PER_POINT = SYNCED_BUILDER
+            .comment("Damage from enemies reduced per Defense above 1 (flat).",
+                    "Reduction = (defense - 1) * this. Applied after armor.")
+            .defineInRange("defenseReduction", 0.5, 0.0, 1000.0);
+
+    /** 防御力で軽減したあとの最低ダメージ（0 = 完全に防げる）。 */
+    public static final ModConfigSpec.DoubleValue DEFENSE_MIN_DAMAGE = SYNCED_BUILDER
+            .comment("Minimum damage after the Defense reduction (0 = can be fully blocked).")
+            .defineInRange("defenseMinDamage", 0.0, 0.0, 1000.0);
+
+    /** 技量 1 のときのクリティカル率（0.05 = 5%）。 */
+    public static final ModConfigSpec.DoubleValue CRIT_CHANCE_BASE = SYNCED_BUILDER
+            .comment("Critical hit chance at Dexterity 1 (0.05 = 5%).")
+            .defineInRange("critChanceBase", 0.05, 0.0, 1.0);
+    /** 技量 1 ごとのクリティカル率の上昇。 */
+    public static final ModConfigSpec.DoubleValue CRIT_CHANCE_PER_POINT = SYNCED_BUILDER
+            .comment("Critical hit chance added per Dexterity above 1 (0.005 = +0.5%).")
+            .defineInRange("critChancePerPoint", 0.005, 0.0, 1.0);
+    /** 技量 1 のときのクリティカル倍率。 */
+    public static final ModConfigSpec.DoubleValue CRIT_DAMAGE_BASE = SYNCED_BUILDER
+            .comment("Critical damage multiplier at Dexterity 1 (vanilla = 1.5).")
+            .defineInRange("critDamageBase", 1.5, 1.0, 100.0);
+    /** 技量 1 ごとのクリティカル倍率の上昇。 */
+    public static final ModConfigSpec.DoubleValue CRIT_DAMAGE_PER_POINT = SYNCED_BUILDER
+            .comment("Critical damage multiplier added per Dexterity above 1 (0.01 = +1%).")
+            .defineInRange("critDamagePerPoint", 0.01, 0.0, 100.0);
+
+    /** ラック 1 ごとにバニラの「幸運」属性に加える量（ラック 1 = 幸運 0）。 */
+    public static final ModConfigSpec.DoubleValue LUCK_ATTRIBUTE_PER_POINT = SYNCED_BUILDER
+            .comment("Vanilla luck attribute added per Luck above 1 (affects fishing and chest loot).")
+            .defineInRange("luckAttributePerPoint", 1.0, 0.0, 1024.0);
+
+    /** MP の自然回復量（1 秒あたり、最大 MP に対する割合。0.01 = 1%）。 */
+    public static final ModConfigSpec.DoubleValue MP_REGEN_PER_SECOND = SYNCED_BUILDER
+            .comment("MP regenerated per second, as a ratio of max MP (0.01 = 1%).")
+            .defineInRange("mpRegenPerSecond", 0.01, 0.0, 1.0);
+
+    static {
+        SYNCED_BUILDER.pop();
+        SYNCED_BUILDER.pop(); // status
+    }
+
     // ---- 安全な取得（読み込み前はデフォルト値） ----
     private static <T> T value(ModConfigSpec.ConfigValue<T> config) {
         return SYNCED_SPEC.isLoaded() ? config.get() : config.getDefault();
@@ -143,6 +275,19 @@ public final class ModConfigs {
     public static double bossAssistExpRatio() { return value(BOSS_ASSIST_EXP_RATIO); }
     public static int assistWindowSeconds() { return value(ASSIST_WINDOW_SECONDS); }
     public static boolean showExpMessages() { return value(SHOW_EXP_MESSAGES); }
+    public static int pointsPerLevel() { return value(POINTS_PER_LEVEL); }
+    public static double attackDamageBonusPerPoint() { return value(ATTACK_DAMAGE_BONUS_PER_POINT); }
+    public static double defenseReductionPerPoint() { return value(DEFENSE_REDUCTION_PER_POINT); }
+    public static double defenseMinDamage() { return value(DEFENSE_MIN_DAMAGE); }
+    public static double critChanceBase() { return value(CRIT_CHANCE_BASE); }
+    public static double critChancePerPoint() { return value(CRIT_CHANCE_PER_POINT); }
+    public static double critDamageBase() { return value(CRIT_DAMAGE_BASE); }
+    public static double critDamagePerPoint() { return value(CRIT_DAMAGE_PER_POINT); }
+    public static double luckAttributePerPoint() { return value(LUCK_ATTRIBUTE_PER_POINT); }
+    public static double mpRegenPerSecond() { return value(MP_REGEN_PER_SECOND); }
+
+    /** Config 値（int / double）を安全に取得する（StatType 等から使う）。 */
+    public static <T> T get(ModConfigSpec.ConfigValue<T> config) { return value(config); }
 
     // ※ 機能追加時はここにセクション（例: "mobs", "items"）を追加していく。
 

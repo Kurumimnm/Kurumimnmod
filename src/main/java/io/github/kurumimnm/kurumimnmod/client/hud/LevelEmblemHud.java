@@ -1,6 +1,6 @@
 package io.github.kurumimnm.kurumimnmod.client.hud;
 
-import io.github.kurumimnm.kurumimnmod.client.status.ClientStatusPlaceholder;
+import io.github.kurumimnm.kurumimnmod.client.status.ClientStatus;
 import io.github.kurumimnm.kurumimnmod.config.ModConstants;
 import net.minecraft.client.AttackIndicatorStatus;
 import net.minecraft.client.Minecraft;
@@ -29,8 +29,8 @@ final class LevelEmblemHud {
     private static long flashStartNanos = 0L;
 
     static void render(GuiGraphicsExtractor g, Minecraft mc, int screenW, int screenH) {
-        int level = ClientStatusPlaceholder.level();
-        float progress = ClientStatusPlaceholder.levelProgress();
+        int level = ClientStatus.level();
+        float progress = ClientStatus.levelProgress();
         updateFlash(level);
 
         int size = ModConstants.LEVEL_EMBLEM_SIZE;

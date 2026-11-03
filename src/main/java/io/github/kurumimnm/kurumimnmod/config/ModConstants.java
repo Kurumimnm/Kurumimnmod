@@ -31,15 +31,11 @@ public final class ModConstants {
     // 例) public static final double EXAMPLE_MOB_MOVEMENT_SPEED = 0.25;
 
     // =====================================================================
-    // ステータス（仮置き）
-    // ※ 本実装（HP/MP/経験値/レベル/ステータスの独自システム）ができたら置き換える
+    // レベル
+    // ※ ステータスの初期値・振り分けの上昇量・効果の数値は Config（ModConfigs の [status]）にある
     // =====================================================================
-    /** 仮置きの最大 MP。 */
-    public static final int PLACEHOLDER_MAX_MP = 20;
     /** 初期レベル。 */
     public static final int INITIAL_LEVEL = 1;
-    /** 1 レベル上がるごとにもらえるステータスポイント。 */
-    public static final int STAT_POINTS_PER_LEVEL = 1;
 
     // =====================================================================
     // HUD（画面下部の HP / MP / レベル表示）
