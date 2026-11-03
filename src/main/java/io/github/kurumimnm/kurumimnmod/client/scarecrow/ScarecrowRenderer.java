@@ -1,9 +1,9 @@
 package io.github.kurumimnm.kurumimnmod.client.scarecrow;
 
+import com.geckolib.constant.dataticket.DataTicket;
 import com.geckolib.renderer.GeoEntityRenderer;
 import com.geckolib.renderer.base.GeoRenderState;
 import com.mojang.blaze3d.vertex.PoseStack;
-import io.github.kurumimnm.kurumimnmod.Kurumimnmod;
 import io.github.kurumimnm.kurumimnmod.config.ModConstants;
 import io.github.kurumimnm.kurumimnmod.entity.ScarecrowEntity;
 import io.github.kurumimnm.kurumimnmod.registry.ModEntities;
@@ -17,11 +17,9 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.util.Mth;
-import net.minecraft.util.context.ContextKey;
 
 /**
  * カカシのレンダラー（GeckoLib）＋頭上のダメージ数字。
@@ -39,9 +37,14 @@ import net.minecraft.util.context.ContextKey;
  */
 public class ScarecrowRenderer<R extends EntityRenderState & GeoRenderState> extends GeoEntityRenderer<ScarecrowEntity, R> {
 
-    /** RenderState に書き込むエンティティ ID（数字の検索に使う）。 */
-    private static final ContextKey<Integer> ENTITY_ID =
-            new ContextKey<>(Identifier.fromNamespaceAndPath(Kurumimnmod.MOD_ID, "scarecrow_entity_id"));
+    /**
+     * RenderState に書き込むエンティティ ID（数字の検索に使う）。
+     * <p>
+     * ※ NeoForge の setRenderData（ContextKey）は使わないこと。GeckoLib は extractRenderState のあとに
+     *    NeoForge の描画データのリセット処理を呼ぶため、そこに入れた値は描画前に消えてしまう
+     *    （ダメージ数字が表示されなかった原因）。GeckoLib 側のデータ（DataTicket）は消えない。
+     */
+    private static final DataTicket<Integer> ENTITY_ID = DataTicket.create("kurumimnmod_scarecrow_entity_id", Integer.class);
 
     /** 消え始める時点（表示時間に対する割合）。 */
     private static final float FADE_START = 0.7f;
@@ -53,13 +56,13 @@ public class ScarecrowRenderer<R extends EntityRenderState & GeoRenderState> ext
     @Override
     public void extractRenderState(ScarecrowEntity entity, R state, float partialTick) {
         super.extractRenderState(entity, state, partialTick);
-        state.setRenderData(ENTITY_ID, entity.getId());
+        state.addGeckolibData(ENTITY_ID, entity.getId());
     }
 
     @Override
     public void submit(R state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState camera) {
         super.submit(state, poseStack, collector, camera);
-        Integer id = state.getRenderData(ENTITY_ID);
+        Integer id = state.getGeckolibData(ENTITY_ID);
         Deque<DamageNumbers.Entry> entries = id == null ? null : DamageNumbers.get(id);
         if (entries != null) {
             submitDamageNumbers(state, entries, poseStack, collector, camera);
