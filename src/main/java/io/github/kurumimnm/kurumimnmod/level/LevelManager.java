@@ -9,6 +9,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
+import net.neoforged.neoforge.common.NeoForge;
 
 /**
  * プレイヤーのレベル・経験値を読み書きする窓口。
@@ -85,15 +86,22 @@ public final class LevelManager {
 
     /** レベルを直接設定する（経験値は 0 に戻る）。コマンド用。 */
     public static void setLevel(ServerPlayer player, int level) {
-        player.setData(ModAttachments.PLAYER_LEVEL, new PlayerLevel(LevelCurve.clampLevel(level), 0L));
+        int oldLevel = get(player).level();
+        int newLevel = LevelCurve.clampLevel(level);
+        player.setData(ModAttachments.PLAYER_LEVEL, new PlayerLevel(newLevel, 0L));
+        if (newLevel > oldLevel) {
+            // コマンドで上げた場合も、ステータス上昇などが同じように処理されるようイベントは出す（演出はなし）
+            NeoForge.EVENT_BUS.post(new PlayerLevelUpEvent(player, oldLevel, newLevel));
+        }
     }
 
     /**
      * レベルアップしたときの処理。
      * バニラのレベルアップ音を鳴らし、チャットに通知する（HUD のエンブレムも自動で光る）。
-     * ※ 今後ステータスポイント付与・HP 回復などを追加するならここ。
+     * ステータス上昇などは {@link PlayerLevelUpEvent} を受け取る側（ステータス設定）で実装する。
      */
     private static void onLevelUp(ServerPlayer player, int oldLevel, int newLevel) {
+        NeoForge.EVENT_BUS.post(new PlayerLevelUpEvent(player, oldLevel, newLevel));
         player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
                 SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 0.75f, 1.0f);
         player.sendSystemMessage(Component.translatable("message.kurumimnmod.level_up", newLevel)
