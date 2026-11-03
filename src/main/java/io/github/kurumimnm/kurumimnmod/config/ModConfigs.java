@@ -285,6 +285,9 @@ public final class ModConfigs {
     public static final ModConfigSpec.DoubleValue SCARECROW_KNOCKBACK_RESISTANCE = SYNCED_BUILDER
             .comment("Initial knockback resistance of a scarecrow in percent (100 = never knocked back).")
             .defineInRange("scarecrowKnockbackResistance", 0.0, 0.0, 100.0);
+    public static final ModConfigSpec.BooleanValue SCARECROW_NO_KNOCKBACK = SYNCED_BUILDER
+            .comment("If true, newly summoned scarecrows are never knocked back (knockback resistance is ignored).")
+            .define("scarecrowNoKnockback", false);
     public static final ModConfigSpec.BooleanValue SCARECROW_COUNTER_ENABLED = SYNCED_BUILDER
             .comment("If true, newly summoned scarecrows attack nearby players.")
             .define("scarecrowCounterEnabled", false);

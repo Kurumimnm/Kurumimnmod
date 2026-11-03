@@ -45,6 +45,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
  *        ダメージの計算・表示は scarecrow/ScarecrowEvents。
  *        HP 無限なら HP は減らない。有限なら削り切ったときに全回復し、しばらく攻撃されなくても全回復する。
  * 【移動】AI なし・重力なし。押されても動かない。ノックバックでずれたら、少し待ってから召喚位置へ滑って戻る。
+ *        「ノックバックなし」のときは一切吹き飛ばない（万一ずれてもすぐ召喚位置に戻す）。
  *        向きは召喚時の向きで固定。
  * 【反撃】ON のとき、射程内で一番近いプレイヤー（サバイバル／アドベンチャー）を一定間隔で攻撃する。
  *        プレイヤーの防具・防御力ステータスで軽減され、受けたダメージはアクションバーに表示される。
@@ -123,11 +124,12 @@ public class ScarecrowEntity extends Mob implements GeoEntity {
         this.counterCooldown = this.settings.counterIntervalTicks();
     }
 
-    /** 最大 HP・防具ポイント・ノックバック耐性をバニラの属性に反映する。 */
+    /** 最大 HP・防具ポイント・ノックバック耐性をバニラの属性に反映する（ノックバックなし = 耐性 100%）。 */
     private void applySettingsToAttributes() {
         setBase(getAttribute(Attributes.MAX_HEALTH), settings.maxHealth());
         setBase(getAttribute(Attributes.ARMOR), settings.armor());
-        setBase(getAttribute(Attributes.KNOCKBACK_RESISTANCE), settings.knockbackResistance() / 100.0);
+        double knockbackResistance = settings.noKnockback() ? 1.0 : settings.knockbackResistance() / 100.0;
+        setBase(getAttribute(Attributes.KNOCKBACK_RESISTANCE), knockbackResistance);
     }
 
     private static void setBase(AttributeInstance attribute, double value) {
@@ -223,6 +225,12 @@ public class ScarecrowEntity extends Mob implements GeoEntity {
         Vec3 toHome = home.subtract(position());
         double distance = toHome.length();
         if (distance <= ModConstants.SCARECROW_HOME_EPSILON) {
+            return;
+        }
+        if (settings.noKnockback()) {
+            // ノックバックなし：耐性を無視する攻撃などで動かされても、待たずにその場へ戻す
+            setDeltaMovement(Vec3.ZERO);
+            setPos(home);
             return;
         }
         long sinceHurt = level().getGameTime() - lastHurtTime;

@@ -32,6 +32,7 @@ import net.neoforged.neoforge.client.network.ClientPacketDistributor;
  * │ アーマー      [   0 ]   │ 射程(ブロック)[ 3 ]   │
  * │ 魔法耐性(%)   [   0 ]   │                       │
  * │ ノックバック耐性(%)[0]  │                       │
+ * │ ノックバックなし  [ ]   │                       │
  * ├──────────────────────────────────────┤
  * │ [初期値に戻す] [削除※OP] [キャンセル] [保存]    │
  * └──────────────────────────────────────┘
@@ -47,7 +48,7 @@ public class ScarecrowSettingsScreen extends Screen {
 
     // ---- レイアウト（GUI ピクセル） ----
     private static final int PANEL_WIDTH = 330;
-    private static final int PANEL_HEIGHT = 214;
+    private static final int PANEL_HEIGHT = 236;
     private static final int PADDING = 10;
     private static final int COLUMN_GAP = 12;
     private static final int ROW_HEIGHT = 22;
@@ -82,6 +83,7 @@ public class ScarecrowSettingsScreen extends Screen {
     private NumberField counterRange;
     private Checkbox infiniteHealth;
     private Checkbox counterEnabled;
+    private Checkbox noKnockback;
 
     private Button saveButton;
     private Button deleteButton;
@@ -129,7 +131,8 @@ public class ScarecrowSettingsScreen extends Screen {
         defense = number(col, row++, "defense", s.defense(), 0, ModConstants.SCARECROW_DEFENSE_LIMIT);
         armor = number(col, row++, "armor", s.armor(), 0, ModConstants.SCARECROW_ARMOR_LIMIT);
         magicResistance = number(col, row++, "magic_resistance", s.magicResistance(), 0, 100);
-        knockbackResistance = number(col, row, "knockback_resistance", s.knockbackResistance(), 0, 100);
+        knockbackResistance = number(col, row++, "knockback_resistance", s.knockbackResistance(), 0, 100);
+        noKnockback = checkbox(col, row, "no_knockback", s.noKnockback());
 
         // ---- 右列：反撃 ----
         col = rightColumnX();
@@ -249,6 +252,7 @@ public class ScarecrowSettingsScreen extends Screen {
                 armor.value().floatValue(),
                 magicResistance.value().floatValue(),
                 knockbackResistance.value().floatValue(),
+                noKnockback.selected(),
                 counterEnabled.selected(),
                 counterDamage.value().floatValue(),
                 counterInterval.value().floatValue(),
@@ -308,6 +312,10 @@ public class ScarecrowSettingsScreen extends Screen {
             allValid &= ok;
         }
         this.saveButton.active = allValid;
+        // ノックバックなしの間は、ノックバック耐性の値は使われないので編集できないようにする
+        boolean kbEditable = !this.noKnockback.selected();
+        this.knockbackResistance.box().setEditable(kbEditable);
+        this.knockbackResistance.box().active = kbEditable;
 
         super.extractRenderState(g, mouseX, mouseY, partialTicks);
 

@@ -126,6 +126,8 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         add(SCARECROW_SCREEN + ".magic_resistance.desc", "Reduces magic damage by this percentage (0 - 100).");
         add(SCARECROW_SCREEN + ".knockback_resistance", "Knockback Resist (%)");
         add(SCARECROW_SCREEN + ".knockback_resistance.desc", "At 100 the scarecrow is never knocked back (0 - 100). When knocked back, it slides back to where it was summoned.");
+        add(SCARECROW_SCREEN + ".no_knockback", "No Knockback");
+        add(SCARECROW_SCREEN + ".no_knockback.desc", "If checked, the scarecrow is never knocked back and stays where it was summoned (Knockback Resist is ignored).");
         add(SCARECROW_SCREEN + ".counter_enabled", "Counterattack");
         add(SCARECROW_SCREEN + ".counter_enabled.desc", "If checked, the scarecrow attacks the nearest player in reach (survival / adventure only).");
         add(SCARECROW_SCREEN + ".counter_damage", "Attack Damage");
@@ -203,6 +205,7 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         add(MOD_ID + ".configuration.scarecrowArmor", "Initial Armor");
         add(MOD_ID + ".configuration.scarecrowMagicResistance", "Initial Magic Resistance (%)");
         add(MOD_ID + ".configuration.scarecrowKnockbackResistance", "Initial Knockback Resistance (%)");
+        add(MOD_ID + ".configuration.scarecrowNoKnockback", "Initial No Knockback");
         add(MOD_ID + ".configuration.scarecrowCounterEnabled", "Initial Counterattack");
         add(MOD_ID + ".configuration.scarecrowCounterDamage", "Initial Counterattack Damage");
         add(MOD_ID + ".configuration.scarecrowCounterInterval", "Initial Counterattack Interval (Seconds)");
