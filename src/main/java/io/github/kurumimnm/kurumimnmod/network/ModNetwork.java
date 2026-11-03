@@ -38,5 +38,8 @@ public final class ModNetwork {
         // 専用サーバーでクライアント専用クラスを読み込まないよう、ここでは形式だけ登録する）
         registrar.playToClient(OpenScarecrowSettingsPayload.TYPE, OpenScarecrowSettingsPayload.STREAM_CODEC);
         registrar.playToClient(ScarecrowDamagePayload.TYPE, ScarecrowDamagePayload.STREAM_CODEC);
+
+
+        registrar.playToServer(CastWandPayload.TYPE, CastWandPayload.STREAM_CODEC, CastWandPayload::handle);
     }
 }

@@ -37,5 +37,6 @@ public class ModModelProvider extends ModelProvider {
         // 杖・剣・ステッキなどの「手に持つ」アイテムは HANDHELD（持ったときに斜めに構える）
         itemModels.generateFlatItem(ModItems.SCARECROW_SUMMON_STICK.get(), ModelTemplates.FLAT_HANDHELD_ITEM);
         itemModels.generateFlatItem(ModItems.SCARECROW_CONFIG_STICK.get(), ModelTemplates.FLAT_HANDHELD_ITEM);
+        itemModels.generateFlatItem(ModItems.ICE_WAND.get(), ModelTemplates.FLAT_HANDHELD_ITEM);
     }
 }

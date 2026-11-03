@@ -3,6 +3,7 @@ package io.github.kurumimnm.kurumimnmod.registry;
 import io.github.kurumimnm.kurumimnmod.Kurumimnmod;
 import io.github.kurumimnm.kurumimnmod.item.ScarecrowConfigStickItem;
 import io.github.kurumimnm.kurumimnmod.item.ScarecrowSummonStickItem;
+import io.github.kurumimnm.kurumimnmod.item.IceWandItem;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
@@ -35,4 +36,12 @@ public final class ModItems {
     /** カカシ設定用ステッキ（カカシを狙って左クリックで設定画面。誰でも使える）。 */
     public static final DeferredItem<ScarecrowConfigStickItem> SCARECROW_CONFIG_STICK =
             ITEMS.registerItem("scarecrow_config_stick", ScarecrowConfigStickItem::new, p -> p.stacksTo(1));
+
+    // =====================================================================
+    // 魔法の杖
+    // =====================================================================
+
+    /** 氷柱の杖（右クリック長押しで照準、左クリックで頭上から氷柱を発射）。 */
+    public static final DeferredItem<IceWandItem> ICE_WAND =
+            ITEMS.registerItem("ice_wand", IceWandItem::new, p -> p.stacksTo(1));
 }

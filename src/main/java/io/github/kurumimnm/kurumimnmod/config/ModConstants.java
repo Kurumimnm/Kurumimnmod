@@ -82,6 +82,17 @@ public final class ModConstants {
     public static final int DAMAGE_NUMBER_COLOR_OTHER = 0xFFB0B0B0;   // 攻撃者なし（炎・毒など。灰）
     public static final int DAMAGE_NUMBER_COLOR_BREAK = 0xFFFF5050;   // HP を削り切った一撃（赤）
 
+
+    // ---- 氷柱（氷柱の杖の弾）。ダメージ・速さなどの調整値は Config の [magic.iceWand] ----
+    /** 当たり判定の大きさ（ブロック）。 */
+    public static final float ICE_ICICLE_SIZE = 0.5f;
+    /** 貫通判定の太さ（ブロック）。見た目の太さに合わせて、敵の当たり判定をこれだけ広げて判定する。 */
+    public static final double ICE_ICICLE_HIT_RADIUS = 0.4;
+    /** 何にも当たらなかったときに消えるまでの時間（tick）。安全装置。 */
+    public static final int ICE_ICICLE_MAX_LIFETIME = 200;
+    /** 何ブロック先のプレイヤーまで見えるか（チャンク単位）。 */
+    public static final int ICE_ICICLE_TRACKING_RANGE = 8;
+
     // =====================================================================
     // レベル
     // ※ ステータスの初期値・振り分けの上昇量・効果の数値は Config（ModConfigs の [status]）にある
@@ -144,6 +155,25 @@ public final class ModConstants {
     public static final int LEVEL_COLOR_SURFACE = 0xFFFFF6C0;      // 液面のハイライト
     public static final int LEVEL_COLOR_TEXT = 0xFFFFFFFF;
     public static final int LEVEL_COLOR_TEXT_OUTLINE = 0xFF3A2400;
+
+    // =====================================================================
+    // 魔法の照準サークル（右クリック長押し中に着弾地点へ表示）
+    // 色は ARGB。中心から外周にかけて塗りが薄くなる（ダメージ減衰のイメージ）
+    // =====================================================================
+    /** 円を何分割して描くか（多いほどなめらか）。 */
+    public static final int AOE_SEGMENTS = 48;
+    /** 外周の線の太さ（ブロック）。 */
+    public static final float AOE_RING_WIDTH = 0.08f;
+    /** 地面からの浮かせ量（ちらつき防止）。 */
+    public static final float AOE_SURFACE_OFFSET = 0.03f;
+    /** 発射できるとき：塗りの中心・外周・線の色。 */
+    public static final int AOE_COLOR_FILL_CENTER = 0x6080D8FF;
+    public static final int AOE_COLOR_FILL_EDGE = 0x2080D8FF;
+    public static final int AOE_COLOR_RING = 0xD0B8ECFF;
+    /** MP 不足・クールダウン中：塗りの中心・外周・線の色。 */
+    public static final int AOE_COLOR_DISABLED_FILL_CENTER = 0x50FF6060;
+    public static final int AOE_COLOR_DISABLED_FILL_EDGE = 0x18FF6060;
+    public static final int AOE_COLOR_DISABLED_RING = 0xB0FF8080;
 
     // =====================================================================
     // 敵の頭上 HP バー
