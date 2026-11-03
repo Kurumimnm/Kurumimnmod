@@ -1,6 +1,9 @@
 package io.github.kurumimnm.kurumimnmod.registry;
 
+import com.mojang.serialization.Codec;
 import io.github.kurumimnm.kurumimnmod.Kurumimnmod;
+import io.github.kurumimnm.kurumimnmod.status.PlayerStats;
+import net.minecraft.network.codec.ByteBufCodecs;
 import io.github.kurumimnm.kurumimnmod.level.KillContribution;
 import io.github.kurumimnm.kurumimnmod.level.PlayerLevel;
 import java.util.function.Supplier;
@@ -31,6 +34,27 @@ public final class ModAttachments {
                     .serialize(PlayerLevel.CODEC)
                     .copyOnDeath()
                     .sync((holder, to) -> holder == to, PlayerLevel.STREAM_CODEC)
+                    .build());
+
+    /**
+     * プレイヤーが振り分けたステータスポイント。
+     * 保存・死亡後も維持・本人にだけ同期（ステータス画面・HUD 表示用）。
+     */
+    public static final Supplier<AttachmentType<PlayerStats>> PLAYER_STATS = ATTACHMENT_TYPES.register("player_stats",
+            () -> AttachmentType.builder(() -> PlayerStats.DEFAULT)
+                    .serialize(PlayerStats.CODEC)
+                    .copyOnDeath()
+                    .sync((holder, to) -> holder == to, PlayerStats.STREAM_CODEC)
+                    .build());
+
+    /**
+     * 現在の MP（-1 = 満タン扱い。最大 MP はステータスから計算する）。
+     * 保存・本人にだけ同期。死亡時はコピーしない（リスポーン時は満タン）。
+     */
+    public static final Supplier<AttachmentType<Float>> PLAYER_MANA = ATTACHMENT_TYPES.register("player_mana",
+            () -> AttachmentType.builder(() -> -1f)
+                    .serialize(Codec.FLOAT.fieldOf("mana"))
+                    .sync((holder, to) -> holder == to, ByteBufCodecs.FLOAT)
                     .build());
 
     /**

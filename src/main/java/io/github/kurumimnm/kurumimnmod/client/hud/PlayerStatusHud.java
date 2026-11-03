@@ -1,6 +1,6 @@
 package io.github.kurumimnm.kurumimnmod.client.hud;
 
-import io.github.kurumimnm.kurumimnmod.client.status.ClientStatusPlaceholder;
+import io.github.kurumimnm.kurumimnmod.client.status.ClientStatus;
 import io.github.kurumimnm.kurumimnmod.config.ModConstants;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
@@ -63,8 +63,8 @@ public final class PlayerStatusHud {
         int hpY = mpY - 1 - ModConstants.HUD_BAR_GAP - 1 - barH; // 枠線 1px ずつを考慮
 
         // ---- HP ----
-        float hp = ClientStatusPlaceholder.health();
-        float maxHp = ClientStatusPlaceholder.maxHealth();
+        float hp = ClientStatus.health();
+        float maxHp = ClientStatus.maxHealth();
         float hpRatio = hp / maxHp;
         updateTrail(hpRatio);
         int hpColor = HealthColor.forRatio(hpRatio);
@@ -72,8 +72,8 @@ public final class PlayerStatusHud {
         HudDraw.centeredLabel(g, font, format(hp) + " / " + format(maxHp), x, hpY, barW, barH);
 
         // ---- MP ----
-        float mp = ClientStatusPlaceholder.mana();
-        float maxMp = ClientStatusPlaceholder.maxMana();
+        float mp = ClientStatus.mana();
+        float maxMp = ClientStatus.maxMana();
         HudDraw.bar(g, x, mpY, barW, barH, mp / Math.max(1, maxMp), ModConstants.HUD_COLOR_MP, 0, 0);
         HudDraw.centeredLabel(g, font, format(mp) + " / " + format(maxMp), x, mpY, barW, barH);
 

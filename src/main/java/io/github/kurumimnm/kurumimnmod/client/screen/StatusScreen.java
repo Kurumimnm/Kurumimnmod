@@ -1,138 +1,156 @@
 package io.github.kurumimnm.kurumimnmod.client.screen;
 
 import io.github.kurumimnm.kurumimnmod.Kurumimnmod;
-import io.github.kurumimnm.kurumimnmod.client.status.ClientStatusPlaceholder;
+import io.github.kurumimnm.kurumimnmod.client.status.ClientStatus;
 import io.github.kurumimnm.kurumimnmod.status.StatType;
 import java.util.EnumMap;
+import java.util.Locale;
 import java.util.Map;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.components.Tooltip;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.Mth;
 
 /**
- * ステータス画面（K キーで開く）。
+ * ステータス画面（1 ページ目・初期キー: Tab）。
  * <pre>
- * ┌──────────── ステータス ────────────┐
- * │ レベル 3        EXP 45 / 100 (45%)  │
- * │ HP 20 / 20      MP 20 / 20          │
- * │ 残りポイント: 2                     │
- * │ STR   0   [+]                       │
- * │ VIT   0   [+]   ...                 │
- * └─────────────────────────────────────┘
+ * ┌[ステータス][ステータス付与]┐
+ * │ レベル 3     EXP 45 / 100  │
+ * │ 次のレベルまで 55           │
+ * │ HP 40 / 40   MP 20 / 20    │
+ * ├────────────────────────────┤
+ * │ 攻撃力              3      │ ← 名前にカーソルを合わせると説明文
+ * │ 防御力 / 知力 / 技量 / ラック / 抵抗力
+ * ├────────────────────────────┤
+ * │ 所持パッシブ                │
+ * │  なし                       │
+ * └────────────────────────────┘
  * </pre>
- * 【仮置き】値は {@link ClientStatusPlaceholder} から取得している。
- * ステータスを振っても現時点では効果はなく、保存もされない。
  */
-public class StatusScreen extends Screen {
+public class StatusScreen extends StatusPageScreen {
 
-    // ---- レイアウト（GUI ピクセル） ----
-    private static final int PANEL_WIDTH = 220;
-    private static final int PANEL_HEIGHT = 176;
-    private static final int ROW_HEIGHT = 20;
-    private static final int PADDING = 10;
+    private static final int ROW_HEIGHT = 12;
+    private static final String KEY = "screen." + Kurumimnmod.MOD_ID + ".status";
 
-    private static final int COLOR_PANEL = 0xE0101010;
-    private static final int COLOR_PANEL_BORDER = 0xFF606060;
-    private static final int COLOR_TITLE = 0xFFFFFFFF;
-    private static final int COLOR_LABEL = 0xFFC0C0C0;
-    private static final int COLOR_VALUE = 0xFFFFFFFF;
-    private static final int COLOR_POINTS = 0xFFF2C230;
-
-    private final Map<StatType, Button> plusButtons = new EnumMap<>(StatType.class);
-
-    private int left;
-    private int top;
+    /** ステータス名のラベル（ツールチップ付き）。 */
+    private final Map<StatType, StringWidget> labels = new EnumMap<>(StatType.class);
 
     public StatusScreen() {
-        super(Component.translatable("screen." + Kurumimnmod.MOD_ID + ".status"));
+        super(Page.STATUS, Component.translatable(KEY));
+    }
+
+    // ---- 縦の配置 ----
+    private int infoTop() {
+        return this.top + CONTENT_TOP;
+    }
+
+    private int statsTop() {
+        return infoTop() + 42;
+    }
+
+    private int passiveTop() {
+        return statsTop() + visibleStatCount() * ROW_HEIGHT + 8;
+    }
+
+    private static int visibleStatCount() {
+        int n = 0;
+        for (StatType type : StatType.values()) {
+            if (type.visible()) {
+                n++;
+            }
+        }
+        return n;
     }
 
     @Override
-    protected void init() {
-        this.left = (this.width - PANEL_WIDTH) / 2;
-        this.top = (this.height - PANEL_HEIGHT) / 2;
-        this.plusButtons.clear();
-
-        // ステータスごとの「+」ボタン
+    protected void initPage() {
+        this.labels.clear();
         int y = statsTop();
         for (StatType type : StatType.values()) {
-            Button button = Button.builder(Component.literal("+"), b -> ClientStatusPlaceholder.allocate(type))
-                    .bounds(this.left + PANEL_WIDTH - PADDING - 20, y, 20, 18)
-                    .tooltip(Tooltip.create(Component.translatable(type.descriptionKey())))
-                    .build();
-            this.plusButtons.put(type, this.addRenderableWidget(button));
+            if (!type.visible()) {
+                continue;
+            }
+            Component name = Component.translatable(type.nameKey());
+            StringWidget label = new StringWidget(this.font.width(name), ROW_HEIGHT, name, this.font);
+            label.setPosition(contentLeft(), y);
+            this.labels.put(type, this.addRenderableWidget(label));
             y += ROW_HEIGHT;
         }
-    }
-
-    /** ステータス一覧の開始 Y 座標。 */
-    private int statsTop() {
-        return this.top + 62;
     }
 
     @Override
     public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTicks) {
-        // ポイントが無いときは「+」を押せないようにする
-        boolean canAllocate = ClientStatusPlaceholder.unspentPoints() > 0;
-        this.plusButtons.values().forEach(b -> b.active = canAllocate);
+        // ツールチップの数値（現在のクリ率など）を最新にする
+        this.labels.forEach((type, label) -> label.setTooltip(Tooltip.create(tooltip(type))));
 
-        // super で「背景（extractBackground：ぼかし＋パネル）→ ボタン」が描かれ、文字はその上に描く
         super.extractRenderState(g, mouseX, mouseY, partialTicks);
 
-        int x = this.left + PADDING;
-        int right = this.left + PANEL_WIDTH - PADDING;
+        int x = contentLeft();
+        int right = contentRight();
 
-        // タイトル
-        g.centeredText(this.font, this.title, this.width / 2, this.top + 8, COLOR_TITLE);
+        // ---- レベル・経験値 ----
+        int y = infoTop();
+        g.text(this.font, Component.translatable(KEY + ".level", ClientStatus.level()), x, y, COLOR_HEADER, true);
+        Component exp = Component.translatable(KEY + ".exp", ClientStatus.exp(), ClientStatus.requiredExp(),
+                Mth.floor(ClientStatus.levelProgress() * 100));
+        g.text(this.font, exp, right - this.font.width(exp), y, COLOR_LABEL, true);
 
-        // レベル・経験値
-        int y = this.top + 24;
-        g.text(this.font, Component.translatable("screen.kurumimnmod.status.level", ClientStatusPlaceholder.level()), x, y, COLOR_VALUE, true);
-        Component progress = Component.translatable("screen.kurumimnmod.status.exp",
-                ClientStatusPlaceholder.exp(), ClientStatusPlaceholder.requiredExp(),
-                Mth.floor(ClientStatusPlaceholder.levelProgress() * 100));
-        g.text(this.font, progress, right - this.font.width(progress), y, COLOR_LABEL, true);
-
-        // HP・MP
         y += 12;
-        g.text(this.font, Component.translatable("screen.kurumimnmod.status.hp",
-                Mth.ceil(ClientStatusPlaceholder.health()), Mth.ceil(ClientStatusPlaceholder.maxHealth())), x, y, COLOR_VALUE, true);
-        Component mp = Component.translatable("screen.kurumimnmod.status.mp",
-                Mth.ceil(ClientStatusPlaceholder.mana()), Mth.ceil(ClientStatusPlaceholder.maxMana()));
+        long toNext = Math.max(0, ClientStatus.requiredExp() - ClientStatus.exp());
+        g.text(this.font, Component.translatable(KEY + ".next", toNext), x, y, COLOR_LABEL, true);
+
+        // ---- HP・MP ----
+        y += 12;
+        g.text(this.font, Component.translatable(KEY + ".hp",
+                Mth.ceil(ClientStatus.health()), Mth.ceil(ClientStatus.maxHealth())), x, y, COLOR_VALUE, true);
+        Component mp = Component.translatable(KEY + ".mp",
+                Mth.floor(ClientStatus.mana()), Mth.floor(ClientStatus.maxMana()));
         g.text(this.font, mp, right - this.font.width(mp), y, COLOR_VALUE, true);
 
-        // 残りポイント
-        y += 12;
-        g.text(this.font, Component.translatable("screen.kurumimnmod.status.points", ClientStatusPlaceholder.unspentPoints()),
-                x, y, COLOR_POINTS, true);
+        separator(g, statsTop() - 5);
 
-        // 各ステータス
+        // ---- 各ステータスの値（名前は StringWidget が描画） ----
         y = statsTop();
         for (StatType type : StatType.values()) {
-            int textY = y + 5;
-            g.text(this.font, Component.translatable(type.nameKey()), x, textY, COLOR_LABEL, true);
-            String value = String.valueOf(ClientStatusPlaceholder.stat(type));
-            g.text(this.font, value, right - 28 - this.font.width(value), textY, COLOR_VALUE, true);
+            if (!type.visible()) {
+                continue;
+            }
+            String value = String.valueOf(Mth.floor(ClientStatus.stat(type)));
+            g.text(this.font, value, right - this.font.width(value), y + 2, COLOR_VALUE, true);
             y += ROW_HEIGHT;
         }
+
+        // ---- 所持パッシブ（パッシブの仕組みができたらここに一覧を出す） ----
+        int py = passiveTop();
+        separator(g, py - 5);
+        g.text(this.font, Component.translatable(KEY + ".passives"), x, py, COLOR_HEADER, true);
+        g.text(this.font, Component.translatable(KEY + ".passives.none"), x + 8, py + 12, COLOR_MUTED, true);
     }
 
-    /** 背景（ぼかし）の上、ボタンの下にパネルを描く。 */
-    @Override
-    public void extractBackground(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTicks) {
-        super.extractBackground(g, mouseX, mouseY, partialTicks);
-        g.fill(this.left - 1, this.top - 1, this.left + PANEL_WIDTH + 1, this.top + PANEL_HEIGHT + 1, COLOR_PANEL_BORDER);
-        g.fill(this.left, this.top, this.left + PANEL_WIDTH, this.top + PANEL_HEIGHT, COLOR_PANEL);
-        // 区切り線
-        g.fill(this.left + PADDING, statsTop() - 6, this.left + PANEL_WIDTH - PADDING, statsTop() - 5, COLOR_PANEL_BORDER);
+    /** ステータスのツールチップ（説明文＋現在の効果）。 */
+    private static Component tooltip(StatType type) {
+        MutableComponent text = Component.translatable(type.nameKey()).withStyle(ChatFormatting.YELLOW)
+                .append("\n")
+                .append(Component.translatable(type.descriptionKey()).withStyle(ChatFormatting.GRAY));
+        Component effect = switch (type) {
+            case ATTACK -> Component.translatable(type.nameKey() + ".effect", format(ClientStatus.attackMultiplier()));
+            case DEFENSE -> Component.translatable(type.nameKey() + ".effect", format(ClientStatus.defenseReduction()));
+            case DEXTERITY -> Component.translatable(type.nameKey() + ".effect",
+                    format(ClientStatus.critChance() * 100), format(ClientStatus.critMultiplier()));
+            default -> null;
+        };
+        if (effect != null) {
+            text.append("\n").append(effect.copy().withStyle(ChatFormatting.AQUA));
+        }
+        return text;
     }
 
-    /** シングルプレイでもゲームを止めない（インベントリと同じ挙動）。 */
-    @Override
-    public boolean isPauseScreen() {
-        return false;
+    /** 小数を「1.2」「1.25」のように表示（不要な 0 は省く）。 */
+    private static String format(double value) {
+        String s = String.format(Locale.ROOT, "%.2f", value);
+        return s.contains(".") ? s.replaceAll("0+$", "").replaceAll("\\.$", "") : s;
     }
 }
