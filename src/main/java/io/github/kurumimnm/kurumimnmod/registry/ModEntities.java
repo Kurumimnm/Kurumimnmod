@@ -2,6 +2,7 @@ package io.github.kurumimnm.kurumimnmod.registry;
 
 import io.github.kurumimnm.kurumimnmod.Kurumimnmod;
 import io.github.kurumimnm.kurumimnmod.config.ModConstants;
+import io.github.kurumimnm.kurumimnmod.entity.ScarecrowEntity;
 import io.github.kurumimnm.kurumimnmod.entity.IceIcicleEntity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -59,6 +60,17 @@ public final class ModEntities {
     public static final DeferredRegister.Entities ENTITY_TYPES = DeferredRegister.createEntities(Kurumimnmod.MOD_ID);
 
     // =====================================================================
+    // カカシ（ステータス実験用の的）
+    // =====================================================================
+
+    /** カカシ。召喚用ステッキで出す（スポーンエッグ・自然スポーンなし）。 */
+    public static final DeferredHolder<EntityType<?>, EntityType<ScarecrowEntity>> SCARECROW =
+            ENTITY_TYPES.registerEntityType("scarecrow", ScarecrowEntity::new, MobCategory.MISC,
+                    builder -> builder.sized(ModConstants.SCARECROW_WIDTH, ModConstants.SCARECROW_HEIGHT)
+                            .clientTrackingRange(ModConstants.SCARECROW_TRACKING_RANGE)
+                            .noLootTable());
+
+    // =====================================================================
     // 魔法の弾
     // =====================================================================
 
@@ -76,5 +88,6 @@ public final class ModEntities {
     @SubscribeEvent
     static void onAttributeCreation(EntityAttributeCreationEvent event) {
         // 例) event.put(WALNUT_MOB.get(), WalnutMob.createAttributes().build());
+        event.put(SCARECROW.get(), ScarecrowEntity.createAttributes().build());
     }
 }

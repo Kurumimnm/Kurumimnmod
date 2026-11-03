@@ -30,6 +30,59 @@ public final class ModConstants {
     // 例) public static final double EXAMPLE_MOB_MAX_HEALTH = 20.0;
     // 例) public static final double EXAMPLE_MOB_MOVEMENT_SPEED = 0.25;
 
+    // ---- カカシ（ステータス実験用の的） ----
+    // ※ 召喚直後の初期設定（HP・防御力・反撃など）は Config の [scarecrow]。ここは登録時の値と入力の上限。
+    /** 当たり判定の幅・高さ（ブロック）。モデル（scarecrow.geo.json）の大きさに合わせてある。 */
+    public static final float SCARECROW_WIDTH = 0.8f;
+    public static final float SCARECROW_HEIGHT = 2.2f;
+    /** クライアントへ同期する距離（チャンク）。 */
+    public static final int SCARECROW_TRACKING_RANGE = 10;
+    /** 属性登録時の最大 HP（召喚時に設定値で上書きされる）。 */
+    public static final double SCARECROW_BASE_HEALTH = 100.0;
+    /** 設定画面で入力できる値の範囲（サーバー側でもこの範囲に丸める）。 */
+    public static final double SCARECROW_MIN_HEALTH = 1.0;
+    public static final double SCARECROW_MAX_HEALTH_LIMIT = 1024.0;   // バニラの最大 HP 属性の上限
+    public static final int SCARECROW_DEFENSE_LIMIT = 1_000_000;
+    public static final double SCARECROW_ARMOR_LIMIT = 30.0;          // バニラの防具ポイント属性の上限
+    public static final double SCARECROW_COUNTER_DAMAGE_LIMIT = 1_000_000.0;
+    public static final double SCARECROW_COUNTER_INTERVAL_MIN = 0.1;
+    public static final double SCARECROW_COUNTER_INTERVAL_MAX = 60.0;
+    public static final double SCARECROW_COUNTER_RANGE_MIN = 0.5;
+    public static final double SCARECROW_COUNTER_RANGE_MAX = 16.0;
+    /**
+     * 設定用ステッキでカカシを狙える距離（ブロック）。
+     * 通常の攻撃の届く距離に関係なく、クロスヘアが合っていればこの距離まで設定画面を開ける
+     * （実際には描画距離内＝クライアントに見えているカカシのみ）。
+     */
+    public static final double SCARECROW_CONFIG_PICK_RANGE = 256.0;
+    /** 召喚位置からこれ以上離れていたら戻る（ブロック）。 */
+    public static final double SCARECROW_HOME_EPSILON = 0.02;
+    /** 召喚時の向きを丸める角度（度。アーマースタンドと同じ 22.5°刻み）。 */
+    public static final float SCARECROW_YAW_STEP = 22.5f;
+
+    // ---- ダメージ数字（カカシの頭上に浮かぶ数値） ----
+    /** 数字が出る高さ（当たり判定の上端からのブロック数）。 */
+    public static final float DAMAGE_NUMBER_Y_OFFSET = 0.25f;
+    /** 消えるまでに浮き上がる高さ（ブロック）。 */
+    public static final float DAMAGE_NUMBER_RISE = 0.9f;
+    /** 出現位置の左右のばらつき（ブロック。連続ヒットで数字が重ならないように）。 */
+    public static final float DAMAGE_NUMBER_SPREAD = 0.5f;
+    /** 文字の大きさ（バニラの名札 = 0.025）。 */
+    public static final float DAMAGE_NUMBER_SCALE = 0.03f;
+    /** クリティカル時の文字の大きさ（倍率）。 */
+    public static final float DAMAGE_NUMBER_CRIT_SCALE = 1.5f;
+    /** 出現直後に少し大きく表示する演出の倍率と時間（割合）。 */
+    public static final float DAMAGE_NUMBER_POP_SCALE = 1.4f;
+    public static final float DAMAGE_NUMBER_POP_TIME = 0.12f;
+    /** 1 体あたりに同時に表示する数字の最大数（古いものから消える）。 */
+    public static final int DAMAGE_NUMBER_MAX_PER_ENTITY = 24;
+    public static final int DAMAGE_NUMBER_COLOR_NORMAL = 0xFFFFFFFF;  // 通常（白）
+    public static final int DAMAGE_NUMBER_COLOR_CRIT = 0xFFFFC830;    // クリティカル（金）
+    public static final int DAMAGE_NUMBER_COLOR_MAGIC = 0xFF6EC8FF;   // 魔法（水色）
+    public static final int DAMAGE_NUMBER_COLOR_OTHER = 0xFFB0B0B0;   // 攻撃者なし（炎・毒など。灰）
+    public static final int DAMAGE_NUMBER_COLOR_BREAK = 0xFFFF5050;   // HP を削り切った一撃（赤）
+
+
     // ---- 氷柱（氷柱の杖の弾）。ダメージ・速さなどの調整値は Config の [magic.iceWand] ----
     /** 当たり判定の大きさ（ブロック）。 */
     public static final float ICE_ICICLE_SIZE = 0.5f;
