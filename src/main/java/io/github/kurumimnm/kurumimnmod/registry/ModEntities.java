@@ -1,9 +1,14 @@
 package io.github.kurumimnm.kurumimnmod.registry;
 
 import io.github.kurumimnm.kurumimnmod.Kurumimnmod;
+import io.github.kurumimnm.kurumimnmod.config.ModConstants;
+import io.github.kurumimnm.kurumimnmod.entity.ScarecrowEntity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobCategory;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
+import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 /**
@@ -53,6 +58,17 @@ public final class ModEntities {
 
     public static final DeferredRegister.Entities ENTITY_TYPES = DeferredRegister.createEntities(Kurumimnmod.MOD_ID);
 
+    // =====================================================================
+    // カカシ（ステータス実験用の的）
+    // =====================================================================
+
+    /** カカシ。召喚用ステッキで出す（スポーンエッグ・自然スポーンなし）。 */
+    public static final DeferredHolder<EntityType<?>, EntityType<ScarecrowEntity>> SCARECROW =
+            ENTITY_TYPES.registerEntityType("scarecrow", ScarecrowEntity::new, MobCategory.MISC,
+                    builder -> builder.sized(ModConstants.SCARECROW_WIDTH, ModConstants.SCARECROW_HEIGHT)
+                            .clientTrackingRange(ModConstants.SCARECROW_TRACKING_RANGE)
+                            .noLootTable());
+
     /**
      * 生き物系エンティティ（LivingEntity）の属性を登録する。
      * 属性を登録しないとスポーン時にクラッシュするので、Mob を追加したら必ずここに追記する。
@@ -60,5 +76,6 @@ public final class ModEntities {
     @SubscribeEvent
     static void onAttributeCreation(EntityAttributeCreationEvent event) {
         // 例) event.put(WALNUT_MOB.get(), WalnutMob.createAttributes().build());
+        event.put(SCARECROW.get(), ScarecrowEntity.createAttributes().build());
     }
 }
