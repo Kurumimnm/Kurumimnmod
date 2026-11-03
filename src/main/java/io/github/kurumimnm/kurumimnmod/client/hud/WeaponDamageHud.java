@@ -6,6 +6,10 @@ import io.github.kurumimnm.kurumimnmod.magic.MagicDamageSource;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.function.BiConsumer;
+import net.minecraft.core.Holder;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -109,9 +113,9 @@ final class WeaponDamageHud {
     /**
      * メインハンドのアイテムで攻撃したときの攻撃力属性の値。
      * <p>
-     * 【注意】手に持ったアイテムの攻撃力（属性の上乗せ）はサーバー側でしか反映されず、
+     * 【注意】手に持ったアイテムの攻撃力や力のポーション等の効果（属性の上乗せ）はサーバー側でしか反映されず、
      * クライアントの {@code player.getAttributeValue(ATTACK_DAMAGE)} は素手の値のままになる。
-     * そのため「プレイヤー側の攻撃力の修正値」に「手に持ったアイテムの修正値」を足して、
+     * そのため「プレイヤー側の攻撃力の修正値」に「手に持ったアイテム・ステータス効果の修正値」を足して、
      * バニラと同じ計算式でここで求め直す。同じ ID の修正値は上書き（二重に足さない）。
      */
     private static double attackDamage(LocalPlayer player, ItemStack stack) {
@@ -123,11 +127,17 @@ final class WeaponDamageHud {
         for (AttributeModifier modifier : instance.getModifiers()) {
             modifiers.put(modifier.id(), modifier);
         }
-        stack.forEachModifier(EquipmentSlot.MAINHAND, (attribute, modifier) -> {
+        BiConsumer<Holder<Attribute>, AttributeModifier> collect = (attribute, modifier) -> {
             if (attribute.value() == Attributes.ATTACK_DAMAGE.value()) {
                 modifiers.put(modifier.id(), modifier);
             }
-        });
+        };
+        // 手に持ったアイテムの攻撃力
+        stack.forEachModifier(EquipmentSlot.MAINHAND, collect);
+        // 力・弱体化などのステータス効果（効果の一覧は本人に同期されているので、ここから修正値を作る）
+        for (MobEffectInstance effect : player.getActiveEffects()) {
+            effect.getEffect().value().createModifiers(effect.getAmplifier(), collect);
+        }
 
         // バニラの計算順：加算 → 基本値への倍率 → 全体への倍率
         double value = instance.getBaseValue();
