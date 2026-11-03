@@ -23,7 +23,7 @@ public final class AirGaugeHud {
         LocalPlayer player = mc.player;
         int maxAir = player.getMaxAirSupply();
         int air = Math.clamp(player.getAirSupply(), 0, maxAir);
-        boolean underwater = player.isEyeInFluid(net.minecraft.tags.FluidTags.WATER);
+        boolean underwater = player.isUnderWater();
         if (!underwater && air >= maxAir) {
             return;
         }
