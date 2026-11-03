@@ -19,6 +19,7 @@ import net.minecraft.util.Mth;
  *   <li>{@code armor} … バニラの防具ポイント（0〜30）</li>
  *   <li>{@code magicResistance} … 魔法ダメージの軽減率（%）</li>
  *   <li>{@code knockbackResistance} … ノックバック耐性（%）</li>
+ *   <li>{@code noKnockback} … true なら一切吹き飛ばない（ノックバック耐性の値は無視）</li>
  * </ul>
  * 【反撃側】
  * <ul>
@@ -37,6 +38,7 @@ public record ScarecrowSettings(
         float armor,
         float magicResistance,
         float knockbackResistance,
+        boolean noKnockback,
         boolean counterEnabled,
         float counterDamage,
         float counterInterval,
@@ -44,7 +46,7 @@ public record ScarecrowSettings(
 
     /** Config が読めないとき用の初期値（Config の既定値と同じ）。 */
     public static final ScarecrowSettings FALLBACK =
-            new ScarecrowSettings(100f, true, 1, 0f, 0f, 0f, false, 4f, 2f, 3f);
+            new ScarecrowSettings(100f, true, 1, 0f, 0f, 0f, false, false, 4f, 2f, 3f);
 
     /** セーブデータ用。項目が足りない古いデータでも読めるよう、すべて既定値付きにする。 */
     public static final Codec<ScarecrowSettings> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -54,6 +56,7 @@ public record ScarecrowSettings(
             Codec.FLOAT.optionalFieldOf("armor", FALLBACK.armor).forGetter(ScarecrowSettings::armor),
             Codec.FLOAT.optionalFieldOf("magic_resistance", FALLBACK.magicResistance).forGetter(ScarecrowSettings::magicResistance),
             Codec.FLOAT.optionalFieldOf("knockback_resistance", FALLBACK.knockbackResistance).forGetter(ScarecrowSettings::knockbackResistance),
+            Codec.BOOL.optionalFieldOf("no_knockback", FALLBACK.noKnockback).forGetter(ScarecrowSettings::noKnockback),
             Codec.BOOL.optionalFieldOf("counter_enabled", FALLBACK.counterEnabled).forGetter(ScarecrowSettings::counterEnabled),
             Codec.FLOAT.optionalFieldOf("counter_damage", FALLBACK.counterDamage).forGetter(ScarecrowSettings::counterDamage),
             Codec.FLOAT.optionalFieldOf("counter_interval", FALLBACK.counterInterval).forGetter(ScarecrowSettings::counterInterval),
@@ -69,6 +72,7 @@ public record ScarecrowSettings(
                 buf.writeFloat(s.armor);
                 buf.writeFloat(s.magicResistance);
                 buf.writeFloat(s.knockbackResistance);
+                buf.writeBoolean(s.noKnockback);
                 buf.writeBoolean(s.counterEnabled);
                 buf.writeFloat(s.counterDamage);
                 buf.writeFloat(s.counterInterval);
@@ -76,7 +80,7 @@ public record ScarecrowSettings(
             },
             buf -> new ScarecrowSettings(
                     buf.readFloat(), buf.readBoolean(), buf.readInt(), buf.readFloat(), buf.readFloat(),
-                    buf.readFloat(), buf.readBoolean(), buf.readFloat(), buf.readFloat(), buf.readFloat()));
+                    buf.readFloat(), buf.readBoolean(), buf.readBoolean(), buf.readFloat(), buf.readFloat(), buf.readFloat()));
 
     /** 召喚直後の初期値（Config の [scarecrow]）。 */
     public static ScarecrowSettings fromConfig() {
@@ -87,6 +91,7 @@ public record ScarecrowSettings(
                 ModConfigs.get(ModConfigs.SCARECROW_ARMOR).floatValue(),
                 ModConfigs.get(ModConfigs.SCARECROW_MAGIC_RESISTANCE).floatValue(),
                 ModConfigs.get(ModConfigs.SCARECROW_KNOCKBACK_RESISTANCE).floatValue(),
+                ModConfigs.get(ModConfigs.SCARECROW_NO_KNOCKBACK),
                 ModConfigs.get(ModConfigs.SCARECROW_COUNTER_ENABLED),
                 ModConfigs.get(ModConfigs.SCARECROW_COUNTER_DAMAGE).floatValue(),
                 ModConfigs.get(ModConfigs.SCARECROW_COUNTER_INTERVAL).floatValue(),
@@ -102,6 +107,7 @@ public record ScarecrowSettings(
                 clamp(armor, 0, ModConstants.SCARECROW_ARMOR_LIMIT),
                 clamp(magicResistance, 0, 100),
                 clamp(knockbackResistance, 0, 100),
+                noKnockback,
                 counterEnabled,
                 clamp(counterDamage, 0, ModConstants.SCARECROW_COUNTER_DAMAGE_LIMIT),
                 clamp(counterInterval, ModConstants.SCARECROW_COUNTER_INTERVAL_MIN, ModConstants.SCARECROW_COUNTER_INTERVAL_MAX),
