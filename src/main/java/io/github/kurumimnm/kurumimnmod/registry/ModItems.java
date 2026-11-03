@@ -1,6 +1,8 @@
 package io.github.kurumimnm.kurumimnmod.registry;
 
 import io.github.kurumimnm.kurumimnmod.Kurumimnmod;
+import io.github.kurumimnm.kurumimnmod.item.IceWandItem;
+import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 /**
@@ -20,4 +22,12 @@ public final class ModItems {
     private ModItems() {}
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Kurumimnmod.MOD_ID);
+
+    // =====================================================================
+    // 魔法の杖
+    // =====================================================================
+
+    /** 氷柱の杖（右クリック長押しで照準、左クリックで頭上から氷柱を発射）。 */
+    public static final DeferredItem<IceWandItem> ICE_WAND =
+            ITEMS.registerItem("ice_wand", IceWandItem::new, p -> p.stacksTo(1));
 }

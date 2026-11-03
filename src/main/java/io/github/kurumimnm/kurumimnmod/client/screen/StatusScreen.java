@@ -138,6 +138,7 @@ public class StatusScreen extends StatusPageScreen {
         Component effect = switch (type) {
             case ATTACK -> Component.translatable(type.nameKey() + ".effect", format(ClientStatus.attackMultiplier()));
             case DEFENSE -> Component.translatable(type.nameKey() + ".effect", format(ClientStatus.defenseReduction()));
+            case INTELLIGENCE -> Component.translatable(type.nameKey() + ".effect", format(ClientStatus.magicMultiplier()));
             case DEXTERITY -> Component.translatable(type.nameKey() + ".effect",
                     format(ClientStatus.critChance() * 100), format(ClientStatus.critMultiplier()));
             default -> null;

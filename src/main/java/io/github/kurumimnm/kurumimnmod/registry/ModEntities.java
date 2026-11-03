@@ -1,9 +1,14 @@
 package io.github.kurumimnm.kurumimnmod.registry;
 
 import io.github.kurumimnm.kurumimnmod.Kurumimnmod;
+import io.github.kurumimnm.kurumimnmod.config.ModConstants;
+import io.github.kurumimnm.kurumimnmod.entity.IceIcicleEntity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobCategory;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
+import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 /**
@@ -52,6 +57,17 @@ public final class ModEntities {
     private ModEntities() {}
 
     public static final DeferredRegister.Entities ENTITY_TYPES = DeferredRegister.createEntities(Kurumimnmod.MOD_ID);
+
+    // =====================================================================
+    // 魔法の弾
+    // =====================================================================
+
+    /** 氷柱の杖の氷柱。位置のずれを防ぐため毎 tick 同期する（寿命が短いので負荷は小さい）。 */
+    public static final DeferredHolder<EntityType<?>, EntityType<IceIcicleEntity>> ICE_ICICLE =
+            ENTITY_TYPES.registerEntityType("ice_icicle", IceIcicleEntity::new, MobCategory.MISC,
+                    builder -> builder.sized(ModConstants.ICE_ICICLE_SIZE, ModConstants.ICE_ICICLE_SIZE)
+                            .clientTrackingRange(ModConstants.ICE_ICICLE_TRACKING_RANGE)
+                            .updateInterval(1));
 
     /**
      * 生き物系エンティティ（LivingEntity）の属性を登録する。
