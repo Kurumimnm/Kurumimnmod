@@ -68,7 +68,7 @@ public final class AoeIndicatorRenderer {
         // 円は XZ 平面（上向き）で作るので、当たった面の向きに回転させる。何もない方向なら水平のまま
         Direction face = target.face();
         if (face != null && face != Direction.UP) {
-            poseStack.mulPose(new Quaternionf().rotationTo(0f, 1f, 0f, face.getStepX(), face.getStepY(), face.getStepZ()));
+            poseStack.rotate(new Quaternionf().rotationTo(0f, 1f, 0f, face.getStepX(), face.getStepY(), face.getStepZ()));
         }
         poseStack.translate(0f, ModConstants.AOE_SURFACE_OFFSET, 0f);
 

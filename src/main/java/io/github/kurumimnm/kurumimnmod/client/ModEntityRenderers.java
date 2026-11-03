@@ -31,6 +31,6 @@ public final class ModEntityRenderers {
         // エンティティを追加したらここにレンダラーを登録する（上の Javadoc の例を参照）
 
         // 氷柱の杖の氷柱（飛ぶ方向に向けて回転させる専用レンダラー）
-        event.registerEntityRenderer(ModEntities.ICE_ICICLE.get(), IceIcicleRenderer::new);
+        event.registerEntityRenderer(ModEntities.ICE_ICICLE.get(), context -> new IceIcicleRenderer<>(context));
     }
 }

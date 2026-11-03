@@ -81,7 +81,7 @@ public class IceWandItem extends Item implements MagicWand {
         IceIcicleEntity.launch(player);
 
         player.getCooldowns().addCooldown(stack, ModConfigs.iceWandCooldown());
-        player.swing(InteractionHand.MAIN_HAND, true);
+        player.swing(InteractionHand.MAIN_HAND, stack.getAttackAnimation(), true);
         player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
                 SoundEvents.EVOKER_CAST_SPELL, SoundSource.PLAYERS, 0.8f, 1.4f);
     }
