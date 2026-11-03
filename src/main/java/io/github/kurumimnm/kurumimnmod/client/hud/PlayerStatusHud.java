@@ -80,6 +80,9 @@ public final class PlayerStatusHud {
         // ---- レベル（ホットバーの右） ----
         LevelEmblemHud.render(g, mc, screenW, screenH);
 
+        // ---- 武器ダメージ（レベルエンブレムの右） ----
+        WeaponDamageHud.render(g, mc, screenW, screenH);
+
         // ---- 他の HUD（酸素ゲージや他 MOD の表示）を HUD の上に積むための高さ調整 ----
         // NeoForge の Hud#leftHeight / rightHeight は「次の行を画面下端から何 px の位置に描くか」
         int used = screenH - hpY + 2;
