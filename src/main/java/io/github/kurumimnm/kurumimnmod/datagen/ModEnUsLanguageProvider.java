@@ -1,6 +1,8 @@
 package io.github.kurumimnm.kurumimnmod.datagen;
 
 import io.github.kurumimnm.kurumimnmod.Kurumimnmod;
+import io.github.kurumimnm.kurumimnmod.registry.ModEntities;
+import io.github.kurumimnm.kurumimnmod.registry.ModItems;
 import io.github.kurumimnm.kurumimnmod.status.AllocType;
 import io.github.kurumimnm.kurumimnmod.status.StatType;
 import net.minecraft.data.PackOutput;
@@ -31,10 +33,20 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         add("itemGroup." + MOD_ID + ".main", "Kurumimnmod");
 
         // ---- アイテム ----
+        addItem(ModItems.ICE_WAND, "Icicle Wand");
 
         // ---- ブロック ----
 
         // ---- エンティティ ----
+        addEntityType(ModEntities.ICE_ICICLE, "Icicle");
+
+        // ---- 魔法の杖（ツールチップ・メッセージ） ----
+        add("tooltip." + MOD_ID + ".wand.mp_cost", "MP Cost: %s");
+        add("tooltip." + MOD_ID + ".wand.damage", "Damage: %s (center) - %s (edge)");
+        add("tooltip." + MOD_ID + ".wand.radius", "Radius: %s blocks");
+        add("tooltip." + MOD_ID + ".wand.pierce", "Pierces enemies and shatters on the ground or walls");
+        add("tooltip." + MOD_ID + ".wand.controls", "Hold Right-Click: Aim / Left-Click: Cast");
+        add("message." + MOD_ID + ".not_enough_mp", "Not enough MP");
 
         // ---- キー割り当て ----
         add("key.category." + MOD_ID + ".main", "Kurumimnmod");
@@ -74,10 +86,11 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
 
         // ---- ステータス（StatType：ステータス画面に表示する値） ----
         addStat(StatType.ATTACK, "Attack", "Increases the damage you deal to enemies.");
-        add(StatType.ATTACK.nameKey() + ".effect", "Current: damage dealt x%s");
+        add(StatType.ATTACK.nameKey() + ".effect", "Current: damage dealt x%s (except magic)");
         addStat(StatType.DEFENSE, "Defense", "Reduces the damage you take from enemies by a flat amount (applied after armor).");
         add(StatType.DEFENSE.nameKey() + ".effect", "Current: damage taken -%s");
         addStat(StatType.INTELLIGENCE, "Intelligence", "Increases the damage of your magic attacks.");
+        add(StatType.INTELLIGENCE.nameKey() + ".effect", "Current: magic damage x%s");
         addStat(StatType.DEXTERITY, "Dexterity", "Increases your critical hit chance and critical damage.");
         add(StatType.DEXTERITY.nameKey() + ".effect", "Current: crit chance %s%% / crit damage x%s");
         addStat(StatType.LUCK, "Luck", "Your fortune. Affects things that depend on luck, such as fishing and chest loot.");
@@ -141,6 +154,17 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         add(MOD_ID + ".configuration.critDamagePerPoint", "Crit Damage per Dexterity");
         add(MOD_ID + ".configuration.luckAttributePerPoint", "Vanilla Luck per Luck");
         add(MOD_ID + ".configuration.mpRegenPerSecond", "MP Regen per Second (Ratio)");
+        add(MOD_ID + ".configuration.intelligenceMagicBonus", "Magic Damage Bonus per Intelligence");
+        add(MOD_ID + ".configuration.magic", "Magic");
+        add(MOD_ID + ".configuration.iceWand", "Icicle Wand");
+        add(MOD_ID + ".configuration.mpCost", "MP Cost");
+        add(MOD_ID + ".configuration.damage", "Damage (Center)");
+        add(MOD_ID + ".configuration.radius", "Impact Radius");
+        add(MOD_ID + ".configuration.edgeDamageRatio", "Damage Ratio at Edge");
+        add(MOD_ID + ".configuration.castRange", "Max Aim Distance");
+        add(MOD_ID + ".configuration.projectileSpeed", "Projectile Speed (Blocks/Tick)");
+        add(MOD_ID + ".configuration.spawnHeight", "Spawn Height above Head");
+        add(MOD_ID + ".configuration.cooldownTicks", "Cooldown (Ticks)");
         add(MOD_ID + ".configuration.enemyHealthBar", "Enemy Health Bar");
         add(MOD_ID + ".configuration.enabled", "Enabled");
         add(MOD_ID + ".configuration.range", "Display Range");
