@@ -27,11 +27,21 @@ jobs:
             if grep -qE "BUILD FAILED|Exception in server tick loop|Failed to start the minecraft server" server_out.txt; then echo "FAILED"; break; fi
           done
           sleep 5
-          python3 .github/rcon_probe.py || true
-          sleep 3
+          python3 .github/rcon_probe.py load || true
+          # 強制読み込みしたチャンクの生成を待つ
+          for i in $(seq 1 40); do sleep 10; tail -c 300 server_out.txt | tr -d '\r' | tail -1; done
+          python3 .github/rcon_probe.py save || true
+          sleep 10
           pkill -f runServer || true; pkill -f java || true
           grep -nE "ERROR|Exception|Caused by|kurumimnmod|Done \(|Preparing spawn|level-type" server_out.txt | grep -v "DEBUG" | head -150
           echo ----; grep -n "level.dat\|Preparing level" server_out.txt | head
-      - name: Inspect level
+      - name: Analyze terrain
         if: always()
-        run: ls -la run run/world 2>/dev/null | head -30
+        run: |
+          pip install nbtlib numpy matplotlib >/dev/null
+          python3 .github/analyze.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: probe-result
+          path: probe_out
