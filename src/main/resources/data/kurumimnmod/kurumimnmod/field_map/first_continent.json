@@ -1,0 +1,2006 @@
+{
+  "warp": {
+    "amplitude": 300,
+    "scale": 1400
+  },
+  "towns": [
+    {
+      "id": "mediana",
+      "number": 0,
+      "x": 0,
+      "z": 0
+    },
+    {
+      "id": "town_1",
+      "number": 1,
+      "x": 0,
+      "z": -3000
+    },
+    {
+      "id": "town_2",
+      "number": 2,
+      "x": 0,
+      "z": -6000
+    },
+    {
+      "id": "town_3",
+      "number": 3,
+      "x": 2600,
+      "z": -7500
+    },
+    {
+      "id": "town_4",
+      "number": 4,
+      "x": -2600,
+      "z": -7500
+    },
+    {
+      "id": "town_5",
+      "number": 5,
+      "x": 0,
+      "z": -9000
+    },
+    {
+      "id": "town_6",
+      "number": 6,
+      "x": 4000,
+      "z": -10500
+    },
+    {
+      "id": "town_7",
+      "number": 7,
+      "x": 1500,
+      "z": -12000
+    },
+    {
+      "id": "town_8",
+      "number": 8,
+      "x": -1500,
+      "z": -12000
+    },
+    {
+      "id": "town_9",
+      "number": 9,
+      "x": -4000,
+      "z": -10500
+    },
+    {
+      "id": "town_10",
+      "number": 10,
+      "x": 3200,
+      "z": -14200
+    },
+    {
+      "id": "town_11",
+      "number": 11,
+      "x": -3200,
+      "z": -14200
+    },
+    {
+      "id": "town_12",
+      "number": 12,
+      "x": -4500,
+      "z": 3500
+    },
+    {
+      "id": "town_13",
+      "number": 13,
+      "x": -1500,
+      "z": 4000
+    },
+    {
+      "id": "town_14",
+      "number": 14,
+      "x": 1500,
+      "z": 4000
+    },
+    {
+      "id": "town_15",
+      "number": 15,
+      "x": 4500,
+      "z": 3500
+    },
+    {
+      "id": "town_16",
+      "number": 16,
+      "x": -3000,
+      "z": 7000
+    },
+    {
+      "id": "town_17",
+      "number": 17,
+      "x": 0,
+      "z": 7500
+    },
+    {
+      "id": "town_18",
+      "number": 18,
+      "x": 3000,
+      "z": 7000
+    },
+    {
+      "id": "town_19",
+      "number": 19,
+      "x": -1500,
+      "z": 10500
+    },
+    {
+      "id": "town_20",
+      "number": 20,
+      "x": 1500,
+      "z": 10500
+    }
+  ],
+  "fields": [
+    {
+      "id": "cradle_basin",
+      "number": 1,
+      "biome": "kurumimnmod:cradle_basin",
+      "tier": 0,
+      "areas": [
+        {
+          "area": 1,
+          "x": 0,
+          "z": -2550
+        },
+        {
+          "area": 1,
+          "x": 0,
+          "z": -1500
+        },
+        {
+          "area": 1,
+          "x": 0,
+          "z": -450
+        },
+        {
+          "area": 2,
+          "x": 600,
+          "z": -1500
+        },
+        {
+          "area": 3,
+          "x": 1100,
+          "z": -1500
+        },
+        {
+          "area": 4,
+          "x": 1600,
+          "z": -1500
+        }
+      ]
+    },
+    {
+      "id": "young_leaf_road",
+      "number": 2,
+      "biome": "kurumimnmod:young_leaf_road",
+      "tier": 1,
+      "areas": [
+        {
+          "area": 1,
+          "x": 0,
+          "z": -3850
+        },
+        {
+          "area": 1,
+          "x": 0,
+          "z": -3500
+        },
+        {
+          "area": 1,
+          "x": 0,
+          "z": -3150
+        },
+        {
+          "area": 2,
+          "x": 600,
+          "z": -3500
+        },
+        {
+          "area": 3,
+          "x": 1100,
+          "z": -3500
+        },
+        {
+          "area": 4,
+          "x": 1600,
+          "z": -3500
+        }
+      ]
+    },
+    {
+      "id": "whispering_forest",
+      "number": 3,
+      "biome": "kurumimnmod:whispering_forest",
+      "tier": 1,
+      "areas": [
+        {
+          "area": 1,
+          "x": 0,
+          "z": -4850
+        },
+        {
+          "area": 1,
+          "x": 0,
+          "z": -4500
+        },
+        {
+          "area": 1,
+          "x": 0,
+          "z": -4150
+        },
+        {
+          "area": 2,
+          "x": 600,
+          "z": -4500
+        },
+        {
+          "area": 3,
+          "x": 1100,
+          "z": -4500
+        },
+        {
+          "area": 4,
+          "x": 1600,
+          "z": -4500
+        }
+      ]
+    },
+    {
+      "id": "windsong_hills",
+      "number": 4,
+      "biome": "kurumimnmod:windsong_hills",
+      "tier": 2,
+      "areas": [
+        {
+          "area": 1,
+          "x": 130,
+          "z": -6075
+        },
+        {
+          "area": 1,
+          "x": 433,
+          "z": -6250
+        },
+        {
+          "area": 1,
+          "x": 737,
+          "z": -6425
+        },
+        {
+          "area": 2,
+          "x": 733,
+          "z": -5730
+        },
+        {
+          "area": 3,
+          "x": 983,
+          "z": -5297
+        },
+        {
+          "area": 4,
+          "x": 1233,
+          "z": -4864
+        }
+      ]
+    },
+    {
+      "id": "mossy_battlefield",
+      "number": 5,
+      "biome": "kurumimnmod:mossy_battlefield",
+      "tier": 1,
+      "areas": [
+        {
+          "area": 1,
+          "x": 0,
+          "z": -5850
+        },
+        {
+          "area": 1,
+          "x": 0,
+          "z": -5500
+        },
+        {
+          "area": 1,
+          "x": 0,
+          "z": -5150
+        },
+        {
+          "area": 2,
+          "x": 600,
+          "z": -5500
+        },
+        {
+          "area": 3,
+          "x": 1100,
+          "z": -5500
+        },
+        {
+          "area": 4,
+          "x": 1600,
+          "z": -5500
+        }
+      ]
+    },
+    {
+      "id": "sunlit_flower_field",
+      "number": 6,
+      "biome": "kurumimnmod:sunlit_flower_field",
+      "tier": 2,
+      "areas": [
+        {
+          "area": 1,
+          "x": 997,
+          "z": -6575
+        },
+        {
+          "area": 1,
+          "x": 1300,
+          "z": -6750
+        },
+        {
+          "area": 1,
+          "x": 1603,
+          "z": -6925
+        },
+        {
+          "area": 2,
+          "x": 1600,
+          "z": -6230
+        },
+        {
+          "area": 3,
+          "x": 1850,
+          "z": -5797
+        },
+        {
+          "area": 4,
+          "x": 2100,
+          "z": -5364
+        }
+      ]
+    },
+    {
+      "id": "misty_lakeside",
+      "number": 7,
+      "biome": "kurumimnmod:misty_lakeside",
+      "tier": 2,
+      "areas": [
+        {
+          "area": 1,
+          "x": 1863,
+          "z": -7075
+        },
+        {
+          "area": 1,
+          "x": 2167,
+          "z": -7250
+        },
+        {
+          "area": 1,
+          "x": 2470,
+          "z": -7425
+        },
+        {
+          "area": 2,
+          "x": 2467,
+          "z": -6730
+        },
+        {
+          "area": 3,
+          "x": 2716,
+          "z": -6297
+        },
+        {
+          "area": 4,
+          "x": 2966,
+          "z": -5864
+        }
+      ]
+    },
+    {
+      "id": "gray_rock_hills",
+      "number": 8,
+      "biome": "kurumimnmod:gray_rock_hills",
+      "tier": 2,
+      "areas": [
+        {
+          "area": 1,
+          "x": -737,
+          "z": -6425
+        },
+        {
+          "area": 1,
+          "x": -433,
+          "z": -6250
+        },
+        {
+          "area": 1,
+          "x": -130,
+          "z": -6075
+        },
+        {
+          "area": 2,
+          "x": -733,
+          "z": -5730
+        },
+        {
+          "area": 3,
+          "x": -983,
+          "z": -5297
+        },
+        {
+          "area": 4,
+          "x": -1233,
+          "z": -4864
+        }
+      ]
+    },
+    {
+      "id": "dragon_claw_gorge",
+      "number": 9,
+      "biome": "kurumimnmod:dragon_claw_gorge",
+      "tier": 2,
+      "areas": [
+        {
+          "area": 1,
+          "x": -1603,
+          "z": -6925
+        },
+        {
+          "area": 1,
+          "x": -1300,
+          "z": -6750
+        },
+        {
+          "area": 1,
+          "x": -997,
+          "z": -6575
+        },
+        {
+          "area": 2,
+          "x": -1600,
+          "z": -6230
+        },
+        {
+          "area": 3,
+          "x": -1850,
+          "z": -5797
+        },
+        {
+          "area": 4,
+          "x": -2100,
+          "z": -5364
+        }
+      ]
+    },
+    {
+      "id": "red_earth_wasteland",
+      "number": 10,
+      "biome": "kurumimnmod:red_earth_wasteland",
+      "tier": 2,
+      "areas": [
+        {
+          "area": 1,
+          "x": -2470,
+          "z": -7425
+        },
+        {
+          "area": 1,
+          "x": -2167,
+          "z": -7250
+        },
+        {
+          "area": 1,
+          "x": -1863,
+          "z": -7075
+        },
+        {
+          "area": 2,
+          "x": -2467,
+          "z": -6730
+        },
+        {
+          "area": 3,
+          "x": -2716,
+          "z": -6297
+        },
+        {
+          "area": 4,
+          "x": -2966,
+          "z": -5864
+        }
+      ]
+    },
+    {
+      "id": "old_highway_ruins",
+      "number": 11,
+      "biome": "kurumimnmod:old_highway_ruins",
+      "tier": 2,
+      "areas": [
+        {
+          "area": 1,
+          "x": 0,
+          "z": -6850
+        },
+        {
+          "area": 1,
+          "x": 0,
+          "z": -6500
+        },
+        {
+          "area": 1,
+          "x": 0,
+          "z": -6150
+        },
+        {
+          "area": 2,
+          "x": 600,
+          "z": -6500
+        }
+      ]
+    },
+    {
+      "id": "millennium_tree_forest",
+      "number": 12,
+      "biome": "kurumimnmod:millennium_tree_forest",
+      "tier": 5,
+      "areas": [
+        {
+          "area": 1,
+          "x": 75,
+          "z": -9150
+        },
+        {
+          "area": 1,
+          "x": 250,
+          "z": -9500
+        },
+        {
+          "area": 1,
+          "x": 425,
+          "z": -9850
+        },
+        {
+          "area": 2,
+          "x": -734,
+          "z": -9992
+        },
+        {
+          "area": 3,
+          "x": -1181,
+          "z": -10216
+        }
+      ]
+    },
+    {
+      "id": "silver_snowfield",
+      "number": 13,
+      "biome": "kurumimnmod:silver_snowfield",
+      "tier": 8,
+      "areas": [
+        {
+          "area": 1,
+          "x": -1982,
+          "z": -12623
+        },
+        {
+          "area": 1,
+          "x": -1783,
+          "z": -12367
+        },
+        {
+          "area": 1,
+          "x": -1585,
+          "z": -12110
+        },
+        {
+          "area": 2,
+          "x": -1309,
+          "z": -12734
+        },
+        {
+          "area": 3,
+          "x": -913,
+          "z": -13039
+        },
+        {
+          "area": 4,
+          "x": -517,
+          "z": -13345
+        }
+      ]
+    },
+    {
+      "id": "scorched_lava_plateau",
+      "number": 14,
+      "biome": "kurumimnmod:scorched_lava_plateau",
+      "tier": 4,
+      "areas": [
+        {
+          "area": 1,
+          "x": -2997,
+          "z": -8350
+        },
+        {
+          "area": 1,
+          "x": -2833,
+          "z": -8000
+        },
+        {
+          "area": 1,
+          "x": -2670,
+          "z": -7650
+        },
+        {
+          "area": 2,
+          "x": -3377,
+          "z": -7746
+        },
+        {
+          "area": 3,
+          "x": -3830,
+          "z": -7535
+        },
+        {
+          "area": 4,
+          "x": -4283,
+          "z": -7323
+        }
+      ]
+    },
+    {
+      "id": "sandstorm_desert",
+      "number": 15,
+      "biome": "kurumimnmod:sandstorm_desert",
+      "tier": 4,
+      "areas": [
+        {
+          "area": 1,
+          "x": -3463,
+          "z": -9350
+        },
+        {
+          "area": 1,
+          "x": -3300,
+          "z": -9000
+        },
+        {
+          "area": 1,
+          "x": -3137,
+          "z": -8650
+        },
+        {
+          "area": 2,
+          "x": -3844,
+          "z": -8746
+        },
+        {
+          "area": 3,
+          "x": -4297,
+          "z": -8535
+        },
+        {
+          "area": 4,
+          "x": -4750,
+          "z": -8323
+        }
+      ]
+    },
+    {
+      "id": "twilight_marsh",
+      "number": 16,
+      "biome": "kurumimnmod:twilight_marsh",
+      "tier": 3,
+      "areas": [
+        {
+          "area": 1,
+          "x": 2670,
+          "z": -7650
+        },
+        {
+          "area": 1,
+          "x": 2833,
+          "z": -8000
+        },
+        {
+          "area": 1,
+          "x": 2997,
+          "z": -8350
+        },
+        {
+          "area": 2,
+          "x": 3377,
+          "z": -7746
+        },
+        {
+          "area": 3,
+          "x": 3830,
+          "z": -7535
+        },
+        {
+          "area": 4,
+          "x": 4283,
+          "z": -7323
+        }
+      ]
+    },
+    {
+      "id": "crystal_caverns",
+      "number": 17,
+      "biome": "kurumimnmod:crystal_caverns",
+      "tier": 5,
+      "areas": [
+        {
+          "area": 1,
+          "x": -425,
+          "z": -9850
+        },
+        {
+          "area": 1,
+          "x": -250,
+          "z": -9500
+        },
+        {
+          "area": 1,
+          "x": -75,
+          "z": -9150
+        },
+        {
+          "area": 2,
+          "x": 734,
+          "z": -9992
+        },
+        {
+          "area": 3,
+          "x": 1181,
+          "z": -10216
+        }
+      ]
+    },
+    {
+      "id": "storm_cliffs",
+      "number": 18,
+      "biome": "kurumimnmod:storm_cliffs",
+      "tier": 6,
+      "areas": [
+        {
+          "area": 1,
+          "x": 3773,
+          "z": -11548
+        },
+        {
+          "area": 1,
+          "x": 3867,
+          "z": -11117
+        },
+        {
+          "area": 1,
+          "x": 3960,
+          "z": -10685
+        },
+        {
+          "area": 2,
+          "x": 4453,
+          "z": -11243
+        },
+        {
+          "area": 3,
+          "x": 4942,
+          "z": -11349
+        },
+        {
+          "area": 4,
+          "x": 5431,
+          "z": -11455
+        }
+      ]
+    },
+    {
+      "id": "sunken_capital",
+      "number": 19,
+      "biome": "kurumimnmod:sunken_capital",
+      "tier": 3,
+      "areas": [
+        {
+          "area": 1,
+          "x": 3137,
+          "z": -8650
+        },
+        {
+          "area": 1,
+          "x": 3300,
+          "z": -9000
+        },
+        {
+          "area": 1,
+          "x": 3463,
+          "z": -9350
+        },
+        {
+          "area": 2,
+          "x": 3844,
+          "z": -8746
+        },
+        {
+          "area": 3,
+          "x": 4297,
+          "z": -8535
+        },
+        {
+          "area": 4,
+          "x": 4750,
+          "z": -8323
+        }
+      ]
+    },
+    {
+      "id": "poison_mushroom_sea",
+      "number": 20,
+      "biome": "kurumimnmod:poison_mushroom_sea",
+      "tier": 5,
+      "areas": [
+        {
+          "area": 1,
+          "x": 575,
+          "z": -10150
+        },
+        {
+          "area": 1,
+          "x": 750,
+          "z": -10500
+        },
+        {
+          "area": 1,
+          "x": 925,
+          "z": -10850
+        },
+        {
+          "area": 2,
+          "x": 1287,
+          "z": -10232
+        },
+        {
+          "area": 3,
+          "x": 1734,
+          "z": -10008
+        },
+        {
+          "area": 4,
+          "x": 2181,
+          "z": -9784
+        }
+      ]
+    },
+    {
+      "id": "dragon_bone_valley",
+      "number": 21,
+      "biome": "kurumimnmod:dragon_bone_valley",
+      "tier": 5,
+      "areas": [
+        {
+          "area": 1,
+          "x": -925,
+          "z": -10850
+        },
+        {
+          "area": 1,
+          "x": -750,
+          "z": -10500
+        },
+        {
+          "area": 1,
+          "x": -575,
+          "z": -10150
+        },
+        {
+          "area": 2,
+          "x": -1287,
+          "z": -10232
+        },
+        {
+          "area": 3,
+          "x": -1734,
+          "z": -10008
+        },
+        {
+          "area": 4,
+          "x": -2181,
+          "z": -9784
+        }
+      ]
+    },
+    {
+      "id": "floating_rock_highlands",
+      "number": 22,
+      "biome": "kurumimnmod:floating_rock_highlands",
+      "tier": 5,
+      "areas": [
+        {
+          "area": 1,
+          "x": -1425,
+          "z": -11850
+        },
+        {
+          "area": 1,
+          "x": -1250,
+          "z": -11500
+        },
+        {
+          "area": 1,
+          "x": -1075,
+          "z": -11150
+        },
+        {
+          "area": 2,
+          "x": -713,
+          "z": -11768
+        },
+        {
+          "area": 3,
+          "x": -266,
+          "z": -11992
+        },
+        {
+          "area": 4,
+          "x": 181,
+          "z": -12216
+        }
+      ]
+    },
+    {
+      "id": "cursed_black_forest",
+      "number": 23,
+      "biome": "kurumimnmod:cursed_black_forest",
+      "tier": 5,
+      "areas": [
+        {
+          "area": 1,
+          "x": 1075,
+          "z": -11150
+        },
+        {
+          "area": 1,
+          "x": 1250,
+          "z": -11500
+        },
+        {
+          "area": 1,
+          "x": 1425,
+          "z": -11850
+        },
+        {
+          "area": 2,
+          "x": 713,
+          "z": -11768
+        },
+        {
+          "area": 3,
+          "x": 266,
+          "z": -11992
+        },
+        {
+          "area": 4,
+          "x": -181,
+          "z": -12216
+        }
+      ]
+    },
+    {
+      "id": "stargazing_plateau",
+      "number": 24,
+      "biome": "kurumimnmod:stargazing_plateau",
+      "tier": 7,
+      "areas": [
+        {
+          "area": 1,
+          "x": 1585,
+          "z": -12110
+        },
+        {
+          "area": 1,
+          "x": 1783,
+          "z": -12367
+        },
+        {
+          "area": 1,
+          "x": 1982,
+          "z": -12623
+        },
+        {
+          "area": 2,
+          "x": 1309,
+          "z": -12734
+        },
+        {
+          "area": 3,
+          "x": 913,
+          "z": -13039
+        },
+        {
+          "area": 4,
+          "x": 517,
+          "z": -13345
+        }
+      ]
+    },
+    {
+      "id": "iron_vein_mines",
+      "number": 25,
+      "biome": "kurumimnmod:iron_vein_mines",
+      "tier": 4,
+      "areas": [
+        {
+          "area": 1,
+          "x": -3930,
+          "z": -10350
+        },
+        {
+          "area": 1,
+          "x": -3767,
+          "z": -10000
+        },
+        {
+          "area": 1,
+          "x": -3603,
+          "z": -9650
+        },
+        {
+          "area": 2,
+          "x": -4310,
+          "z": -9746
+        },
+        {
+          "area": 3,
+          "x": -4763,
+          "z": -9535
+        },
+        {
+          "area": 4,
+          "x": -5217,
+          "z": -9323
+        }
+      ]
+    },
+    {
+      "id": "rusted_ancient_ruins",
+      "number": 26,
+      "biome": "kurumimnmod:rusted_ancient_ruins",
+      "tier": 2,
+      "areas": [
+        {
+          "area": 1,
+          "x": 0,
+          "z": -7850
+        },
+        {
+          "area": 1,
+          "x": 0,
+          "z": -7500
+        },
+        {
+          "area": 1,
+          "x": 0,
+          "z": -7150
+        },
+        {
+          "area": 2,
+          "x": 600,
+          "z": -7500
+        },
+        {
+          "area": 3,
+          "x": 1100,
+          "z": -7500
+        },
+        {
+          "area": 4,
+          "x": 1600,
+          "z": -7500
+        }
+      ]
+    },
+    {
+      "id": "great_beast_plains",
+      "number": 27,
+      "biome": "kurumimnmod:great_beast_plains",
+      "tier": 2,
+      "areas": [
+        {
+          "area": 1,
+          "x": 0,
+          "z": -8850
+        },
+        {
+          "area": 1,
+          "x": 0,
+          "z": -8500
+        },
+        {
+          "area": 1,
+          "x": 0,
+          "z": -8150
+        },
+        {
+          "area": 2,
+          "x": 600,
+          "z": -8500
+        },
+        {
+          "area": 3,
+          "x": 1100,
+          "z": -8500
+        },
+        {
+          "area": 4,
+          "x": 1600,
+          "z": -8500
+        }
+      ]
+    },
+    {
+      "id": "waterfall_gorge",
+      "number": 28,
+      "biome": "kurumimnmod:waterfall_gorge",
+      "tier": 3,
+      "areas": [
+        {
+          "area": 1,
+          "x": 3603,
+          "z": -9650
+        },
+        {
+          "area": 1,
+          "x": 3767,
+          "z": -10000
+        },
+        {
+          "area": 1,
+          "x": 3930,
+          "z": -10350
+        },
+        {
+          "area": 2,
+          "x": 4310,
+          "z": -9746
+        },
+        {
+          "area": 3,
+          "x": 4763,
+          "z": -9535
+        },
+        {
+          "area": 4,
+          "x": 5217,
+          "z": -9323
+        }
+      ]
+    },
+    {
+      "id": "dragon_peaks",
+      "number": 29,
+      "biome": "kurumimnmod:dragon_peaks",
+      "tier": 8,
+      "areas": [
+        {
+          "area": 1,
+          "x": -2548,
+          "z": -13357
+        },
+        {
+          "area": 1,
+          "x": -2350,
+          "z": -13100
+        },
+        {
+          "area": 1,
+          "x": -2152,
+          "z": -12843
+        },
+        {
+          "area": 2,
+          "x": -1875,
+          "z": -13467
+        },
+        {
+          "area": 3,
+          "x": -1480,
+          "z": -13773
+        },
+        {
+          "area": 4,
+          "x": -1084,
+          "z": -14078
+        }
+      ]
+    },
+    {
+      "id": "kingdom_of_the_dead",
+      "number": 30,
+      "biome": "kurumimnmod:kingdom_of_the_dead",
+      "tier": 7,
+      "areas": [
+        {
+          "area": 1,
+          "x": 2152,
+          "z": -12843
+        },
+        {
+          "area": 1,
+          "x": 2350,
+          "z": -13100
+        },
+        {
+          "area": 1,
+          "x": 2548,
+          "z": -13357
+        },
+        {
+          "area": 2,
+          "x": 1875,
+          "z": -13467
+        },
+        {
+          "area": 3,
+          "x": 1480,
+          "z": -13773
+        },
+        {
+          "area": 4,
+          "x": 1084,
+          "z": -14078
+        }
+      ]
+    },
+    {
+      "id": "sky_temples",
+      "number": 31,
+      "biome": "kurumimnmod:sky_temples",
+      "tier": 6,
+      "areas": [
+        {
+          "area": 1,
+          "x": 3507,
+          "z": -12782
+        },
+        {
+          "area": 1,
+          "x": 3600,
+          "z": -12350
+        },
+        {
+          "area": 1,
+          "x": 3693,
+          "z": -11918
+        },
+        {
+          "area": 2,
+          "x": 4186,
+          "z": -12477
+        },
+        {
+          "area": 3,
+          "x": 4675,
+          "z": -12582
+        },
+        {
+          "area": 4,
+          "x": 5164,
+          "z": -12688
+        }
+      ]
+    },
+    {
+      "id": "eastern_rough_coast",
+      "number": 32,
+      "biome": "kurumimnmod:eastern_rough_coast",
+      "tier": 6,
+      "areas": [
+        {
+          "area": 1,
+          "x": 3240,
+          "z": -14015
+        },
+        {
+          "area": 1,
+          "x": 3333,
+          "z": -13583
+        },
+        {
+          "area": 1,
+          "x": 3427,
+          "z": -13152
+        },
+        {
+          "area": 2,
+          "x": 3920,
+          "z": -13710
+        },
+        {
+          "area": 3,
+          "x": 4408,
+          "z": -13816
+        },
+        {
+          "area": 4,
+          "x": 4897,
+          "z": -13921
+        }
+      ]
+    },
+    {
+      "id": "calamity_scar",
+      "number": 33,
+      "biome": "kurumimnmod:calamity_scar",
+      "tier": 9,
+      "areas": [
+        {
+          "area": 1,
+          "x": -3960,
+          "z": -10685
+        },
+        {
+          "area": 1,
+          "x": -3867,
+          "z": -11117
+        },
+        {
+          "area": 1,
+          "x": -3773,
+          "z": -11548
+        },
+        {
+          "area": 2,
+          "x": -4453,
+          "z": -11243
+        },
+        {
+          "area": 3,
+          "x": -4942,
+          "z": -11349
+        },
+        {
+          "area": 4,
+          "x": -5431,
+          "z": -11455
+        }
+      ]
+    },
+    {
+      "id": "timeless_forest",
+      "number": 34,
+      "biome": "kurumimnmod:timeless_forest",
+      "tier": 7,
+      "areas": [
+        {
+          "area": 1,
+          "x": 2718,
+          "z": -13577
+        },
+        {
+          "area": 1,
+          "x": 2917,
+          "z": -13833
+        },
+        {
+          "area": 1,
+          "x": 3115,
+          "z": -14090
+        },
+        {
+          "area": 2,
+          "x": 2442,
+          "z": -14200
+        },
+        {
+          "area": 3,
+          "x": 2046,
+          "z": -14506
+        },
+        {
+          "area": 4,
+          "x": 1651,
+          "z": -14812
+        }
+      ]
+    },
+    {
+      "id": "mana_storm_wastes",
+      "number": 35,
+      "biome": "kurumimnmod:mana_storm_wastes",
+      "tier": 9,
+      "areas": [
+        {
+          "area": 1,
+          "x": -3693,
+          "z": -11918
+        },
+        {
+          "area": 1,
+          "x": -3600,
+          "z": -12350
+        },
+        {
+          "area": 1,
+          "x": -3507,
+          "z": -12782
+        },
+        {
+          "area": 2,
+          "x": -4186,
+          "z": -12477
+        },
+        {
+          "area": 3,
+          "x": -4675,
+          "z": -12582
+        },
+        {
+          "area": 4,
+          "x": -5164,
+          "z": -12688
+        }
+      ]
+    },
+    {
+      "id": "obsidian_volcano",
+      "number": 36,
+      "biome": "kurumimnmod:obsidian_volcano",
+      "tier": 9,
+      "areas": [
+        {
+          "area": 1,
+          "x": -3427,
+          "z": -13152
+        },
+        {
+          "area": 1,
+          "x": -3333,
+          "z": -13583
+        },
+        {
+          "area": 1,
+          "x": -3240,
+          "z": -14015
+        },
+        {
+          "area": 2,
+          "x": -3920,
+          "z": -13710
+        },
+        {
+          "area": 3,
+          "x": -4408,
+          "z": -13816
+        },
+        {
+          "area": 4,
+          "x": -4897,
+          "z": -13921
+        }
+      ]
+    },
+    {
+      "id": "great_ancient_ruins",
+      "number": 37,
+      "biome": "kurumimnmod:great_ancient_ruins",
+      "tier": 11,
+      "areas": [
+        {
+          "area": 1,
+          "x": 1760,
+          "z": -16180
+        },
+        {
+          "area": 1,
+          "x": 2353,
+          "z": -15365
+        },
+        {
+          "area": 1,
+          "x": 2946,
+          "z": -14549
+        },
+        {
+          "area": 2,
+          "x": 2838,
+          "z": -15718
+        },
+        {
+          "area": 3,
+          "x": 3243,
+          "z": -16012
+        },
+        {
+          "area": 4,
+          "x": 3647,
+          "z": -16306
+        }
+      ]
+    },
+    {
+      "id": "world_tree_roots",
+      "number": 38,
+      "biome": "kurumimnmod:world_tree_roots",
+      "tier": 11,
+      "areas": [
+        {
+          "area": 1,
+          "x": -1008,
+          "z": -16400
+        },
+        {
+          "area": 1,
+          "x": 0,
+          "z": -16400
+        },
+        {
+          "area": 1,
+          "x": 1008,
+          "z": -16400
+        },
+        {
+          "area": 2,
+          "x": 0,
+          "z": -17000
+        },
+        {
+          "area": 3,
+          "x": 0,
+          "z": -17500
+        },
+        {
+          "area": 4,
+          "x": 0,
+          "z": -18000
+        }
+      ]
+    },
+    {
+      "id": "permafrost_ice_castle",
+      "number": 39,
+      "biome": "kurumimnmod:permafrost_ice_castle",
+      "tier": 8,
+      "areas": [
+        {
+          "area": 1,
+          "x": -3115,
+          "z": -14090
+        },
+        {
+          "area": 1,
+          "x": -2917,
+          "z": -13833
+        },
+        {
+          "area": 1,
+          "x": -2718,
+          "z": -13577
+        },
+        {
+          "area": 2,
+          "x": -2442,
+          "z": -14200
+        },
+        {
+          "area": 3,
+          "x": -2046,
+          "z": -14506
+        },
+        {
+          "area": 4,
+          "x": -1651,
+          "z": -14812
+        }
+      ]
+    },
+    {
+      "id": "laboratory_valley",
+      "number": 40,
+      "biome": "kurumimnmod:laboratory_valley",
+      "tier": 11,
+      "areas": [
+        {
+          "area": 1,
+          "x": -2946,
+          "z": -14549
+        },
+        {
+          "area": 1,
+          "x": -2353,
+          "z": -15365
+        },
+        {
+          "area": 1,
+          "x": -1760,
+          "z": -16180
+        },
+        {
+          "area": 2,
+          "x": -2838,
+          "z": -15718
+        },
+        {
+          "area": 3,
+          "x": -3243,
+          "z": -16012
+        },
+        {
+          "area": 4,
+          "x": -3647,
+          "z": -16306
+        }
+      ]
+    },
+    {
+      "id": "black_sand_desert",
+      "number": 41,
+      "biome": "kurumimnmod:black_sand_desert",
+      "tier": 12,
+      "areas": [
+        {
+          "area": 1,
+          "x": -4050,
+          "z": 3575
+        },
+        {
+          "area": 1,
+          "x": -3000,
+          "z": 3750
+        },
+        {
+          "area": 1,
+          "x": -1950,
+          "z": 3925
+        },
+        {
+          "area": 2,
+          "x": -2901,
+          "z": 3158
+        },
+        {
+          "area": 3,
+          "x": -2819,
+          "z": 2665
+        },
+        {
+          "area": 4,
+          "x": -2737,
+          "z": 2172
+        }
+      ]
+    },
+    {
+      "id": "acid_marsh",
+      "number": 42,
+      "biome": "kurumimnmod:acid_marsh",
+      "tier": 13,
+      "areas": [
+        {
+          "area": 1,
+          "x": -1050,
+          "z": 4000
+        },
+        {
+          "area": 1,
+          "x": 0,
+          "z": 4000
+        },
+        {
+          "area": 1,
+          "x": 1050,
+          "z": 4000
+        },
+        {
+          "area": 2,
+          "x": 0,
+          "z": 3400
+        },
+        {
+          "area": 3,
+          "x": 0,
+          "z": 2900
+        },
+        {
+          "area": 4,
+          "x": 0,
+          "z": 2400
+        }
+      ]
+    },
+    {
+      "id": "eternal_night_forest",
+      "number": 43,
+      "biome": "kurumimnmod:eternal_night_forest",
+      "tier": 14,
+      "areas": [
+        {
+          "area": 1,
+          "x": 1950,
+          "z": 3925
+        },
+        {
+          "area": 1,
+          "x": 3000,
+          "z": 3750
+        },
+        {
+          "area": 1,
+          "x": 4050,
+          "z": 3575
+        },
+        {
+          "area": 2,
+          "x": 2901,
+          "z": 3158
+        },
+        {
+          "area": 3,
+          "x": 2819,
+          "z": 2665
+        },
+        {
+          "area": 4,
+          "x": 2737,
+          "z": 2172
+        }
+      ]
+    },
+    {
+      "id": "thunder_highlands",
+      "number": 44,
+      "biome": "kurumimnmod:thunder_highlands",
+      "tier": 12,
+      "areas": [
+        {
+          "area": 1,
+          "x": -4275,
+          "z": 4025
+        },
+        {
+          "area": 1,
+          "x": -3750,
+          "z": 5250
+        },
+        {
+          "area": 1,
+          "x": -3225,
+          "z": 6475
+        },
+        {
+          "area": 2,
+          "x": -4301,
+          "z": 5486
+        },
+        {
+          "area": 3,
+          "x": -4761,
+          "z": 5683
+        },
+        {
+          "area": 4,
+          "x": -5221,
+          "z": 5880
+        }
+      ]
+    },
+    {
+      "id": "corroded_land",
+      "number": 45,
+      "biome": "kurumimnmod:corroded_land",
+      "tier": 13,
+      "areas": [
+        {
+          "area": 1,
+          "x": -1275,
+          "z": 4525
+        },
+        {
+          "area": 1,
+          "x": -750,
+          "z": 5750
+        },
+        {
+          "area": 1,
+          "x": -225,
+          "z": 6975
+        },
+        {
+          "area": 2,
+          "x": -199,
+          "z": 5514
+        },
+        {
+          "area": 3,
+          "x": 261,
+          "z": 5317
+        },
+        {
+          "area": 4,
+          "x": 721,
+          "z": 5120
+        }
+      ]
+    },
+    {
+      "id": "giant_bone_wastes",
+      "number": 46,
+      "biome": "kurumimnmod:giant_bone_wastes",
+      "tier": 15,
+      "areas": [
+        {
+          "area": 1,
+          "x": 3225,
+          "z": 6475
+        },
+        {
+          "area": 1,
+          "x": 3750,
+          "z": 5250
+        },
+        {
+          "area": 1,
+          "x": 4275,
+          "z": 4025
+        },
+        {
+          "area": 2,
+          "x": 4301,
+          "z": 5486
+        },
+        {
+          "area": 3,
+          "x": 4761,
+          "z": 5683
+        },
+        {
+          "area": 4,
+          "x": 5221,
+          "z": 5880
+        }
+      ]
+    },
+    {
+      "id": "maelstrom_coast",
+      "number": 47,
+      "biome": "kurumimnmod:maelstrom_coast",
+      "tier": 16,
+      "areas": [
+        {
+          "area": 1,
+          "x": -2775,
+          "z": 7525
+        },
+        {
+          "area": 1,
+          "x": -2250,
+          "z": 8750
+        },
+        {
+          "area": 1,
+          "x": -1725,
+          "z": 9975
+        },
+        {
+          "area": 2,
+          "x": -2801,
+          "z": 8986
+        },
+        {
+          "area": 3,
+          "x": -3261,
+          "z": 9183
+        },
+        {
+          "area": 4,
+          "x": -3721,
+          "z": 9380
+        }
+      ]
+    },
+    {
+      "id": "red_moon_plains",
+      "number": 48,
+      "biome": "kurumimnmod:red_moon_plains",
+      "tier": 17,
+      "areas": [
+        {
+          "area": 1,
+          "x": -1275,
+          "z": 10050
+        },
+        {
+          "area": 1,
+          "x": -750,
+          "z": 9000
+        },
+        {
+          "area": 1,
+          "x": -225,
+          "z": 7950
+        },
+        {
+          "area": 2,
+          "x": -1287,
+          "z": 8732
+        },
+        {
+          "area": 3,
+          "x": -1734,
+          "z": 8508
+        }
+      ]
+    },
+    {
+      "id": "breathing_earth",
+      "number": 49,
+      "biome": "kurumimnmod:breathing_earth",
+      "tier": 17,
+      "areas": [
+        {
+          "area": 1,
+          "x": 225,
+          "z": 7950
+        },
+        {
+          "area": 1,
+          "x": 750,
+          "z": 9000
+        },
+        {
+          "area": 1,
+          "x": 1275,
+          "z": 10050
+        },
+        {
+          "area": 2,
+          "x": 1287,
+          "z": 8732
+        },
+        {
+          "area": 3,
+          "x": 1734,
+          "z": 8508
+        }
+      ]
+    },
+    {
+      "id": "calamity_slumber",
+      "number": 50,
+      "biome": "kurumimnmod:calamity_slumber",
+      "tier": 18,
+      "areas": [
+        {
+          "area": 1,
+          "x": 1725,
+          "z": 9975
+        },
+        {
+          "area": 1,
+          "x": 2250,
+          "z": 8750
+        },
+        {
+          "area": 1,
+          "x": 2775,
+          "z": 7525
+        },
+        {
+          "area": 2,
+          "x": 2801,
+          "z": 8986
+        },
+        {
+          "area": 3,
+          "x": 3261,
+          "z": 9183
+        },
+        {
+          "area": 4,
+          "x": 3721,
+          "z": 9380
+        }
+      ]
+    }
+  ]
+}

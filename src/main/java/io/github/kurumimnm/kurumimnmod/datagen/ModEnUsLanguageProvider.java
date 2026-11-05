@@ -158,6 +158,64 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         add(SCARECROW_SCREEN + ".cancel", "Cancel");
         add(SCARECROW_SCREEN + ".save", "Save");
 
+        // ---- ワールド（ワールドの種類・コマンド） ----
+        add("generator." + MOD_ID + ".field_world", "Kurumimnmod World");
+        add("commands." + MOD_ID + ".area.info", "Field %s: %s - Area %s (Danger %s)");
+        add("commands." + MOD_ID + ".area.not_field_world", "This world does not use the Kurumimnmod field map.");
+        add("commands." + MOD_ID + ".towns.entry", "Town %s: X %s / Z %s");
+
+        // ---- フィールド（バイオーム名）。番号は設計時のフィールド番号 ----
+        addBiome("cradle_basin", "Cradle Basin"); // 1
+        addBiome("young_leaf_road", "Young Leaf Road"); // 2
+        addBiome("whispering_forest", "Whispering Forest"); // 3
+        addBiome("windsong_hills", "Windsong Hills"); // 4
+        addBiome("mossy_battlefield", "Mossy Battlefield"); // 5
+        addBiome("sunlit_flower_field", "Sunlit Flower Field"); // 6
+        addBiome("misty_lakeside", "Misty Lakeside"); // 7
+        addBiome("gray_rock_hills", "Gray Rock Hills"); // 8
+        addBiome("dragon_claw_gorge", "Dragon Claw Gorge"); // 9
+        addBiome("red_earth_wasteland", "Red Earth Wasteland"); // 10
+        addBiome("old_highway_ruins", "Old Highway Ruins"); // 11
+        addBiome("millennium_tree_forest", "Millennium Tree Forest"); // 12
+        addBiome("silver_snowfield", "Silver Snowfield"); // 13
+        addBiome("scorched_lava_plateau", "Scorched Lava Plateau"); // 14
+        addBiome("sandstorm_desert", "Sandstorm Desert"); // 15
+        addBiome("twilight_marsh", "Twilight Marsh"); // 16
+        addBiome("crystal_caverns", "Crystal Caverns"); // 17
+        addBiome("storm_cliffs", "Storm Cliffs"); // 18
+        addBiome("sunken_capital", "Sunken Capital"); // 19
+        addBiome("poison_mushroom_sea", "Poison Mushroom Sea"); // 20
+        addBiome("dragon_bone_valley", "Dragon Bone Valley"); // 21
+        addBiome("floating_rock_highlands", "Floating Rock Highlands"); // 22
+        addBiome("cursed_black_forest", "Cursed Black Forest"); // 23
+        addBiome("stargazing_plateau", "Stargazing Plateau"); // 24
+        addBiome("iron_vein_mines", "Iron Vein Mines"); // 25
+        addBiome("rusted_ancient_ruins", "Rusted Ancient Ruins"); // 26
+        addBiome("great_beast_plains", "Great Beast Plains"); // 27
+        addBiome("waterfall_gorge", "Waterfall Gorge"); // 28
+        addBiome("dragon_peaks", "Dragon Peaks"); // 29
+        addBiome("kingdom_of_the_dead", "Kingdom of the Dead"); // 30
+        addBiome("sky_temples", "Sky Temples"); // 31
+        addBiome("eastern_rough_coast", "Eastern Rough Coast"); // 32
+        addBiome("calamity_scar", "Calamity Scar"); // 33
+        addBiome("timeless_forest", "Timeless Forest"); // 34
+        addBiome("mana_storm_wastes", "Mana Storm Wastes"); // 35
+        addBiome("obsidian_volcano", "Obsidian Volcano"); // 36
+        addBiome("great_ancient_ruins", "Great Ancient Ruins"); // 37
+        addBiome("world_tree_roots", "World Tree Roots"); // 38
+        addBiome("permafrost_ice_castle", "Permafrost Ice Castle"); // 39
+        addBiome("laboratory_valley", "Laboratory Valley"); // 40
+        addBiome("black_sand_desert", "Black Sand Desert"); // 41
+        addBiome("acid_marsh", "Acid Marsh"); // 42
+        addBiome("eternal_night_forest", "Eternal Night Forest"); // 43
+        addBiome("thunder_highlands", "Thunder Highlands"); // 44
+        addBiome("corroded_land", "Corroded Land"); // 45
+        addBiome("giant_bone_wastes", "Giant Bone Wastes"); // 46
+        addBiome("maelstrom_coast", "Maelstrom Coast"); // 47
+        addBiome("red_moon_plains", "Red Moon Plains"); // 48
+        addBiome("breathing_earth", "Breathing Earth"); // 49
+        addBiome("calamity_slumber", "Land of the Sleeping Calamity"); // 50
+
         // ---- Config 画面 ----
         add(MOD_ID + ".configuration.title", "Kurumimnmod Configs");
         add(MOD_ID + ".configuration.section." + MOD_ID + ".synced.toml", "Kurumimnmod Configs");
@@ -243,6 +301,11 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         add(MOD_ID + ".configuration.damageNumbers", "Damage Numbers");
         add(MOD_ID + ".configuration.showDamageNumbers", "Show Damage Numbers");
         add(MOD_ID + ".configuration.damageNumberDuration", "Display Time (Seconds)");
+    }
+
+    /** このMODのバイオーム（フィールド）の名前を追加する。 */
+    private void addBiome(String id, String name) {
+        add("biome." + MOD_ID + "." + id, name);
     }
 
     /** ステータスの名前と説明文をまとめて追加する。 */
