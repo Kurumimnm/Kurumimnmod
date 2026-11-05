@@ -19,9 +19,9 @@
         "alpha": {
           "type": "minecraft:gradient",
           "axis": "y",
-          "from_coordinate": 240,
+          "from_coordinate": 400,
           "from_value": 1.0,
-          "to_coordinate": 256,
+          "to_coordinate": 416,
           "to_value": 0.0
         },
         "first": -0.078125,
@@ -42,8 +42,8 @@
                       "axis": "y",
                       "from_coordinate": -64,
                       "from_value": 1.5,
-                      "to_coordinate": 320,
-                      "to_value": -1.5
+                      "to_coordinate": 448,
+                      "to_value": -2.5
                     },
                     "right": "kurumimnmod:field_world/offset"
                   },
@@ -81,7 +81,7 @@
       },
       "right": 128.0
     },
-    "max": 320.0,
+    "max": 448.0,
     "min": -40.0
   }
 }
