@@ -67,9 +67,9 @@ public final class ModWorldgen {
 
     /**
      * 地図のレジストリを「ワールド用のデータパックレジストリ」として登録する。
-     * サーバー側だけで使うので、クライアントへの同期はしない。
+     * クライアントでも地図を使う（ゲートの壁・場所の名前・地図画面）ので、クライアントへ同期する。
      */
     private static void onNewDatapackRegistry(NewDatapackRegistryEvent event) {
-        event.worldRegistry(FIELD_MAP, FieldMap.DIRECT_CODEC);
+        event.worldRegistry(FIELD_MAP, FieldMap.DIRECT_CODEC, FieldMap.DIRECT_CODEC);
     }
 }

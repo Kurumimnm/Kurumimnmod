@@ -8,127 +8,148 @@
       "id": "mediana",
       "number": 0,
       "x": 0,
-      "z": 0
+      "z": 0,
+      "radius": 64
     },
     {
       "id": "town_1",
       "number": 1,
       "x": 0,
-      "z": -3000
+      "z": -3000,
+      "radius": 48
     },
     {
       "id": "town_2",
       "number": 2,
       "x": 0,
-      "z": -6000
+      "z": -6000,
+      "radius": 48
     },
     {
       "id": "town_3",
       "number": 3,
       "x": 2600,
-      "z": -7500
+      "z": -7500,
+      "radius": 48
     },
     {
       "id": "town_4",
       "number": 4,
       "x": -2600,
-      "z": -7500
+      "z": -7500,
+      "radius": 48
     },
     {
       "id": "town_5",
       "number": 5,
       "x": 0,
-      "z": -9000
+      "z": -9000,
+      "radius": 48
     },
     {
       "id": "town_6",
       "number": 6,
       "x": 4000,
-      "z": -10500
+      "z": -10500,
+      "radius": 48
     },
     {
       "id": "town_7",
       "number": 7,
       "x": 1500,
-      "z": -12000
+      "z": -12000,
+      "radius": 48
     },
     {
       "id": "town_8",
       "number": 8,
       "x": -1500,
-      "z": -12000
+      "z": -12000,
+      "radius": 48
     },
     {
       "id": "town_9",
       "number": 9,
       "x": -4000,
-      "z": -10500
+      "z": -10500,
+      "radius": 48
     },
     {
       "id": "town_10",
       "number": 10,
       "x": 3200,
-      "z": -14200
+      "z": -14200,
+      "radius": 48
     },
     {
       "id": "town_11",
       "number": 11,
       "x": -3200,
-      "z": -14200
+      "z": -14200,
+      "radius": 48
     },
     {
       "id": "town_12",
       "number": 12,
       "x": -4500,
-      "z": 3500
+      "z": 3500,
+      "radius": 48
     },
     {
       "id": "town_13",
       "number": 13,
       "x": -1500,
-      "z": 4000
+      "z": 4000,
+      "radius": 48
     },
     {
       "id": "town_14",
       "number": 14,
       "x": 1500,
-      "z": 4000
+      "z": 4000,
+      "radius": 48
     },
     {
       "id": "town_15",
       "number": 15,
       "x": 4500,
-      "z": 3500
+      "z": 3500,
+      "radius": 48
     },
     {
       "id": "town_16",
       "number": 16,
       "x": -3000,
-      "z": 7000
+      "z": 7000,
+      "radius": 48
     },
     {
       "id": "town_17",
       "number": 17,
       "x": 0,
-      "z": 7500
+      "z": 7500,
+      "radius": 48
     },
     {
       "id": "town_18",
       "number": 18,
       "x": 3000,
-      "z": 7000
+      "z": 7000,
+      "radius": 48
     },
     {
       "id": "town_19",
       "number": 19,
       "x": -1500,
-      "z": 10500
+      "z": 10500,
+      "radius": 48
     },
     {
       "id": "town_20",
       "number": 20,
       "x": 1500,
-      "z": 10500
+      "z": 10500,
+      "radius": 48
     }
   ],
   "fields": [
@@ -172,7 +193,8 @@
       "road": {
         "style": "dirt",
         "condition": "full"
-      }
+      },
+      "map_color": "#8DB360"
     },
     {
       "id": "young_leaf_road",
@@ -214,7 +236,8 @@
       "road": {
         "style": "dirt",
         "condition": "full"
-      }
+      },
+      "map_color": "#A5C45C"
     },
     {
       "id": "whispering_forest",
@@ -256,7 +279,8 @@
       "road": {
         "style": "dirt",
         "condition": "full"
-      }
+      },
+      "map_color": "#4F8F3A"
     },
     {
       "id": "windsong_hills",
@@ -298,7 +322,8 @@
       "road": {
         "style": "gravel",
         "condition": "full"
-      }
+      },
+      "map_color": "#8FA38A"
     },
     {
       "id": "mossy_battlefield",
@@ -340,7 +365,8 @@
       "road": {
         "style": "old_stone",
         "condition": "worn"
-      }
+      },
+      "map_color": "#56704A"
     },
     {
       "id": "sunlit_flower_field",
@@ -382,7 +408,8 @@
       "road": {
         "style": "dirt",
         "condition": "full"
-      }
+      },
+      "map_color": "#B58FC9"
     },
     {
       "id": "misty_lakeside",
@@ -424,7 +451,8 @@
       "road": {
         "style": "boardwalk",
         "condition": "full"
-      }
+      },
+      "map_color": "#5D7A5A"
     },
     {
       "id": "gray_rock_hills",
@@ -466,7 +494,8 @@
       "road": {
         "style": "gravel",
         "condition": "full"
-      }
+      },
+      "map_color": "#A3A3A3"
     },
     {
       "id": "dragon_claw_gorge",
@@ -508,7 +537,8 @@
       "road": {
         "style": "gravel",
         "condition": "worn"
-      }
+      },
+      "map_color": "#8A8A80"
     },
     {
       "id": "red_earth_wasteland",
@@ -550,7 +580,8 @@
       "road": {
         "style": "red_sand",
         "condition": "worn"
-      }
+      },
+      "map_color": "#D0773C"
     },
     {
       "id": "old_highway_ruins",
@@ -582,7 +613,8 @@
       "road": {
         "style": "old_stone",
         "condition": "worn"
-      }
+      },
+      "map_color": "#8DB360"
     },
     {
       "id": "millennium_tree_forest",
@@ -619,7 +651,8 @@
       "road": {
         "style": "dirt",
         "condition": "worn"
-      }
+      },
+      "map_color": "#3D5C3A"
     },
     {
       "id": "silver_snowfield",
@@ -661,7 +694,8 @@
       "road": {
         "style": "snow",
         "condition": "worn"
-      }
+      },
+      "map_color": "#EEF3F7"
     },
     {
       "id": "scorched_lava_plateau",
@@ -703,7 +737,8 @@
       "road": {
         "style": "gravel",
         "condition": "none"
-      }
+      },
+      "map_color": "#B85C30"
     },
     {
       "id": "sandstorm_desert",
@@ -745,7 +780,8 @@
       "road": {
         "style": "sand",
         "condition": "worn"
-      }
+      },
+      "map_color": "#E8D38A"
     },
     {
       "id": "twilight_marsh",
@@ -787,7 +823,8 @@
       "road": {
         "style": "boardwalk",
         "condition": "worn"
-      }
+      },
+      "map_color": "#4C6B48"
     },
     {
       "id": "crystal_caverns",
@@ -824,7 +861,8 @@
       "road": {
         "style": "gravel",
         "condition": "worn"
-      }
+      },
+      "map_color": "#9B8466"
     },
     {
       "id": "storm_cliffs",
@@ -866,7 +904,8 @@
       "road": {
         "style": "gravel",
         "condition": "none"
-      }
+      },
+      "map_color": "#8C9399"
     },
     {
       "id": "sunken_capital",
@@ -908,7 +947,8 @@
       "road": {
         "style": "old_stone",
         "condition": "worn"
-      }
+      },
+      "map_color": "#6F9FD8"
     },
     {
       "id": "poison_mushroom_sea",
@@ -950,7 +990,8 @@
       "road": {
         "style": "dirt",
         "condition": "none"
-      }
+      },
+      "map_color": "#A2849C"
     },
     {
       "id": "dragon_bone_valley",
@@ -992,7 +1033,8 @@
       "road": {
         "style": "gravel",
         "condition": "none"
-      }
+      },
+      "map_color": "#C2B464"
     },
     {
       "id": "floating_rock_highlands",
@@ -1034,7 +1076,8 @@
       "road": {
         "style": "gravel",
         "condition": "worn"
-      }
+      },
+      "map_color": "#6F8F68"
     },
     {
       "id": "cursed_black_forest",
@@ -1076,7 +1119,8 @@
       "road": {
         "style": "dirt",
         "condition": "none"
-      }
+      },
+      "map_color": "#2F4A2A"
     },
     {
       "id": "stargazing_plateau",
@@ -1118,7 +1162,8 @@
       "road": {
         "style": "gravel",
         "condition": "full"
-      }
+      },
+      "map_color": "#A8D68A"
     },
     {
       "id": "iron_vein_mines",
@@ -1160,7 +1205,8 @@
       "road": {
         "style": "gravel",
         "condition": "full"
-      }
+      },
+      "map_color": "#8A8A80"
     },
     {
       "id": "rusted_ancient_ruins",
@@ -1202,7 +1248,8 @@
       "road": {
         "style": "old_stone",
         "condition": "worn"
-      }
+      },
+      "map_color": "#BFB05A"
     },
     {
       "id": "great_beast_plains",
@@ -1244,7 +1291,8 @@
       "road": {
         "style": "dirt",
         "condition": "worn"
-      }
+      },
+      "map_color": "#BFB05A"
     },
     {
       "id": "waterfall_gorge",
@@ -1286,7 +1334,8 @@
       "road": {
         "style": "dirt",
         "condition": "worn"
-      }
+      },
+      "map_color": "#5AA04A"
     },
     {
       "id": "dragon_peaks",
@@ -1328,7 +1377,8 @@
       "road": {
         "style": "gravel",
         "condition": "none"
-      }
+      },
+      "map_color": "#DFE6EA"
     },
     {
       "id": "kingdom_of_the_dead",
@@ -1370,7 +1420,8 @@
       "road": {
         "style": "old_stone",
         "condition": "none"
-      }
+      },
+      "map_color": "#B8BCB4"
     },
     {
       "id": "sky_temples",
@@ -1412,7 +1463,8 @@
       "road": {
         "style": "old_stone",
         "condition": "worn"
-      }
+      },
+      "map_color": "#F2B8D0"
     },
     {
       "id": "eastern_rough_coast",
@@ -1454,7 +1506,8 @@
       "road": {
         "style": "gravel",
         "condition": "worn"
-      }
+      },
+      "map_color": "#8C9399"
     },
     {
       "id": "calamity_scar",
@@ -1496,7 +1549,8 @@
       "road": {
         "style": "gravel",
         "condition": "none"
-      }
+      },
+      "map_color": "#B85C30"
     },
     {
       "id": "timeless_forest",
@@ -1538,7 +1592,8 @@
       "road": {
         "style": "dirt",
         "condition": "none"
-      }
+      },
+      "map_color": "#9FC27A"
     },
     {
       "id": "mana_storm_wastes",
@@ -1580,7 +1635,8 @@
       "road": {
         "style": "gravel",
         "condition": "none"
-      }
+      },
+      "map_color": "#A99F5C"
     },
     {
       "id": "obsidian_volcano",
@@ -1622,7 +1678,8 @@
       "road": {
         "style": "gravel",
         "condition": "none"
-      }
+      },
+      "map_color": "#B85C30"
     },
     {
       "id": "great_ancient_ruins",
@@ -1664,7 +1721,8 @@
       "road": {
         "style": "old_stone",
         "condition": "worn"
-      }
+      },
+      "map_color": "#CFDDE0"
     },
     {
       "id": "world_tree_roots",
@@ -1706,7 +1764,8 @@
       "road": {
         "style": "dirt",
         "condition": "none"
-      }
+      },
+      "map_color": "#4F6F55"
     },
     {
       "id": "permafrost_ice_castle",
@@ -1748,7 +1807,8 @@
       "road": {
         "style": "snow",
         "condition": "none"
-      }
+      },
+      "map_color": "#CFE8F5"
     },
     {
       "id": "laboratory_valley",
@@ -1790,7 +1850,8 @@
       "road": {
         "style": "old_stone",
         "condition": "worn"
-      }
+      },
+      "map_color": "#D7E5E0"
     },
     {
       "id": "black_sand_desert",
@@ -1832,7 +1893,8 @@
       "road": {
         "style": "gravel",
         "condition": "none"
-      }
+      },
+      "map_color": "#E8D38A"
     },
     {
       "id": "acid_marsh",
@@ -1874,7 +1936,8 @@
       "road": {
         "style": "gravel",
         "condition": "none"
-      }
+      },
+      "map_color": "#5D7A5A"
     },
     {
       "id": "eternal_night_forest",
@@ -1916,7 +1979,8 @@
       "road": {
         "style": "gravel",
         "condition": "none"
-      }
+      },
+      "map_color": "#2F4A2A"
     },
     {
       "id": "thunder_highlands",
@@ -1958,7 +2022,8 @@
       "road": {
         "style": "gravel",
         "condition": "none"
-      }
+      },
+      "map_color": "#A3A3A3"
     },
     {
       "id": "corroded_land",
@@ -2000,7 +2065,8 @@
       "road": {
         "style": "gravel",
         "condition": "none"
-      }
+      },
+      "map_color": "#B85C30"
     },
     {
       "id": "giant_bone_wastes",
@@ -2042,7 +2108,8 @@
       "road": {
         "style": "gravel",
         "condition": "none"
-      }
+      },
+      "map_color": "#E8D38A"
     },
     {
       "id": "maelstrom_coast",
@@ -2084,7 +2151,8 @@
       "road": {
         "style": "gravel",
         "condition": "none"
-      }
+      },
+      "map_color": "#ECDCA0"
     },
     {
       "id": "red_moon_plains",
@@ -2121,7 +2189,8 @@
       "road": {
         "style": "gravel",
         "condition": "none"
-      }
+      },
+      "map_color": "#BFB05A"
     },
     {
       "id": "breathing_earth",
@@ -2158,7 +2227,8 @@
       "road": {
         "style": "gravel",
         "condition": "none"
-      }
+      },
+      "map_color": "#4C6B48"
     },
     {
       "id": "calamity_slumber",
@@ -2200,7 +2270,8 @@
       "road": {
         "style": "gravel",
         "condition": "none"
-      }
+      },
+      "map_color": "#EEF3F7"
     }
   ],
   "terrain": {
