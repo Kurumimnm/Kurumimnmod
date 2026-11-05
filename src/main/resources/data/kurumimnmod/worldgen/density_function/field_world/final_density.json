@@ -19,5 +19,7 @@
     },
     "right": 0.1
   },
-  "right": "minecraft:beardifier"
+  "right": {
+    "type": "minecraft:beardifier"
+  }
 }
