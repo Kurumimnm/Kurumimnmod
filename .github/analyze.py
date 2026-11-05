@@ -39,7 +39,8 @@ for path in glob.glob(os.path.join(reg, "r.*.mca")):
                     bs = sec.get("block_states") if hasattr(sec, "get") else None
                     pal = bs.get("palette", []) if hasattr(bs, "get") else []
                     for p in pal:
-                        n = str(p["Name"]) if hasattr(p, "get") else str(p)
+                        n = str(p.get("Name", p.get("name", ""))) if hasattr(p, "get") else str(p)
+                        if not n.startswith("minecraft:"): print("palette entry?", repr(p)[:200])
                         if n in ("minecraft:oak_door", "minecraft:crafting_table", "minecraft:lantern"):
                             blocks_found.setdefault(n, []).append((cx, cz, int(sec["Y"])))
 print("chunks with heights:", len(heights) // 256)
