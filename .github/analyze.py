@@ -7,6 +7,7 @@ REG = glob.glob("run/world/**/region", recursive=True)
 print("region dirs", REG)
 reg = [r for r in REG if "dimensions/minecraft/overworld" in r.replace("\\","/") or r.endswith("world/region")]
 reg = reg[0] if reg else REG[0]
+roads = {}
 heights = {}; blocks_found = {}; stats = {"chunks": 0, "underground_air": 0, "water_y48_79": 0}
 def chunk_nbt(path, lx, lz):
     with open(path, "rb") as f:
@@ -39,6 +40,8 @@ for path in glob.glob(os.path.join(reg, "r.*.mca")):
                 pal = [str(p.get("id", "")) if hasattr(p, "get") else str(p) for p in bs.get("palette", [])] if hasattr(bs, "get") else []
                 if -4 <= Y <= 2 and ("minecraft:air" in pal or "minecraft:cave_air" in pal): stats["underground_air"] += 1
                 if 3 <= Y <= 4 and "minecraft:water" in pal: stats["water_y48_79"] += 1
+                for rb in ("minecraft:dirt_path", "minecraft:coarse_dirt"):
+                    if rb in pal: roads.setdefault(rb, set()).add((cx, cz))
             stats["chunks"] += 1
             if -2 <= cx <= 1 and -2 <= cz <= 1:
                 secs = c.get("sections", [])
@@ -53,6 +56,8 @@ for path in glob.glob(os.path.join(reg, "r.*.mca")):
 print("chunks with heights:", len(heights) // 256)
 print("house blocks:", blocks_found)
 print("STATS", stats)
+for rb, cs in roads.items():
+    print("ROAD", rb, len(cs), "chunks; z-range on x=0..1:", sorted(c[1] for c in cs if 0 <= c[0] <= 1)[:3], "...", sorted(c[1] for c in cs if 0 <= c[0] <= 1)[-3:])
 # 南北の断面 (x=8) と 東西の断面 (z=8)
 ns = sorted((z, h) for (x, z), h in heights.items() if x == 8)
 ew = sorted((x, h) for (x, z), h in heights.items() if z == 8)
