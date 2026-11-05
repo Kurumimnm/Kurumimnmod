@@ -12,21 +12,20 @@ import net.minecraft.world.level.levelgen.densityfunction.DfRewriteRule;
 import net.minecraft.world.level.levelgen.densityfunction.SamplerContext;
 
 /**
- * 地形の JSON（density_function）から使う「山脈で地形を盛り上げる量」。
+ * 地形の JSON（density_function）から使う「地面の高さ（Y）」。{@link FieldMap#terrainHeight} を返す。
  * <p>
- * {@code kurumimnmod:field_world/offset}（地面の高さの基準）に足し合わせて使う。
- * 地面の高さそのものを持ち上げるので、洞窟・鉱石・地表のブロックなどはバニラの仕組みがそのまま働く
- * （山脈の中にも洞窟ができる）。
+ * 地形の密度は「地面の高さ − Y」で作る（kurumimnmod:field_world/final_density）ので、
+ * この値より下が地面、上が空になる。バニラの地形・洞窟・川は使っていない。
  * <pre>{@code
- * { "type": "kurumimnmod:mountain_uplift", "map": "kurumimnmod:first_continent" }
+ * { "type": "kurumimnmod:terrain_height", "map": "kurumimnmod:first_continent" }
  * }</pre>
  * 値は X・Z だけで決まる（高さ Y には関係しない）。
  */
-public record MountainUpliftFunction(Holder<FieldMap> map) implements DensityFunction {
+public record TerrainHeightFunction(Holder<FieldMap> map) implements DensityFunction {
 
-    public static final MapCodec<MountainUpliftFunction> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-            FieldMap.CODEC.fieldOf("map").forGetter(MountainUpliftFunction::map)
-    ).apply(i, MountainUpliftFunction::new));
+    public static final MapCodec<TerrainHeightFunction> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+            FieldMap.CODEC.fieldOf("map").forGetter(TerrainHeightFunction::map)
+    ).apply(i, TerrainHeightFunction::new));
 
     @Override
     public DensitySampler compileSampler(DensityFunction.CompileContext context) {
@@ -40,7 +39,7 @@ public record MountainUpliftFunction(Holder<FieldMap> map) implements DensityFun
 
     @Override
     public Interval range() {
-        return Interval.of(0.0F, (float) map.value().maxMountainUplift());
+        return Interval.of(-64.0F, (float) map.value().terrain().maxHeight());
     }
 
     @Override
@@ -49,7 +48,7 @@ public record MountainUpliftFunction(Holder<FieldMap> map) implements DensityFun
     }
 
     @Override
-    public MapCodec<MountainUpliftFunction> codec() {
+    public MapCodec<TerrainHeightFunction> codec() {
         return CODEC;
     }
 
@@ -62,7 +61,7 @@ public record MountainUpliftFunction(Holder<FieldMap> map) implements DensityFun
             for (int z = 0; z < volume.sizeZ(); ++z) {
                 int blockZ = volume.blockZ(z);
                 for (int x = 0; x < volume.sizeX(); ++x) {
-                    float value = (float) map.mountainUplift(volume.blockX(x), blockZ);
+                    float value = (float) map.terrainHeight(volume.blockX(x), blockZ);
                     for (int y = 0; y < volume.sizeY(); ++y) {
                         outputBuffer.set(index++, value);
                     }
@@ -72,7 +71,7 @@ public record MountainUpliftFunction(Holder<FieldMap> map) implements DensityFun
 
         @Override
         public float sampleValue(SamplerContext context, int blockX, int blockY, int blockZ) {
-            return (float) map.mountainUplift(blockX, blockZ);
+            return (float) map.terrainHeight(blockX, blockZ);
         }
     }
 }

@@ -168,7 +168,11 @@
           "x": 1600,
           "z": -1500
         }
-      ]
+      ],
+      "road": {
+        "style": "dirt",
+        "condition": "full"
+      }
     },
     {
       "id": "young_leaf_road",
@@ -206,7 +210,11 @@
           "x": 1600,
           "z": -3500
         }
-      ]
+      ],
+      "road": {
+        "style": "dirt",
+        "condition": "full"
+      }
     },
     {
       "id": "whispering_forest",
@@ -244,7 +252,11 @@
           "x": 1600,
           "z": -4500
         }
-      ]
+      ],
+      "road": {
+        "style": "dirt",
+        "condition": "full"
+      }
     },
     {
       "id": "windsong_hills",
@@ -282,7 +294,11 @@
           "x": 1233,
           "z": -4864
         }
-      ]
+      ],
+      "road": {
+        "style": "gravel",
+        "condition": "full"
+      }
     },
     {
       "id": "mossy_battlefield",
@@ -320,7 +336,11 @@
           "x": 1600,
           "z": -5500
         }
-      ]
+      ],
+      "road": {
+        "style": "old_stone",
+        "condition": "worn"
+      }
     },
     {
       "id": "sunlit_flower_field",
@@ -358,7 +378,11 @@
           "x": 2100,
           "z": -5364
         }
-      ]
+      ],
+      "road": {
+        "style": "dirt",
+        "condition": "full"
+      }
     },
     {
       "id": "misty_lakeside",
@@ -396,7 +420,11 @@
           "x": 2966,
           "z": -5864
         }
-      ]
+      ],
+      "road": {
+        "style": "boardwalk",
+        "condition": "full"
+      }
     },
     {
       "id": "gray_rock_hills",
@@ -434,7 +462,11 @@
           "x": -1233,
           "z": -4864
         }
-      ]
+      ],
+      "road": {
+        "style": "gravel",
+        "condition": "full"
+      }
     },
     {
       "id": "dragon_claw_gorge",
@@ -472,7 +504,11 @@
           "x": -2100,
           "z": -5364
         }
-      ]
+      ],
+      "road": {
+        "style": "gravel",
+        "condition": "worn"
+      }
     },
     {
       "id": "red_earth_wasteland",
@@ -510,7 +546,11 @@
           "x": -2966,
           "z": -5864
         }
-      ]
+      ],
+      "road": {
+        "style": "red_sand",
+        "condition": "worn"
+      }
     },
     {
       "id": "old_highway_ruins",
@@ -538,7 +578,11 @@
           "x": 600,
           "z": -6500
         }
-      ]
+      ],
+      "road": {
+        "style": "old_stone",
+        "condition": "worn"
+      }
     },
     {
       "id": "millennium_tree_forest",
@@ -571,7 +615,11 @@
           "x": -1181,
           "z": -10216
         }
-      ]
+      ],
+      "road": {
+        "style": "dirt",
+        "condition": "worn"
+      }
     },
     {
       "id": "silver_snowfield",
@@ -609,7 +657,11 @@
           "x": -517,
           "z": -13345
         }
-      ]
+      ],
+      "road": {
+        "style": "snow",
+        "condition": "worn"
+      }
     },
     {
       "id": "scorched_lava_plateau",
@@ -647,7 +699,11 @@
           "x": -4283,
           "z": -7323
         }
-      ]
+      ],
+      "road": {
+        "style": "gravel",
+        "condition": "none"
+      }
     },
     {
       "id": "sandstorm_desert",
@@ -685,7 +741,11 @@
           "x": -4750,
           "z": -8323
         }
-      ]
+      ],
+      "road": {
+        "style": "sand",
+        "condition": "worn"
+      }
     },
     {
       "id": "twilight_marsh",
@@ -723,7 +783,11 @@
           "x": 4283,
           "z": -7323
         }
-      ]
+      ],
+      "road": {
+        "style": "boardwalk",
+        "condition": "worn"
+      }
     },
     {
       "id": "crystal_caverns",
@@ -756,7 +820,11 @@
           "x": 1181,
           "z": -10216
         }
-      ]
+      ],
+      "road": {
+        "style": "gravel",
+        "condition": "worn"
+      }
     },
     {
       "id": "storm_cliffs",
@@ -794,7 +862,11 @@
           "x": 5431,
           "z": -11455
         }
-      ]
+      ],
+      "road": {
+        "style": "gravel",
+        "condition": "none"
+      }
     },
     {
       "id": "sunken_capital",
@@ -832,7 +904,11 @@
           "x": 4750,
           "z": -8323
         }
-      ]
+      ],
+      "road": {
+        "style": "old_stone",
+        "condition": "worn"
+      }
     },
     {
       "id": "poison_mushroom_sea",
@@ -870,7 +946,11 @@
           "x": 2181,
           "z": -9784
         }
-      ]
+      ],
+      "road": {
+        "style": "dirt",
+        "condition": "none"
+      }
     },
     {
       "id": "dragon_bone_valley",
@@ -908,7 +988,11 @@
           "x": -2181,
           "z": -9784
         }
-      ]
+      ],
+      "road": {
+        "style": "gravel",
+        "condition": "none"
+      }
     },
     {
       "id": "floating_rock_highlands",
@@ -946,7 +1030,11 @@
           "x": 181,
           "z": -12216
         }
-      ]
+      ],
+      "road": {
+        "style": "gravel",
+        "condition": "worn"
+      }
     },
     {
       "id": "cursed_black_forest",
@@ -984,7 +1072,11 @@
           "x": -181,
           "z": -12216
         }
-      ]
+      ],
+      "road": {
+        "style": "dirt",
+        "condition": "none"
+      }
     },
     {
       "id": "stargazing_plateau",
@@ -1022,7 +1114,11 @@
           "x": 517,
           "z": -13345
         }
-      ]
+      ],
+      "road": {
+        "style": "gravel",
+        "condition": "full"
+      }
     },
     {
       "id": "iron_vein_mines",
@@ -1060,7 +1156,11 @@
           "x": -5217,
           "z": -9323
         }
-      ]
+      ],
+      "road": {
+        "style": "gravel",
+        "condition": "full"
+      }
     },
     {
       "id": "rusted_ancient_ruins",
@@ -1098,7 +1198,11 @@
           "x": 1600,
           "z": -7500
         }
-      ]
+      ],
+      "road": {
+        "style": "old_stone",
+        "condition": "worn"
+      }
     },
     {
       "id": "great_beast_plains",
@@ -1136,7 +1240,11 @@
           "x": 1600,
           "z": -8500
         }
-      ]
+      ],
+      "road": {
+        "style": "dirt",
+        "condition": "worn"
+      }
     },
     {
       "id": "waterfall_gorge",
@@ -1174,7 +1282,11 @@
           "x": 5217,
           "z": -9323
         }
-      ]
+      ],
+      "road": {
+        "style": "dirt",
+        "condition": "worn"
+      }
     },
     {
       "id": "dragon_peaks",
@@ -1212,7 +1324,11 @@
           "x": -1084,
           "z": -14078
         }
-      ]
+      ],
+      "road": {
+        "style": "gravel",
+        "condition": "none"
+      }
     },
     {
       "id": "kingdom_of_the_dead",
@@ -1250,7 +1366,11 @@
           "x": 1084,
           "z": -14078
         }
-      ]
+      ],
+      "road": {
+        "style": "old_stone",
+        "condition": "none"
+      }
     },
     {
       "id": "sky_temples",
@@ -1288,7 +1408,11 @@
           "x": 5164,
           "z": -12688
         }
-      ]
+      ],
+      "road": {
+        "style": "old_stone",
+        "condition": "worn"
+      }
     },
     {
       "id": "eastern_rough_coast",
@@ -1326,7 +1450,11 @@
           "x": 4897,
           "z": -13921
         }
-      ]
+      ],
+      "road": {
+        "style": "gravel",
+        "condition": "worn"
+      }
     },
     {
       "id": "calamity_scar",
@@ -1364,7 +1492,11 @@
           "x": -5431,
           "z": -11455
         }
-      ]
+      ],
+      "road": {
+        "style": "gravel",
+        "condition": "none"
+      }
     },
     {
       "id": "timeless_forest",
@@ -1402,7 +1534,11 @@
           "x": 1651,
           "z": -14812
         }
-      ]
+      ],
+      "road": {
+        "style": "dirt",
+        "condition": "none"
+      }
     },
     {
       "id": "mana_storm_wastes",
@@ -1440,7 +1576,11 @@
           "x": -5164,
           "z": -12688
         }
-      ]
+      ],
+      "road": {
+        "style": "gravel",
+        "condition": "none"
+      }
     },
     {
       "id": "obsidian_volcano",
@@ -1478,7 +1618,11 @@
           "x": -4897,
           "z": -13921
         }
-      ]
+      ],
+      "road": {
+        "style": "gravel",
+        "condition": "none"
+      }
     },
     {
       "id": "great_ancient_ruins",
@@ -1516,7 +1660,11 @@
           "x": 3647,
           "z": -16306
         }
-      ]
+      ],
+      "road": {
+        "style": "old_stone",
+        "condition": "worn"
+      }
     },
     {
       "id": "world_tree_roots",
@@ -1554,7 +1702,11 @@
           "x": 0,
           "z": -18000
         }
-      ]
+      ],
+      "road": {
+        "style": "dirt",
+        "condition": "none"
+      }
     },
     {
       "id": "permafrost_ice_castle",
@@ -1592,7 +1744,11 @@
           "x": -1651,
           "z": -14812
         }
-      ]
+      ],
+      "road": {
+        "style": "snow",
+        "condition": "none"
+      }
     },
     {
       "id": "laboratory_valley",
@@ -1630,7 +1786,11 @@
           "x": -3647,
           "z": -16306
         }
-      ]
+      ],
+      "road": {
+        "style": "old_stone",
+        "condition": "worn"
+      }
     },
     {
       "id": "black_sand_desert",
@@ -1668,7 +1828,11 @@
           "x": -2737,
           "z": 2172
         }
-      ]
+      ],
+      "road": {
+        "style": "gravel",
+        "condition": "none"
+      }
     },
     {
       "id": "acid_marsh",
@@ -1706,7 +1870,11 @@
           "x": 0,
           "z": 2400
         }
-      ]
+      ],
+      "road": {
+        "style": "gravel",
+        "condition": "none"
+      }
     },
     {
       "id": "eternal_night_forest",
@@ -1744,7 +1912,11 @@
           "x": 2737,
           "z": 2172
         }
-      ]
+      ],
+      "road": {
+        "style": "gravel",
+        "condition": "none"
+      }
     },
     {
       "id": "thunder_highlands",
@@ -1782,7 +1954,11 @@
           "x": -5221,
           "z": 5880
         }
-      ]
+      ],
+      "road": {
+        "style": "gravel",
+        "condition": "none"
+      }
     },
     {
       "id": "corroded_land",
@@ -1820,7 +1996,11 @@
           "x": 721,
           "z": 5120
         }
-      ]
+      ],
+      "road": {
+        "style": "gravel",
+        "condition": "none"
+      }
     },
     {
       "id": "giant_bone_wastes",
@@ -1858,7 +2038,11 @@
           "x": 5221,
           "z": 5880
         }
-      ]
+      ],
+      "road": {
+        "style": "gravel",
+        "condition": "none"
+      }
     },
     {
       "id": "maelstrom_coast",
@@ -1896,7 +2080,11 @@
           "x": -3721,
           "z": 9380
         }
-      ]
+      ],
+      "road": {
+        "style": "gravel",
+        "condition": "none"
+      }
     },
     {
       "id": "red_moon_plains",
@@ -1929,7 +2117,11 @@
           "x": -1734,
           "z": 8508
         }
-      ]
+      ],
+      "road": {
+        "style": "gravel",
+        "condition": "none"
+      }
     },
     {
       "id": "breathing_earth",
@@ -1962,7 +2154,11 @@
           "x": 1734,
           "z": 8508
         }
-      ]
+      ],
+      "road": {
+        "style": "gravel",
+        "condition": "none"
+      }
     },
     {
       "id": "calamity_slumber",
@@ -2000,17 +2196,62 @@
           "x": 3721,
           "z": 9380
         }
-      ]
+      ],
+      "road": {
+        "style": "gravel",
+        "condition": "none"
+      }
     }
   ],
+  "terrain": {
+    "base_height": 80,
+    "max_height": 440,
+    "noise": [
+      {
+        "amplitude": 5,
+        "scale": 600
+      },
+      {
+        "amplitude": 1.5,
+        "scale": 80
+      }
+    ]
+  },
   "mountains": {
     "biome": "kurumimnmod:sky_wall_range",
-    "biome_threshold": 0.04,
-    "wall_height": 170,
-    "ledge_height": 200,
-    "peak_height": 300,
-    "wall_ratio": 0.08,
-    "ledge_ratio": 0.6,
+    "biome_threshold": 0.03,
+    "profile": [
+      {
+        "p": 0,
+        "h": 0
+      },
+      {
+        "p": 0.04,
+        "h": 150
+      },
+      {
+        "p": 0.18,
+        "h": 165
+      },
+      {
+        "p": 0.25,
+        "h": 300
+      },
+      {
+        "p": 0.42,
+        "h": 315
+      },
+      {
+        "p": 0.55,
+        "h": 350
+      },
+      {
+        "p": 1.0,
+        "h": 360
+      }
+    ],
+    "shelf_noise": 0.1,
+    "height_noise": 20,
     "jitter": {
       "amplitude": 70,
       "scale": 600
@@ -2155,6 +2396,157 @@
             "z": 1000
           }
         ]
+      }
+    ]
+  },
+  "roads": {
+    "jitter": {
+      "amplitude": 18,
+      "scale": 260
+    },
+    "styles": {
+      "dirt": {
+        "surface": "minecraft:dirt_path",
+        "edge": "minecraft:coarse_dirt",
+        "width": 3
+      },
+      "gravel": {
+        "surface": "minecraft:gravel",
+        "edge": "minecraft:cobblestone",
+        "width": 3
+      },
+      "old_stone": {
+        "surface": "minecraft:stone_bricks",
+        "edge": "minecraft:mossy_cobblestone",
+        "width": 4
+      },
+      "sand": {
+        "surface": "minecraft:smooth_sandstone",
+        "edge": "minecraft:cut_sandstone",
+        "width": 3
+      },
+      "red_sand": {
+        "surface": "minecraft:smooth_red_sandstone",
+        "edge": "minecraft:cut_red_sandstone",
+        "width": 3
+      },
+      "boardwalk": {
+        "surface": "minecraft:spruce_planks",
+        "edge": "minecraft:packed_mud",
+        "width": 3
+      },
+      "snow": {
+        "surface": "minecraft:packed_ice",
+        "edge": "minecraft:snow_block",
+        "width": 3
+      }
+    },
+    "routes": [
+      {
+        "from": "mediana",
+        "to": "town_1"
+      },
+      {
+        "from": "town_1",
+        "to": "town_2"
+      },
+      {
+        "from": "town_2",
+        "to": "town_3"
+      },
+      {
+        "from": "town_2",
+        "to": "town_4"
+      },
+      {
+        "from": "town_2",
+        "to": "town_5"
+      },
+      {
+        "from": "town_3",
+        "to": "town_6"
+      },
+      {
+        "from": "town_4",
+        "to": "town_9"
+      },
+      {
+        "from": "town_5",
+        "to": "town_7"
+      },
+      {
+        "from": "town_5",
+        "to": "town_8"
+      },
+      {
+        "from": "town_6",
+        "to": "town_10"
+      },
+      {
+        "from": "town_7",
+        "to": "town_10"
+      },
+      {
+        "from": "town_8",
+        "to": "town_11"
+      },
+      {
+        "from": "town_9",
+        "to": "town_11"
+      },
+      {
+        "from": "town_10",
+        "to": "town_11",
+        "via": [
+          {
+            "x": 1600,
+            "z": -16400
+          },
+          {
+            "x": -1600,
+            "z": -16400
+          }
+        ]
+      },
+      {
+        "from": "town_12",
+        "to": "town_13"
+      },
+      {
+        "from": "town_13",
+        "to": "town_14"
+      },
+      {
+        "from": "town_14",
+        "to": "town_15"
+      },
+      {
+        "from": "town_12",
+        "to": "town_16"
+      },
+      {
+        "from": "town_13",
+        "to": "town_17"
+      },
+      {
+        "from": "town_15",
+        "to": "town_18"
+      },
+      {
+        "from": "town_16",
+        "to": "town_19"
+      },
+      {
+        "from": "town_17",
+        "to": "town_19"
+      },
+      {
+        "from": "town_17",
+        "to": "town_20"
+      },
+      {
+        "from": "town_18",
+        "to": "town_20"
       }
     ]
   }

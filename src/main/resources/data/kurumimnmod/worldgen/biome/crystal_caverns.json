@@ -99,7 +99,8 @@
     ],
     [
       "minecraft:amethyst_geode",
-      "minecraft:large_dripstone"
+      "minecraft:large_dripstone",
+      "kurumimnmod:field_roads"
     ],
     [
       "minecraft:monster_room",

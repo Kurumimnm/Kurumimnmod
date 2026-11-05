@@ -131,7 +131,8 @@
       "minecraft:lake_lava_surface"
     ],
     [
-      "minecraft:amethyst_geode"
+      "minecraft:amethyst_geode",
+      "kurumimnmod:field_roads"
     ],
     [
       "minecraft:monster_room",

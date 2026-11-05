@@ -26,9 +26,12 @@ import net.minecraft.world.level.biome.Biome;
  * 危険度 = フィールドの tier（出発する街の番号）＋ エリア番号。
  * 本道（エリア 1）から外れるほど数字が上がり、敵が強くなる想定。
  *
- * <h2>山脈</h2>
- * mountains（省略可）に尾根線を書くと、その周りの地形が盛り上がる（{@link MountainUpliftFunction}）。
- * ふもとは登れない絶壁、上のほうは戦闘できる広い場所、中心が山頂。山の中のバイオームは山脈用になる。
+ * <h2>地形</h2>
+ * 地面の高さはすべてこのMODで計算する（{@link TerrainHeightFunction}）。
+ * terrain = 基本の地面、mountains = 山脈（{@link MountainSettings}）。丘・渓谷・川・洞窟も今後ここに足していく。
+ *
+ * <h2>道</h2>
+ * roads = 街と街を結ぶ道（{@link RoadSettings}）。道の見た目と有無はフィールドごとの road で決まる。
  */
 public final class FieldMap {
 
@@ -63,16 +66,24 @@ public final class FieldMap {
         ).apply(i, AreaSeed::new));
     }
 
-    /** フィールド。biome = このフィールドのバイオーム、tier = 危険度の基準（出発する街の番号）。 */
-    public record Field(String id, int number, Holder<Biome> biome, int tier, List<AreaSeed> areas) {
+    /**
+     * フィールド。biome = このフィールドのバイオーム、tier = 危険度の基準（出発する街の番号）、
+     * road = このフィールドを通る道の種類と状態（省略すると道なし。{@link RoadSettings} 参照）。
+     */
+    public record Field(String id, int number, Holder<Biome> biome, int tier, List<AreaSeed> areas,
+                        RoadSettings.FieldRoad road) {
         public static final Codec<Field> CODEC = RecordCodecBuilder.create(i -> i.group(
                 Codec.STRING.fieldOf("id").forGetter(Field::id),
                 Codec.INT.fieldOf("number").forGetter(Field::number),
                 Biome.CODEC.fieldOf("biome").forGetter(Field::biome),
                 Codec.INT.fieldOf("tier").forGetter(Field::tier),
-                AreaSeed.CODEC.listOf().fieldOf("areas").forGetter(Field::areas)
+                AreaSeed.CODEC.listOf().fieldOf("areas").forGetter(Field::areas),
+                RoadSettings.FieldRoad.CODEC.optionalFieldOf("road", RoadSettings.FieldRoad.NONE).forGetter(Field::road)
         ).apply(i, Field::new));
     }
+
+    /** 道の判定結果。block = 置くブロック。 */
+    public record RoadHit(RoadSettings.Style style, net.minecraft.world.level.block.Block block) {}
 
     /** 座標（ブロック単位）。 */
     public record Point(int x, int z) {
@@ -80,68 +91,6 @@ public final class FieldMap {
                 Codec.INT.fieldOf("x").forGetter(Point::x),
                 Codec.INT.fieldOf("z").forGetter(Point::z)
         ).apply(i, Point::new));
-    }
-
-    /**
-     * 山脈の尾根線。points を順につないだ線が尾根の中心になり、そこから width ブロック離れたところが山のふもと。
-     * closed = true なら最後の点と最初の点もつなぐ（輪にする）。
-     */
-    public record Ridge(double width, boolean closed, List<Point> points) {
-        public static final Codec<Ridge> CODEC = RecordCodecBuilder.create(i -> i.group(
-                Codec.DOUBLE.fieldOf("width").forGetter(Ridge::width),
-                Codec.BOOL.optionalFieldOf("closed", false).forGetter(Ridge::closed),
-                Point.CODEC.listOf().fieldOf("points").forGetter(Ridge::points)
-        ).apply(i, Ridge::new));
-    }
-
-    /**
-     * 山脈の設定。高さはふもとの地面から何ブロック盛り上げるか。
-     * <pre>
-     * 高さ
-     *  peak   ┤                    ／￣＼      ← 山頂（尾根の中心）
-     *  ledge  ┤        ＿＿＿＿＿／        ← 上のほうの広い場所（戦闘できる）
-     *  wall   ┤   ┌──             ← 絶壁の上
-     *         │   │                ← 絶壁（登れない）
-     *    0    ┼───┘
-     *         ふもと  wall_ratio   ledge_ratio    中心
-     * </pre>
-     * wall_ratio / ledge_ratio は「ふもと→尾根の中心」を 0〜1 としたときの位置。
-     * biome_threshold より内側（山の中）は biome のバイオームになる。
-     * jitter = 山のふもとの線をぐにゃっとさせる量（amplitude ブロック、scale は波の大きさ）。
-     */
-    public record Mountains(Holder<Biome> biome, double biomeThreshold,
-                            double wallHeight, double ledgeHeight, double peakHeight,
-                            double wallRatio, double ledgeRatio, Warp jitter, List<Ridge> ridges) {
-        public static final Codec<Mountains> CODEC = RecordCodecBuilder.create(i -> i.group(
-                Biome.CODEC.fieldOf("biome").forGetter(Mountains::biome),
-                Codec.DOUBLE.fieldOf("biome_threshold").forGetter(Mountains::biomeThreshold),
-                Codec.DOUBLE.fieldOf("wall_height").forGetter(Mountains::wallHeight),
-                Codec.DOUBLE.fieldOf("ledge_height").forGetter(Mountains::ledgeHeight),
-                Codec.DOUBLE.fieldOf("peak_height").forGetter(Mountains::peakHeight),
-                Codec.DOUBLE.fieldOf("wall_ratio").forGetter(Mountains::wallRatio),
-                Codec.DOUBLE.fieldOf("ledge_ratio").forGetter(Mountains::ledgeRatio),
-                Warp.CODEC.fieldOf("jitter").forGetter(Mountains::jitter),
-                Ridge.CODEC.listOf().fieldOf("ridges").forGetter(Mountains::ridges)
-        ).apply(i, Mountains::new));
-
-        /** 山の中での位置 p（0 = ふもと、1 = 尾根の中心）から、盛り上げる高さ（ブロック）を求める。 */
-        public double heightAt(double p) {
-            if (p <= 0) {
-                return 0;
-            }
-            if (p < wallRatio) {
-                return wallHeight * smooth(p / wallRatio);
-            }
-            if (p < ledgeRatio) {
-                return wallHeight + (ledgeHeight - wallHeight) * (p - wallRatio) / (ledgeRatio - wallRatio);
-            }
-            return ledgeHeight + (peakHeight - ledgeHeight) * smooth((p - ledgeRatio) / (1 - ledgeRatio));
-        }
-
-        private static double smooth(double t) {
-            t = Math.max(0, Math.min(1, t));
-            return t * t * (3 - 2 * t);
-        }
     }
 
     /**
@@ -163,7 +112,9 @@ public final class FieldMap {
             Warp.CODEC.fieldOf("warp").forGetter(FieldMap::warp),
             Town.CODEC.listOf().fieldOf("towns").forGetter(FieldMap::towns),
             Field.CODEC.listOf().fieldOf("fields").forGetter(FieldMap::fields),
-            Mountains.CODEC.optionalFieldOf("mountains").forGetter(FieldMap::mountains)
+            TerrainSettings.CODEC.fieldOf("terrain").forGetter(FieldMap::terrain),
+            MountainSettings.CODEC.optionalFieldOf("mountains").forGetter(FieldMap::mountains),
+            RoadSettings.CODEC.optionalFieldOf("roads").forGetter(FieldMap::roads)
     ).apply(i, FieldMap::new)).validate(FieldMap::validate);
 
     /** フィールドが 1 つもない地図は読み込みエラーにする。 */
@@ -183,15 +134,25 @@ public final class FieldMap {
     /** ノイズの種類（x 方向・z 方向で別のノイズを使う）。確認用スクリプトと同じ値にすること。 */
     private static final long WARP_SALT_X = 101;
     private static final long WARP_SALT_Z = 202;
-    private static final long MOUNTAIN_SALT_X = 303;
-    private static final long MOUNTAIN_SALT_Z = 404;
-    /** 地形の「高さ 1」が何ブロックか（バニラの地形の depth は 128 ブロックで 1 変わる）。 */
-    private static final double BLOCKS_PER_DEPTH = 128.0;
+    private static final long ROAD_SALT_X = 909;
+    private static final long ROAD_SALT_Z = 1010;
+    private static final long ROAD_GAP_SALT = 1111;
+    /** 「worn」の道が途切れる割合の目安（ノイズがこの値より小さいところが途切れる）。 */
+    private static final double WORN_GAP_THRESHOLD = -0.15;
+    /** 「worn」の道の途切れの波の大きさ（ブロック）。 */
+    private static final double WORN_GAP_SCALE = 36.0;
 
     private final Warp warp;
     private final List<Town> towns;
     private final List<Field> fields;
-    private final Optional<Mountains> mountains;
+    private final TerrainSettings terrain;
+    private final Optional<MountainSettings> mountains;
+    private final Optional<RoadSettings> roads;
+    // 道の線分（from → to）を配列に展開したもの
+    private final double[] roadAX;
+    private final double[] roadAZ;
+    private final double[] roadBX;
+    private final double[] roadBZ;
 
     // 判定を速くするため、基準点を配列に展開しておく
     private final int[] seedX;
@@ -199,11 +160,39 @@ public final class FieldMap {
     private final int[] seedArea;
     private final Field[] seedField;
 
-    public FieldMap(Warp warp, List<Town> towns, List<Field> fields, Optional<Mountains> mountains) {
+    public FieldMap(Warp warp, List<Town> towns, List<Field> fields, TerrainSettings terrain,
+                    Optional<MountainSettings> mountains, Optional<RoadSettings> roads) {
         this.warp = warp;
         this.towns = List.copyOf(towns);
         this.fields = List.copyOf(fields);
+        this.terrain = terrain;
         this.mountains = mountains;
+        this.roads = roads;
+
+        // 道のルートを線分にする（街の id → 座標）
+        java.util.List<double[]> segments = new java.util.ArrayList<>();
+        roads.ifPresent(r -> {
+            for (RoadSettings.Route route : r.routes()) {
+                Optional<Town> from = this.towns.stream().filter(t -> t.id().equals(route.from())).findFirst();
+                Optional<Town> to = this.towns.stream().filter(t -> t.id().equals(route.to())).findFirst();
+                if (from.isEmpty() || to.isEmpty()) {
+                    continue; // 存在しない街の名前は無視
+                }
+                java.util.List<double[]> points = new java.util.ArrayList<>();
+                points.add(new double[]{from.get().x(), from.get().z()});
+                for (Point via : route.via()) {
+                    points.add(new double[]{via.x(), via.z()});
+                }
+                points.add(new double[]{to.get().x(), to.get().z()});
+                for (int s = 0; s + 1 < points.size(); s++) {
+                    segments.add(new double[]{points.get(s)[0], points.get(s)[1], points.get(s + 1)[0], points.get(s + 1)[1]});
+                }
+            }
+        });
+        this.roadAX = segments.stream().mapToDouble(v -> v[0]).toArray();
+        this.roadAZ = segments.stream().mapToDouble(v -> v[1]).toArray();
+        this.roadBX = segments.stream().mapToDouble(v -> v[2]).toArray();
+        this.roadBZ = segments.stream().mapToDouble(v -> v[3]).toArray();
 
         int count = 0;
         for (Field field : this.fields) {
@@ -237,8 +226,16 @@ public final class FieldMap {
         return fields;
     }
 
-    public Optional<Mountains> mountains() {
+    public TerrainSettings terrain() {
+        return terrain;
+    }
+
+    public Optional<MountainSettings> mountains() {
         return mountains;
+    }
+
+    public Optional<RoadSettings> roads() {
+        return roads;
     }
 
     /** 番号から街を探す。 */
@@ -286,66 +283,78 @@ public final class FieldMap {
         return location.field().biome();
     }
 
-    /**
-     * 山脈の中での位置（0 = 山の外・ふもと、1 = 尾根の中心）。
-     * 一番近い尾根線までの距離から求める。山脈が設定されていなければ常に 0。
-     */
+    /** 山脈の中での位置（0 = 山の外・ふもと、1 = 尾根の中心）。山脈がなければ常に 0。 */
     public double mountainPosition(double x, double z) {
-        if (mountains.isEmpty()) {
-            return 0;
-        }
-        Mountains m = mountains.get();
-        // ふもとの線がまっすぐにならないよう、座標を少しずらす
-        double nx = x / m.jitter().scale();
-        double nz = z / m.jitter().scale();
-        double jx = x + m.jitter().amplitude() * FieldNoise.fbm(nx, nz, MOUNTAIN_SALT_X);
-        double jz = z + m.jitter().amplitude() * FieldNoise.fbm(nx, nz, MOUNTAIN_SALT_Z);
+        return mountains.map(m -> m.position(x, z)).orElse(0.0);
+    }
 
-        double best = 0;
-        for (Ridge ridge : m.ridges()) {
-            List<Point> points = ridge.points();
-            int n = points.size();
-            if (n == 0) {
+    /**
+     * 地面の高さ（Y）。地形の JSON（density_function の kurumimnmod:terrain_height）から呼ばれる。
+     * 基本の地面（terrain）＋ 山脈（mountains）。上限は terrain.max_height。
+     */
+    public double terrainHeight(double x, double z) {
+        double height = terrain.groundHeight(x, z);
+        if (mountains.isPresent()) {
+            MountainSettings m = mountains.get();
+            double p = m.position(x, z);
+            if (p > 0) {
+                height += m.heightAt(p, x, z);
+            }
+        }
+        return Math.min(height, terrain.maxHeight());
+    }
+
+    /**
+     * その地点に道があれば、置くブロックを返す（なければ null）。
+     * 道はルートの線分の近く・山脈の外・フィールドの road が none 以外の場所にだけできる。
+     */
+    public RoadHit roadAt(double x, double z) {
+        if (roads.isEmpty() || roadAX.length == 0) {
+            return null;
+        }
+        RoadSettings r = roads.get();
+        // 道がまっすぐにならないよう、座標を少しずらす
+        double nx = x / r.jitter().scale();
+        double nz = z / r.jitter().scale();
+        double jx = x + r.jitter().amplitude() * FieldNoise.fbm(nx, nz, ROAD_SALT_X);
+        double jz = z + r.jitter().amplitude() * FieldNoise.fbm(nx, nz, ROAD_SALT_Z);
+
+        double limit = r.maxHalfWidth() + 1;
+        double distance = Double.MAX_VALUE;
+        for (int i = 0; i < roadAX.length; i++) {
+            // 線分を囲む四角の外ならスキップ（速くするため）
+            if (jx < Math.min(roadAX[i], roadBX[i]) - limit || jx > Math.max(roadAX[i], roadBX[i]) + limit
+                    || jz < Math.min(roadAZ[i], roadBZ[i]) - limit || jz > Math.max(roadAZ[i], roadBZ[i]) + limit) {
                 continue;
             }
-            double minDistance = Double.MAX_VALUE;
-            int segments = ridge.closed() ? n : n - 1;
-            if (n == 1) {
-                minDistance = Math.hypot(jx - points.get(0).x(), jz - points.get(0).z());
-            }
-            for (int i = 0; i < segments; i++) {
-                Point a = points.get(i);
-                Point b = points.get((i + 1) % n);
-                minDistance = Math.min(minDistance, distanceToSegment(jx, jz, a, b));
-            }
-            best = Math.max(best, 1 - minDistance / ridge.width());
+            distance = Math.min(distance, Geometry.distanceToSegment(jx, jz, roadAX[i], roadAZ[i], roadBX[i], roadBZ[i]));
         }
-        return best;
-    }
-
-    /**
-     * 地形を盛り上げる量（地形の depth 単位。1 = 128 ブロック）。
-     * 地形の JSON（density_function の kurumimnmod:mountain_uplift）から呼ばれる。
-     */
-    public double mountainUplift(double x, double z) {
-        if (mountains.isEmpty()) {
-            return 0;
+        if (distance > limit) {
+            return null;
         }
-        return mountains.get().heightAt(mountainPosition(x, z)) / BLOCKS_PER_DEPTH;
-    }
 
-    /** 盛り上げる量の最大値（depth 単位）。 */
-    public double maxMountainUplift() {
-        return mountains.map(m -> Math.max(m.peakHeight(), Math.max(m.ledgeHeight(), m.wallHeight())) / BLOCKS_PER_DEPTH)
-                .orElse(0.0);
-    }
-
-    private static double distanceToSegment(double x, double z, Point a, Point b) {
-        double vx = b.x() - a.x();
-        double vz = b.z() - a.z();
-        double lengthSq = vx * vx + vz * vz;
-        double t = lengthSq == 0 ? 0 : ((x - a.x()) * vx + (z - a.z()) * vz) / lengthSq;
-        t = Math.max(0, Math.min(1, t));
-        return Math.hypot(x - (a.x() + vx * t), z - (a.z() + vz * t));
+        Location location = locate(x, z);
+        RoadSettings.FieldRoad fieldRoad = location.field().road();
+        if (location.inMountains() || fieldRoad.isNone()) {
+            return null;
+        }
+        RoadSettings.Style style = r.styles().get(fieldRoad.style());
+        if (style == null) {
+            return null;
+        }
+        double halfWidth = style.width() / 2.0;
+        if (fieldRoad.isWorn()) {
+            // 荒れた道：ところどころ途切れて、細くなる
+            if (FieldNoise.fbm(x / WORN_GAP_SCALE, z / WORN_GAP_SCALE, ROAD_GAP_SALT) < WORN_GAP_THRESHOLD) {
+                return null;
+            }
+            halfWidth -= 0.5;
+        }
+        if (distance > halfWidth) {
+            return null;
+        }
+        // 中央は surface、端の 1 ブロックは edge
+        boolean edge = halfWidth >= 1.5 && distance > halfWidth - 1;
+        return new RoadHit(style, edge ? style.edge() : style.surface());
     }
 }
