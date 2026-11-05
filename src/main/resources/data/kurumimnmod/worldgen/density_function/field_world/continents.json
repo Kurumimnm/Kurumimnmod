@@ -1,9 +1,9 @@
 {
   "type": "minecraft:add",
-  "argument1": 0.45,
-  "argument2": {
+  "left": 0.45,
+  "right": {
     "type": "minecraft:mul",
-    "argument1": 0.25,
-    "argument2": "minecraft:overworld/continents"
+    "left": 0.25,
+    "right": "minecraft:overworld/continents"
   }
 }
