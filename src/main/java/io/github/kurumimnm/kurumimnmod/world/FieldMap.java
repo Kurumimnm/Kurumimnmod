@@ -47,14 +47,24 @@ public final class FieldMap {
         ).apply(i, Warp::new));
     }
 
-    /** 街。number = 街の番号（0 = 始まりの街）。座標はブロック単位（北 = -Z）。 */
-    public record Town(String id, int number, int x, int z) {
+    /**
+     * 街。number = 街の番号（0 = 始まりの街）。座標はブロック単位（北 = -Z）。
+     * radius = 街の範囲（この円の中が「街」。周りのフィールドとの境目にゲートの壁ができる）。
+     */
+    public record Town(String id, int number, int x, int z, int radius) {
         public static final Codec<Town> CODEC = RecordCodecBuilder.create(i -> i.group(
                 Codec.STRING.fieldOf("id").forGetter(Town::id),
                 Codec.INT.fieldOf("number").forGetter(Town::number),
                 Codec.INT.fieldOf("x").forGetter(Town::x),
-                Codec.INT.fieldOf("z").forGetter(Town::z)
+                Codec.INT.fieldOf("z").forGetter(Town::z),
+                Codec.INT.optionalFieldOf("radius", 48).forGetter(Town::radius)
         ).apply(i, Town::new));
+
+        public boolean contains(double px, double pz) {
+            double dx = px - x;
+            double dz = pz - z;
+            return dx * dx + dz * dz <= (double) radius * radius;
+        }
     }
 
     /** エリアの基準点。area = エリア番号（1 = 本道、大きいほど深い）。 */
@@ -71,19 +81,29 @@ public final class FieldMap {
      * road = このフィールドを通る道の種類と状態（省略すると道なし。{@link RoadSettings} 参照）。
      */
     public record Field(String id, int number, Holder<Biome> biome, int tier, List<AreaSeed> areas,
-                        RoadSettings.FieldRoad road) {
+                        RoadSettings.FieldRoad road, int mapColor) {
         public static final Codec<Field> CODEC = RecordCodecBuilder.create(i -> i.group(
                 Codec.STRING.fieldOf("id").forGetter(Field::id),
                 Codec.INT.fieldOf("number").forGetter(Field::number),
                 Biome.CODEC.fieldOf("biome").forGetter(Field::biome),
                 Codec.INT.fieldOf("tier").forGetter(Field::tier),
                 AreaSeed.CODEC.listOf().fieldOf("areas").forGetter(Field::areas),
-                RoadSettings.FieldRoad.CODEC.optionalFieldOf("road", RoadSettings.FieldRoad.NONE).forGetter(Field::road)
+                RoadSettings.FieldRoad.CODEC.optionalFieldOf("road", RoadSettings.FieldRoad.NONE).forGetter(Field::road),
+                COLOR_CODEC.optionalFieldOf("map_color", 0x7FB238).forGetter(Field::mapColor)
         ).apply(i, Field::new));
     }
 
     /** 道の判定結果。block = 置くブロック。 */
     public record RoadHit(RoadSettings.Style style, net.minecraft.world.level.block.Block block) {}
+
+    /** 色（"#RRGGBB" の文字列）。地図画面で使う。 */
+    public static final Codec<Integer> COLOR_CODEC = Codec.STRING.comapFlatMap(text -> {
+        try {
+            return DataResult.success(Integer.parseInt(text.startsWith("#") ? text.substring(1) : text, 16) & 0xFFFFFF);
+        } catch (NumberFormatException e) {
+            return DataResult.error(() -> "Invalid color: " + text);
+        }
+    }, color -> String.format("#%06X", color & 0xFFFFFF));
 
     /** 座標（ブロック単位）。 */
     public record Point(int x, int z) {
@@ -236,6 +256,30 @@ public final class FieldMap {
 
     public Optional<RoadSettings> roads() {
         return roads;
+    }
+
+    /** id から街を探す。 */
+    public Optional<Town> town(String id) {
+        return towns.stream().filter(t -> t.id().equals(id)).findFirst();
+    }
+
+    /** 番号からフィールドを探す。 */
+    public Optional<Field> field(int number) {
+        return fields.stream().filter(f -> f.number() == number).findFirst();
+    }
+
+    /**
+     * その地点の「場所」（街の中なら街、それ以外はフィールドとエリア）。
+     * ゲートの壁・場所の名前の表示・地図で使う。
+     */
+    public FieldRegion regionAt(double x, double z) {
+        for (Town town : towns) {
+            if (town.contains(x, z)) {
+                return FieldRegion.town(town.id());
+            }
+        }
+        Location location = locate(x, z);
+        return FieldRegion.field(location.field().number(), location.area());
     }
 
     /** 番号から街を探す。 */

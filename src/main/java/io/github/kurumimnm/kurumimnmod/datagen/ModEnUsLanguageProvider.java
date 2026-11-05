@@ -165,6 +165,30 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         add("commands." + MOD_ID + ".area.mountains", "(Inside the mountain range)");
         add("commands." + MOD_ID + ".towns.entry", "Town %s: X %s / Z %s");
 
+        // ---- ワールド：街の名前（1〜20 は名前が決まるまで仮） ----
+        add("town." + MOD_ID + ".mediana", "Mediana");
+        for (int n = 1; n <= 20; n++) {
+            add("town." + MOD_ID + ".town_" + n, "Town " + n + " (tentative)");
+        }
+
+        // ---- ワールド：場所の表示・ゲート・地図 ----
+        add("hud." + MOD_ID + ".location.town", "Town");
+        add("hud." + MOD_ID + ".location.area", "Area %s - Danger %s");
+        add("hud." + MOD_ID + ".location.new", "- New Location -");
+        add("message." + MOD_ID + ".gate.blocked", "Defeat the boss of this field to go further.");
+        add("commands." + MOD_ID + ".gate.cleared", "Marked %s field(s) as boss defeated.");
+        add("commands." + MOD_ID + ".gate.reset", "Reset all field boss victories.");
+        add("commands." + MOD_ID + ".explore.all", "Marked every town and area as visited.");
+        add("commands." + MOD_ID + ".explore.reset", "Cleared the exploration record.");
+        add("key." + MOD_ID + ".open_map", "Open Map");
+        add("screen." + MOD_ID + ".map", "Map");
+        add("screen." + MOD_ID + ".map.loading", "Drawing the map...");
+        add("screen." + MOD_ID + ".map.hover", "%s (%s)");
+        add("screen." + MOD_ID + ".map.unexplored", "Unexplored");
+        add("screen." + MOD_ID + ".map.coords", "X %s / Z %s");
+        add("screen." + MOD_ID + ".map.help", "Drag: Move   Wheel: Zoom   M: Close");
+        add("screen." + MOD_ID + ".map.help_op", "Drag: Move   Wheel: Zoom   Right-click: Teleport (OP)   M: Close");
+
         // ---- フィールド（バイオーム名）。番号は設計時のフィールド番号 ----
         addBiome("cradle_basin", "Cradle Basin"); // 1
         addBiome("young_leaf_road", "Young Leaf Road"); // 2

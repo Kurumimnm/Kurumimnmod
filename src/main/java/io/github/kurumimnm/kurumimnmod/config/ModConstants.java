@@ -212,4 +212,67 @@ public final class ModConstants {
     public static final float ENEMY_BAR_TICK_WIDTH = 0.012f;
     public static final int ENEMY_BAR_COLOR_TICK = 0x90000000;
     // ※ HP 部分の色は HP_COLORS（割合で変化）を使用
+
+    // =====================================================================
+    // ワールド：ゲート（赤い壁）
+    // =====================================================================
+    /** 1 tick でこれ以上（ブロック）動いたら「テレポート」とみなす（OP のテレポートは壁を通す）。 */
+    public static final double GATE_TELEPORT_DISTANCE = 8.0;
+    /** 壁を描く範囲（プレイヤーからの水平距離、ブロック）。 */
+    public static final int GATE_RENDER_RADIUS = 24;
+    /** 壁の高さ（プレイヤーの足元から上下、ブロック）。 */
+    public static final float GATE_RENDER_BELOW = 6f;
+    public static final float GATE_RENDER_ABOVE = 18f;
+    /** 壁の色（ARGB）。遠いほど薄くなる。 */
+    public static final int GATE_COLOR = 0xFFFF2A2A;
+    /** 壁のいちばん濃いところの不透明度（0〜1）。 */
+    public static final float GATE_MAX_ALPHA = 0.55f;
+    /** 縞模様の間隔（ブロック）と流れる速さ（1 秒あたりブロック）。 */
+    public static final float GATE_STRIPE_SPACING = 1.5f;
+    public static final float GATE_STRIPE_SPEED = 0.6f;
+
+    // =====================================================================
+    // ワールド：場所の名前の表示
+    // =====================================================================
+    /** 場所が変わったときの大きな表示：フェードイン・表示・フェードアウトの時間（ミリ秒）。 */
+    public static final int LOCATION_TITLE_FADE_IN_MS = 400;
+    public static final int LOCATION_TITLE_STAY_MS = 2200;
+    public static final int LOCATION_TITLE_FADE_OUT_MS = 800;
+    /** 大きな表示の文字の倍率（初めて来た場所は NEW_SCALE）。 */
+    public static final float LOCATION_TITLE_SCALE = 2.0f;
+    public static final float LOCATION_TITLE_NEW_SCALE = 2.6f;
+    /** 大きな表示の上端の位置（画面の高さに対する割合）。 */
+    public static final float LOCATION_TITLE_Y = 0.22f;
+    /** 同じ境目を行き来したときに表示が連続しないよう、エリアの表示を出さない間隔（ミリ秒）。 */
+    public static final int LOCATION_TITLE_COOLDOWN_MS = 3000;
+    /** 左上の常時表示の位置（ピクセル）。 */
+    public static final int LOCATION_HUD_X = 4;
+    public static final int LOCATION_HUD_Y = 4;
+    public static final int LOCATION_COLOR_NAME = 0xFFFFFFFF;
+    public static final int LOCATION_COLOR_SUB = 0xFFC8C8C8;
+    public static final int LOCATION_COLOR_NEW = 0xFFFFD94A;
+    public static final int LOCATION_COLOR_BACKGROUND = 0x60000000;
+
+    // =====================================================================
+    // ワールド：地図画面（M キー）
+    // =====================================================================
+    /** 地図の画像の 1 ピクセルが何ブロックか（小さいほど細かいが、作るのに時間がかかる）。 */
+    public static final int MAP_BLOCKS_PER_PIXEL = 16;
+    /** 地図の外側の余白（ブロック）。 */
+    public static final int MAP_MARGIN = 1200;
+    /** 拡大率の範囲（画面の 1 ピクセルあたり地図の何ピクセルか）と、ホイール 1 回あたりの倍率。 */
+    public static final float MAP_MIN_ZOOM = 0.25f;
+    public static final float MAP_MAX_ZOOM = 8f;
+    public static final float MAP_ZOOM_STEP = 1.25f;
+    /** まだ行っていないエリアの色。 */
+    public static final int MAP_COLOR_UNEXPLORED = 0xFF1B1B20;
+    /** エリアの境目の線の色。 */
+    public static final int MAP_COLOR_AREA_LINE = 0xFFFFFFFF;
+    /** 山脈の色（低いところ → 高いところ）。 */
+    public static final int MAP_COLOR_MOUNTAIN_LOW = 0xFF7A766E;
+    public static final int MAP_COLOR_MOUNTAIN_HIGH = 0xFFF2F2F2;
+    /** 街の印の色。 */
+    public static final int MAP_COLOR_TOWN = 0xFF1D9E75;
+    /** プレイヤーの印の色。 */
+    public static final int MAP_COLOR_PLAYER = 0xFFFF4040;
 }

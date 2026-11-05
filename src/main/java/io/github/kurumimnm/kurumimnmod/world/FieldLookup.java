@@ -23,6 +23,15 @@ public final class FieldLookup {
         return Optional.empty();
     }
 
+    /** そのディメンションが使っている地図の名前（例：kurumimnmod:first_continent）。 */
+    public static Optional<net.minecraft.resources.Identifier> mapId(ServerLevel level) {
+        BiomeSource source = level.getChunkSource().getGenerator().getBiomeSource();
+        if (source instanceof FieldMapBiomeSource fieldSource) {
+            return fieldSource.map().unwrapKey().map(key -> key.identifier());
+        }
+        return Optional.empty();
+    }
+
     /** ブロック座標 (x, z) のフィールド・エリア・危険度。 */
     public static Optional<FieldMap.Location> locate(ServerLevel level, double x, double z) {
         return map(level).map(m -> m.locate(x, z));
