@@ -4,13 +4,15 @@ import com.mojang.serialization.MapCodec;
 import io.github.kurumimnm.kurumimnmod.Kurumimnmod;
 import io.github.kurumimnm.kurumimnmod.world.FieldMap;
 import io.github.kurumimnm.kurumimnmod.world.FieldMapBiomeSource;
-import io.github.kurumimnm.kurumimnmod.world.MountainUpliftFunction;
+import io.github.kurumimnm.kurumimnmod.world.FieldRoadFeature;
+import io.github.kurumimnm.kurumimnmod.world.TerrainHeightFunction;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.biome.BiomeSource;
 import net.minecraft.world.level.levelgen.densityfunction.DensityFunction;
+import net.minecraft.world.level.levelgen.feature.Feature;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -20,7 +22,8 @@ import net.neoforged.neoforge.registries.NewDatapackRegistryEvent;
  * ワールド生成まわりの登録クラス。
  * <ul>
  *   <li>BiomeSource の種類 {@code kurumimnmod:field_map}（{@link FieldMapBiomeSource}）</li>
- *   <li>地形の部品（density function）の種類 {@code kurumimnmod:mountain_uplift}（{@link MountainUpliftFunction}）</li>
+ *   <li>地形の部品（density function）の種類 {@code kurumimnmod:terrain_height}（{@link TerrainHeightFunction}）</li>
+ *   <li>地物（feature）の種類 {@code kurumimnmod:field_roads}（{@link FieldRoadFeature}・街道）</li>
  *   <li>データパックのレジストリ {@code kurumimnmod:field_map}（地図 JSON の置き場所）
  *       … {@code data/<名前空間>/kurumimnmod/field_map/<名前>.json}</li>
  * </ul>
@@ -44,11 +47,19 @@ public final class ModWorldgen {
     public static final DeferredRegister<MapCodec<? extends DensityFunction>> DENSITY_FUNCTION_TYPES =
             DeferredRegister.create(Registries.DENSITY_FUNCTION_TYPE, Kurumimnmod.MOD_ID);
 
-    /** 山脈で地形を盛り上げる量。 */
-    public static final DeferredHolder<MapCodec<? extends DensityFunction>, MapCodec<MountainUpliftFunction>> MOUNTAIN_UPLIFT =
-            DENSITY_FUNCTION_TYPES.register("mountain_uplift", () -> MountainUpliftFunction.CODEC);
+    /** 地面の高さ（このMODの地形はすべてこれで作る）。 */
+    public static final DeferredHolder<MapCodec<? extends DensityFunction>, MapCodec<TerrainHeightFunction>> TERRAIN_HEIGHT =
+            DENSITY_FUNCTION_TYPES.register("terrain_height", () -> TerrainHeightFunction.CODEC);
+
+    public static final DeferredRegister<MapCodec<? extends Feature>> FEATURE_TYPES =
+            DeferredRegister.create(Registries.FEATURE_TYPE, Kurumimnmod.MOD_ID);
+
+    /** 街道を敷く地物。 */
+    public static final DeferredHolder<MapCodec<? extends Feature>, MapCodec<FieldRoadFeature>> FIELD_ROADS =
+            FEATURE_TYPES.register("field_roads", () -> FieldRoadFeature.CODEC);
 
     public static void register(IEventBus modEventBus) {
+        FEATURE_TYPES.register(modEventBus);
         BIOME_SOURCES.register(modEventBus);
         DENSITY_FUNCTION_TYPES.register(modEventBus);
         modEventBus.addListener(ModWorldgen::onNewDatapackRegistry);

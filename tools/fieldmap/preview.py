@@ -80,9 +80,25 @@ def main():
                     dmin = min(_segdist(jx, jz, a, b) for a, b in segs) if segs else math.hypot(jx - pts[0][0], jz - pts[0][1])
                     best = max(best, 1 - dmin / r["width"])
                 P[j, i] = best
-        wall = (P > 0) & (P < mt["wall_ratio"]); upper = P >= mt["wall_ratio"]
+        wall_p = mt["profile"][1]["p"] if len(mt["profile"]) > 1 else 0.05  # 最初の絶壁の終わり
+        wall = (P > 0) & (P < wall_p); upper = P >= wall_p
         img[wall] = [0.35, 0.33, 0.32]
-        img[upper] = (0.85 - 0.25 * np.clip((P[upper] - mt["wall_ratio"]) / (1 - mt["wall_ratio"]), 0, 1))[:, None] * np.array([1, 1, 1.03])
+        img[upper] = (0.85 - 0.25 * np.clip((P[upper] - wall_p) / (1 - wall_p), 0, 1))[:, None] * np.array([1, 1, 1.03])
+    # 街道（道のある/荒れた/ないフィールドで色分け）
+    roads = data.get("roads")
+    if roads:
+        town = {t["id"]: (t["x"], t["z"]) for t in data["towns"]}
+        cond = {f["number"]: f.get("road", {}).get("condition", "none") for f in data["fields"]}
+        for r in roads["routes"]:
+            pts = [town[r["from"]]] + [(v["x"], v["z"]) for v in r.get("via", [])] + [town[r["to"]]]
+            for a, b in zip(pts, pts[1:]):
+                for t in np.linspace(0, 1, 120):
+                    x = a[0] + (b[0] - a[0]) * t; z = a[1] + (b[1] - a[1]) * t
+                    i = int((x - xs[0]) / STEP); j = int((z - zs[0]) / STEP)
+                    if 0 <= i < len(xs) and 0 <= j < len(zs):
+                        c = cond.get(int(field[j, i]), "none")
+                        if c != "none":
+                            img[max(j-1,0):j+1, max(i-1,0):i+1] = [0.95, 0.85, 0.35] if c == "full" else [0.75, 0.6, 0.35]
     edge = (field[1:, 1:] != field[:-1, 1:]) | (field[1:, 1:] != field[1:, :-1])
     img[1:, 1:][edge] = 0.15
     fig, ax = plt.subplots(figsize=(7.5, 7.5 * len(zs) / len(xs)), dpi=110)
@@ -95,7 +111,7 @@ def main():
         cx = np.mean([a["x"] for a in main_area]); cz = np.mean([a["z"] for a in main_area])
         ax.text(cx + 180, cz, str(f["number"]), fontsize=7, bbox=dict(boxstyle="round,pad=.15", fc="white", ec="none", alpha=.75))
     ax.set_xlabel("X (east ->)"); ax.set_ylabel("Z (north = up)")
-    ax.set_title("Kurumimnmod field map (darker = deeper area, gray = mountains)")
+    ax.set_title("Kurumimnmod field map (darker = deeper area, gray = mountains, yellow = road)")
     plt.tight_layout(); plt.savefig(OUT)
     print("saved:", OUT)
 
