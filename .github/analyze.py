@@ -39,8 +39,7 @@ for path in glob.glob(os.path.join(reg, "r.*.mca")):
                     bs = sec.get("block_states") if hasattr(sec, "get") else None
                     pal = bs.get("palette", []) if hasattr(bs, "get") else []
                     for p in pal:
-                        n = str(p.get("Name", p.get("name", ""))) if hasattr(p, "get") else str(p)
-                        if not n.startswith("minecraft:"): print("palette entry?", repr(p)[:200])
+                        n = str(p.get("id", "")) if hasattr(p, "get") else str(p)
                         if n in ("minecraft:oak_door", "minecraft:crafting_table", "minecraft:lantern"):
                             blocks_found.setdefault(n, []).append((cx, cz, int(sec["Y"])))
 print("chunks with heights:", len(heights) // 256)
@@ -64,3 +63,8 @@ plt.figure(figsize=(9, 4)); plt.imshow(img, extent=[-400, 400, -699, -1000], cma
 plt.savefig("probe_out/pass.png")
 for z in (-1600, -1200, -900, -600, -300, 0, 300, 600, 900, 1200, 1500, 1800):
     print("x=8 z=%d height=%s" % (z, heights.get((8, z))))
+
+print("NS_PROFILE", ";".join("%d:%d" % (z, h) for z, h in ns if z % 8 == 0))
+print("EW_PROFILE", ";".join("%d:%d" % (x, h) for x, h in ew if x % 8 == 0))
+pas = sorted((x, z, h) for (x, z), h in heights.items() if -400 <= x <= 400 and -1000 <= z <= -700 and x % 16 == 0 and z % 16 == 0)
+print("PASS", ";".join("%d,%d:%d" % p for p in pas))
