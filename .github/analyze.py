@@ -36,7 +36,7 @@ for path in glob.glob(os.path.join(reg, "r.*.mca")):
             # 洞窟（地下の空気）と川・池（地表付近の水）の数
             for sec in c.get("sections", []):
                 Y = int(sec["Y"]); bs = sec.get("block_states")
-                pal = [str(p.get("id", "")) for p in bs.get("palette", [])] if hasattr(bs, "get") else []
+                pal = [str(p.get("id", "")) if hasattr(p, "get") else str(p) for p in bs.get("palette", [])] if hasattr(bs, "get") else []
                 if -4 <= Y <= 2 and ("minecraft:air" in pal or "minecraft:cave_air" in pal): stats["underground_air"] += 1
                 if 3 <= Y <= 4 and "minecraft:water" in pal: stats["water_y48_79"] += 1
             stats["chunks"] += 1
