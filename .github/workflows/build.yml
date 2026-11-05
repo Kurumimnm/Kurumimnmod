@@ -16,7 +16,7 @@ jobs:
         run: |
           mkdir -p run
           echo "eula=true" > run/eula.txt
-          printf 'level-type=kurumimnmod\\:field_world\nlevel-seed=12345\nonline-mode=false\n' > run/server.properties
+          printf 'level-type=kurumimnmod\\:field_world\nlevel-seed=12345\nonline-mode=false\nenable-rcon=true\nrcon.password=probe\nrcon.port=25575\n' > run/server.properties
           cat run/server.properties
       - name: Run server (stop after start)
         run: |
@@ -27,6 +27,8 @@ jobs:
             if grep -qE "BUILD FAILED|Exception in server tick loop|Failed to start the minecraft server" server_out.txt; then echo "FAILED"; break; fi
           done
           sleep 5
+          python3 .github/rcon_probe.py || true
+          sleep 3
           pkill -f runServer || true; pkill -f java || true
           grep -nE "ERROR|Exception|Caused by|kurumimnmod|Done \(|Preparing spawn|level-type" server_out.txt | grep -v "DEBUG" | head -150
           echo ----; grep -n "level.dat\|Preparing level" server_out.txt | head
