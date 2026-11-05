@@ -285,7 +285,7 @@ public final class FieldMap {
 
     /** 山脈の中での位置（0 = 山の外・ふもと、1 = 尾根の中心）。山脈がなければ常に 0。 */
     public double mountainPosition(double x, double z) {
-        return mountains.map(m -> m.position(x, z)).orElse(0.0);
+        return mountains.map(m -> m.position(x, z).p()).orElse(0.0);
     }
 
     /**
@@ -296,9 +296,9 @@ public final class FieldMap {
         double height = terrain.groundHeight(x, z);
         if (mountains.isPresent()) {
             MountainSettings m = mountains.get();
-            double p = m.position(x, z);
-            if (p > 0) {
-                height += m.heightAt(p, x, z);
+            MountainSettings.Position position = m.position(x, z);
+            if (position.p() > 0) {
+                height += m.heightAt(position, x, z);
             }
         }
         return Math.min(height, terrain.maxHeight());
