@@ -82,13 +82,18 @@ public final class FieldMap {
     // =====================================================================
 
     /** JSON の中身そのものを読む Codec。 */
-    public static final Codec<FieldMap> DIRECT_CODEC = RecordCodecBuilder.create(i -> i.group(
+    public static final Codec<FieldMap> DIRECT_CODEC = RecordCodecBuilder.<FieldMap>create(i -> i.group(
             Warp.CODEC.fieldOf("warp").forGetter(FieldMap::warp),
             Town.CODEC.listOf().fieldOf("towns").forGetter(FieldMap::towns),
             Field.CODEC.listOf().fieldOf("fields").forGetter(FieldMap::fields)
-    ).apply(i, FieldMap::new)).validate(map -> map.fields().isEmpty()
-            ? DataResult.error(() -> "Field map must have at least one field")
-            : DataResult.success(map));
+    ).apply(i, FieldMap::new)).validate(FieldMap::validate);
+
+    /** フィールドが 1 つもない地図は読み込みエラーにする。 */
+    private static DataResult<FieldMap> validate(FieldMap map) {
+        return map.fields().isEmpty()
+                ? DataResult.error(() -> "Field map must have at least one field")
+                : DataResult.success(map);
+    }
 
     /** 「kurumimnmod:first_continent」のように、登録済みの地図を名前で参照する Codec。 */
     public static final Codec<Holder<FieldMap>> CODEC = RegistryCodecs.holder(ModWorldgen.FIELD_MAP, DIRECT_CODEC);
