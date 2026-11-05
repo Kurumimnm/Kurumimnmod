@@ -64,7 +64,7 @@ public final class ModAttachments {
      */
     public static final Supplier<AttachmentType<PlayerExploration>> EXPLORATION = ATTACHMENT_TYPES.register("exploration",
             () -> AttachmentType.builder(() -> PlayerExploration.EMPTY)
-                    .serialize(PlayerExploration.CODEC)
+                    .serialize(PlayerExploration.CODEC.fieldOf("exploration"))
                     .copyOnDeath()
                     .sync((holder, to) -> holder == to, PlayerExploration.STREAM_CODEC)
                     .build());
