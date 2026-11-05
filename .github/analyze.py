@@ -33,9 +33,13 @@ for path in glob.glob(os.path.join(reg, "r.*.mca")):
             for i in range(256):
                 heights[(cx * 16 + i % 16, cz * 16 + i // 16)] = vals[i] - 64 - 1
             if -2 <= cx <= 1 and -2 <= cz <= 1:
-                for sec in c.get("sections", []):
-                    for p in sec.get("block_states", {}).get("palette", []):
-                        n = str(p["Name"])
+                secs = c.get("sections", [])
+                if not isinstance(secs, list): print("sections type", type(secs)); secs = []
+                for sec in secs:
+                    bs = sec.get("block_states") if hasattr(sec, "get") else None
+                    pal = bs.get("palette", []) if hasattr(bs, "get") else []
+                    for p in pal:
+                        n = str(p["Name"]) if hasattr(p, "get") else str(p)
                         if n in ("minecraft:oak_door", "minecraft:crafting_table", "minecraft:lantern"):
                             blocks_found.setdefault(n, []).append((cx, cz, int(sec["Y"])))
 print("chunks with heights:", len(heights) // 256)

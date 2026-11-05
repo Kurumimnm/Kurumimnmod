@@ -17,7 +17,8 @@ if mode=="load":
               "forceload add 0 -1600 31 99","forceload add 0 100 31 1800",
               "forceload add -1600 0 -1 31","forceload add 0 0 1600 31",
               # 峠のあたり（x=-400〜400, z=-1000〜-700）
-              "forceload add -400 -1000 400 -700"]:
+              "forceload add -400 -1000 -1 -700","forceload add 0 -1000 400 -700",
+              "execute positioned 0 64 -900 run kmod area"]:
         run(c)
 elif mode=="save":
     run("save-all flush")
