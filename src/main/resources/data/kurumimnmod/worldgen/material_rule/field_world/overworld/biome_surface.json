@@ -23,7 +23,8 @@
         "type": "minecraft:biome",
         "biome_is": [
           "minecraft:jagged_peaks",
-          "kurumimnmod:dragon_peaks"
+          "kurumimnmod:dragon_peaks",
+          "kurumimnmod:sky_wall_range"
         ]
       },
       "then_run": "minecraft:overworld/biome_surface/jagged_peaks"

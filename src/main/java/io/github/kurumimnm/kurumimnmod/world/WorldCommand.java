@@ -54,6 +54,9 @@ public final class WorldCommand {
                 .orElse(Component.literal(loc.field().id()));
         source.sendSuccess(() -> Component.translatable(KEY + ".area.info",
                 loc.field().number(), fieldName, loc.area(), loc.danger()), false);
+        if (loc.inMountains()) {
+            source.sendSuccess(() -> Component.translatable(KEY + ".area.mountains"), false);
+        }
         return loc.danger();
     }
 

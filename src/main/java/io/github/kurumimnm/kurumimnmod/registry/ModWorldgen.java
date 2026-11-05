@@ -4,11 +4,13 @@ import com.mojang.serialization.MapCodec;
 import io.github.kurumimnm.kurumimnmod.Kurumimnmod;
 import io.github.kurumimnm.kurumimnmod.world.FieldMap;
 import io.github.kurumimnm.kurumimnmod.world.FieldMapBiomeSource;
+import io.github.kurumimnm.kurumimnmod.world.MountainUpliftFunction;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.biome.BiomeSource;
+import net.minecraft.world.level.levelgen.densityfunction.DensityFunction;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -18,6 +20,7 @@ import net.neoforged.neoforge.registries.NewDatapackRegistryEvent;
  * ワールド生成まわりの登録クラス。
  * <ul>
  *   <li>BiomeSource の種類 {@code kurumimnmod:field_map}（{@link FieldMapBiomeSource}）</li>
+ *   <li>地形の部品（density function）の種類 {@code kurumimnmod:mountain_uplift}（{@link MountainUpliftFunction}）</li>
  *   <li>データパックのレジストリ {@code kurumimnmod:field_map}（地図 JSON の置き場所）
  *       … {@code data/<名前空間>/kurumimnmod/field_map/<名前>.json}</li>
  * </ul>
@@ -38,8 +41,16 @@ public final class ModWorldgen {
     public static final DeferredHolder<MapCodec<? extends BiomeSource>, MapCodec<FieldMapBiomeSource>> FIELD_MAP_BIOME_SOURCE =
             BIOME_SOURCES.register("field_map", () -> FieldMapBiomeSource.CODEC);
 
+    public static final DeferredRegister<MapCodec<? extends DensityFunction>> DENSITY_FUNCTION_TYPES =
+            DeferredRegister.create(Registries.DENSITY_FUNCTION_TYPE, Kurumimnmod.MOD_ID);
+
+    /** 山脈で地形を盛り上げる量。 */
+    public static final DeferredHolder<MapCodec<? extends DensityFunction>, MapCodec<MountainUpliftFunction>> MOUNTAIN_UPLIFT =
+            DENSITY_FUNCTION_TYPES.register("mountain_uplift", () -> MountainUpliftFunction.CODEC);
+
     public static void register(IEventBus modEventBus) {
         BIOME_SOURCES.register(modEventBus);
+        DENSITY_FUNCTION_TYPES.register(modEventBus);
         modEventBus.addListener(ModWorldgen::onNewDatapackRegistry);
     }
 

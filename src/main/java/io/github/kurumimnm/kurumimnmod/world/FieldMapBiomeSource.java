@@ -14,7 +14,7 @@ import net.minecraft.world.level.biome.Climate;
  * フィールドマップに従ってバイオームを決める BiomeSource。
  * <p>
  * バニラのように気候ノイズでランダムに決めるのではなく、{@link FieldMap} の
- * 「いちばん近いエリアの基準点」が属するフィールドのバイオームを使う。
+ * 「いちばん近いエリアの基準点」が属するフィールドのバイオームを使う（山脈の中は山脈のバイオーム）。
  * 高さ（Y）には関係なく、同じ X・Z なら地上も地下も同じバイオームになる。
  * <p>
  * ワールドプリセットの JSON では次のように書く:
@@ -45,7 +45,11 @@ public final class FieldMapBiomeSource extends BiomeSource {
 
     @Override
     protected Stream<Holder<Biome>> collectPossibleBiomes() {
-        return map.value().fields().stream().map(FieldMap.Field::biome);
+        FieldMap fieldMap = map.value();
+        Stream<Holder<Biome>> fieldBiomes = fieldMap.fields().stream().map(FieldMap.Field::biome);
+        return fieldMap.mountains()
+                .map(m -> Stream.concat(fieldBiomes, Stream.of(m.biome())))
+                .orElse(fieldBiomes);
     }
 
     @Override
@@ -77,7 +81,7 @@ public final class FieldMapBiomeSource extends BiomeSource {
             // クォート（4 ブロック）単位 → ブロック座標（マスの中心）
             double x = QuartPos.toBlock(quartX) + 2;
             double z = QuartPos.toBlock(quartZ) + 2;
-            Holder<Biome> biome = map.locate(x, z).field().biome();
+            Holder<Biome> biome = map.biomeAt(x, z);
             last = new Memo(quartX, quartZ, biome);
             return biome;
         }
