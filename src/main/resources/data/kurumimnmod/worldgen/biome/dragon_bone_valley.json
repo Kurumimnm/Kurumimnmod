@@ -139,11 +139,7 @@
     "minecraft:gameplay/snow_golem_melts": true,
     "minecraft:visual/sky_color": "#6eb1ff"
   },
-  "carvers": [
-    "minecraft:cave",
-    "minecraft:cave_extra_underground",
-    "minecraft:canyon"
-  ],
+  "carvers": [],
   "downfall": 0.0,
   "effects": {
     "water_color": "#3f76e4"

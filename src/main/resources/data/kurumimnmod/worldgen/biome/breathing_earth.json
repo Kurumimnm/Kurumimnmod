@@ -116,11 +116,7 @@
       "modifier": "multiply"
     }
   },
-  "carvers": [
-    "minecraft:cave",
-    "minecraft:cave_extra_underground",
-    "minecraft:canyon"
-  ],
+  "carvers": [],
   "downfall": 0.9,
   "effects": {
     "dry_foliage_color": "#7b5334",

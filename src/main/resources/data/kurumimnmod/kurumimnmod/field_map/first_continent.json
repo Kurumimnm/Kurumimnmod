@@ -2006,9 +2006,9 @@
   "mountains": {
     "biome": "kurumimnmod:sky_wall_range",
     "biome_threshold": 0.04,
-    "wall_height": 95,
-    "ledge_height": 115,
-    "peak_height": 150,
+    "wall_height": 170,
+    "ledge_height": 200,
+    "peak_height": 300,
     "wall_ratio": 0.08,
     "ledge_ratio": 0.6,
     "jitter": {

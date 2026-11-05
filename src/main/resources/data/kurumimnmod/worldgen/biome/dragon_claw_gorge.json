@@ -105,11 +105,7 @@
     },
     "minecraft:visual/sky_color": "#7da2ff"
   },
-  "carvers": [
-    "minecraft:cave",
-    "minecraft:cave_extra_underground",
-    "minecraft:canyon"
-  ],
+  "carvers": [],
   "downfall": 0.3,
   "effects": {
     "water_color": "#3f76e4"
