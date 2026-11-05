@@ -162,6 +162,7 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         add("generator." + MOD_ID + ".field_world", "Kurumimnmod World");
         add("commands." + MOD_ID + ".area.info", "Field %s: %s - Area %s (Danger %s)");
         add("commands." + MOD_ID + ".area.not_field_world", "This world does not use the Kurumimnmod field map.");
+        add("commands." + MOD_ID + ".area.mountains", "(Inside the mountain range)");
         add("commands." + MOD_ID + ".towns.entry", "Town %s: X %s / Z %s");
 
         // ---- フィールド（バイオーム名）。番号は設計時のフィールド番号 ----
@@ -215,6 +216,7 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         addBiome("red_moon_plains", "Red Moon Plains"); // 48
         addBiome("breathing_earth", "Breathing Earth"); // 49
         addBiome("calamity_slumber", "Land of the Sleeping Calamity"); // 50
+        addBiome("sky_wall_range", "Sky Wall Range"); // 山脈（メディアナを囲む山・大陸を南北に分ける山）
 
         // ---- Config 画面 ----
         add(MOD_ID + ".configuration.title", "Kurumimnmod Configs");

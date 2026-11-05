@@ -37,6 +37,11 @@ def _value(x, z, salt):
 def fbm(x, z, salt):
     return _value(x, z, salt) * 0.65 + _value(x * 2.3, z * 2.3, salt + 7) * 0.35
 
+def _segdist(x, z, a, b):
+    vx, vz = b[0] - a[0], b[1] - a[1]; l2 = vx * vx + vz * vz
+    t = 0 if l2 == 0 else max(0, min(1, ((x - a[0]) * vx + (z - a[1]) * vz) / l2))
+    return math.hypot(x - (a[0] + vx * t), z - (a[1] + vz * t))
+
 def main():
     data = json.load(open(MAP, encoding="utf-8"))
     amp, scale = data["warp"]["amplitude"], data["warp"]["scale"]
@@ -60,6 +65,24 @@ def main():
     for n, c in colors.items():
         img[field == n] = c
     img *= (1 - 0.13 * (area - 1))[:, :, None]  # 深いエリアほど暗く
+    # 山脈（尾根線からの距離。FieldMap.mountainPosition と同じ計算）
+    mt = data.get("mountains")
+    if mt:
+        ja, js = mt["jitter"]["amplitude"], mt["jitter"]["scale"]
+        P = np.zeros((len(zs), len(xs)))
+        for j, z in enumerate(zs):
+            for i, x in enumerate(xs):
+                jx = x + ja * fbm(x / js, z / js, 303); jz = z + ja * fbm(x / js, z / js, 404)
+                best = 0.0
+                for r in mt["ridges"]:
+                    pts = [(p["x"], p["z"]) for p in r["points"]]
+                    segs = list(zip(pts, pts[1:])) + ([(pts[-1], pts[0])] if r.get("closed") else [])
+                    dmin = min(_segdist(jx, jz, a, b) for a, b in segs) if segs else math.hypot(jx - pts[0][0], jz - pts[0][1])
+                    best = max(best, 1 - dmin / r["width"])
+                P[j, i] = best
+        wall = (P > 0) & (P < mt["wall_ratio"]); upper = P >= mt["wall_ratio"]
+        img[wall] = [0.35, 0.33, 0.32]
+        img[upper] = (0.85 - 0.25 * np.clip((P[upper] - mt["wall_ratio"]) / (1 - mt["wall_ratio"]), 0, 1))[:, None] * np.array([1, 1, 1.03])
     edge = (field[1:, 1:] != field[:-1, 1:]) | (field[1:, 1:] != field[1:, :-1])
     img[1:, 1:][edge] = 0.15
     fig, ax = plt.subplots(figsize=(7.5, 7.5 * len(zs) / len(xs)), dpi=110)
@@ -72,7 +95,7 @@ def main():
         cx = np.mean([a["x"] for a in main_area]); cz = np.mean([a["z"] for a in main_area])
         ax.text(cx + 180, cz, str(f["number"]), fontsize=7, bbox=dict(boxstyle="round,pad=.15", fc="white", ec="none", alpha=.75))
     ax.set_xlabel("X (east ->)"); ax.set_ylabel("Z (north = up)")
-    ax.set_title("Kurumimnmod field map (darker = deeper area)")
+    ax.set_title("Kurumimnmod field map (darker = deeper area, gray = mountains)")
     plt.tight_layout(); plt.savefig(OUT)
     print("saved:", OUT)
 

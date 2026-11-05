@@ -210,6 +210,7 @@
   "generator.kurumimnmod.field_world": "Kurumimnmod ワールド",
   "commands.kurumimnmod.area.info": "フィールド%s：%s　エリア%s（危険度 %s）",
   "commands.kurumimnmod.area.not_field_world": "このワールドはKurumimnmodのフィールドマップを使っていません",
+  "commands.kurumimnmod.area.mountains": "（山脈の中）",
   "commands.kurumimnmod.towns.entry": "街%s：X %s ／ Z %s",
 
   "biome.kurumimnmod.cradle_basin": "揺り籠の盆地",
@@ -261,5 +262,6 @@
   "biome.kurumimnmod.maelstrom_coast": "大渦の海岸",
   "biome.kurumimnmod.red_moon_plains": "赤い月の平原",
   "biome.kurumimnmod.breathing_earth": "呼吸する大地",
-  "biome.kurumimnmod.calamity_slumber": "厄災の眠る地"
+  "biome.kurumimnmod.calamity_slumber": "厄災の眠る地",
+  "biome.kurumimnmod.sky_wall_range": "天壁の山脈"
 }
