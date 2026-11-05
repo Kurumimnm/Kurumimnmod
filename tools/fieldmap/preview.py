@@ -80,7 +80,7 @@ def main():
                     dmin = min(_segdist(jx, jz, a, b) for a, b in segs) if segs else math.hypot(jx - pts[0][0], jz - pts[0][1])
                     best = max(best, 1 - dmin / r["width"])
                 P[j, i] = best
-        wall_p = mt["profile"][1]["p"] if len(mt["profile"]) > 1 else 0.05  # 最初の絶壁の終わり
+        wall_p = mt.get("foot_ratio", 0.02) * 3  # ふもと付近
         wall = (P > 0) & (P < wall_p); upper = P >= wall_p
         img[wall] = [0.35, 0.33, 0.32]
         img[upper] = (0.85 - 0.25 * np.clip((P[upper] - wall_p) / (1 - wall_p), 0, 1))[:, None] * np.array([1, 1, 1.03])

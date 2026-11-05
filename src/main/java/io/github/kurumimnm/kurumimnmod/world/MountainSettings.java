@@ -9,37 +9,51 @@ import net.minecraft.world.level.biome.Biome;
 /**
  * 山脈の設定（地図 JSON の {@code mountains}）。
  * <p>
- * 尾根線（ridges）からの距離で「山の中の位置 p」（0 = ふもと、1 = 尾根の中心）を求め、
- * 断面の形（profile）に当てはめて高さを決める。
- *
- * <h2>断面の形（profile）</h2>
- * {@code [{"p": 0, "h": 0}, {"p": 0.04, "h": 150}, ...]} のように、p と高さ h（ふもとの地面から何ブロック上か）の組を並べる。
- * 点と点の間はまっすぐつなぐので、
+ * 尾根線（ridges）からの距離で「山の中の位置 p」（0 = ふもと、1 = 尾根の中心）を求め、そこから高さを決める。
+ * 断面は「ふもとの絶壁 → 険しい斜面 → 頂上 → 反対側の斜面」で、場所ごとに形が変わる。
  * <ul>
- *   <li>p が少ししか進まないのに h が大きく上がる区間 → 絶壁・急斜面</li>
- *   <li>h がほとんど変わらない区間 → 平らな場所（戦闘できる台地）</li>
- * </ul>
- * になる。初期設定は「凸」の形（絶壁 → 下の段 → 絶壁 → 上の段 → 山頂）。
- *
- * <h2>場所ごとのばらつき</h2>
- * <ul>
- *   <li>shelf_noise … 3 つ目以降の点の p を場所ごとにずらす量。下の段の幅が場所によって広い・ほぼない、になる</li>
- *   <li>height_noise … 2 つ目以降の点の高さを場所ごとにずらす量（ブロック）。平らな場所の高さが場所によって違う</li>
+ *   <li>foot_wall … ふもとの絶壁の高さ（場所ごとに min〜max。0 なら絶壁なしでそのまま斜面）</li>
+ *   <li>peak … 頂上の高さ（ふもとの地面から何ブロック上か。場所ごとに min〜max、scale は変化の波の大きさ）</li>
+ *   <li>crest_shift … 頂上の位置を尾根の中心からずらす量（0〜1）。ずれた側は急に、反対側はなだらかになる</li>
+ *   <li>roughness … 斜面のでこぼこ（amplitude ブロック、scale ブロック。複数重ねられる）</li>
+ *   <li>shelves … ところどころにできる平らな段。coverage = 段ができる場所の割合（0〜1）、
+ *       level = 段の高さ（ふもと〜頂上の何割か）、band = 段の奥の絶壁の高さ、scale = 段がある場所の波の大きさ</li>
  *   <li>jitter … ふもとの線をぐにゃっとさせる量</li>
  * </ul>
  *
  * @param biome          山の中のバイオーム
  * @param biomeThreshold この p より内側を山のバイオームにする
+ * @param footRatio      ふもとの絶壁の幅（p の割合）
  */
-public record MountainSettings(Holder<Biome> biome, double biomeThreshold, List<ProfilePoint> profile,
-                               double shelfNoise, double heightNoise, FieldMap.Warp jitter, List<Ridge> ridges) {
+public record MountainSettings(Holder<Biome> biome, double biomeThreshold, Range footWall, double footRatio,
+                               Peak peak, double crestShift, List<FieldMap.Warp> roughness, Shelves shelves,
+                               FieldMap.Warp jitter, List<Ridge> ridges) {
 
-    /** 断面の形の 1 点。 */
-    public record ProfilePoint(double p, double h) {
-        public static final Codec<ProfilePoint> CODEC = RecordCodecBuilder.create(i -> i.group(
-                Codec.DOUBLE.fieldOf("p").forGetter(ProfilePoint::p),
-                Codec.DOUBLE.fieldOf("h").forGetter(ProfilePoint::h)
-        ).apply(i, ProfilePoint::new));
+    /** 最小〜最大。 */
+    public record Range(double min, double max) {
+        public static final Codec<Range> CODEC = RecordCodecBuilder.create(i -> i.group(
+                Codec.DOUBLE.fieldOf("min").forGetter(Range::min),
+                Codec.DOUBLE.fieldOf("max").forGetter(Range::max)
+        ).apply(i, Range::new));
+    }
+
+    /** 頂上の高さ。 */
+    public record Peak(double min, double max, double scale) {
+        public static final Codec<Peak> CODEC = RecordCodecBuilder.create(i -> i.group(
+                Codec.DOUBLE.fieldOf("min").forGetter(Peak::min),
+                Codec.DOUBLE.fieldOf("max").forGetter(Peak::max),
+                Codec.DOUBLE.fieldOf("scale").forGetter(Peak::scale)
+        ).apply(i, Peak::new));
+    }
+
+    /** 平らな段。 */
+    public record Shelves(double coverage, double level, double band, double scale) {
+        public static final Codec<Shelves> CODEC = RecordCodecBuilder.create(i -> i.group(
+                Codec.DOUBLE.fieldOf("coverage").forGetter(Shelves::coverage),
+                Codec.DOUBLE.fieldOf("level").forGetter(Shelves::level),
+                Codec.DOUBLE.fieldOf("band").forGetter(Shelves::band),
+                Codec.DOUBLE.fieldOf("scale").forGetter(Shelves::scale)
+        ).apply(i, Shelves::new));
     }
 
     /**
@@ -54,36 +68,49 @@ public record MountainSettings(Holder<Biome> biome, double biomeThreshold, List<
         ).apply(i, Ridge::new));
     }
 
+    /** 山の中での位置。p = 0（ふもと）〜1（尾根の中心）、side = 尾根線のどちら側か（+1 / -1）。 */
+    public record Position(double p, int side) {
+        public static final Position OUTSIDE = new Position(0, 1);
+    }
+
     public static final Codec<MountainSettings> CODEC = RecordCodecBuilder.create(i -> i.group(
             Biome.CODEC.fieldOf("biome").forGetter(MountainSettings::biome),
             Codec.DOUBLE.fieldOf("biome_threshold").forGetter(MountainSettings::biomeThreshold),
-            ProfilePoint.CODEC.listOf().fieldOf("profile").forGetter(MountainSettings::profile),
-            Codec.DOUBLE.optionalFieldOf("shelf_noise", 0.0).forGetter(MountainSettings::shelfNoise),
-            Codec.DOUBLE.optionalFieldOf("height_noise", 0.0).forGetter(MountainSettings::heightNoise),
+            Range.CODEC.fieldOf("foot_wall").forGetter(MountainSettings::footWall),
+            Codec.DOUBLE.optionalFieldOf("foot_ratio", 0.02).forGetter(MountainSettings::footRatio),
+            Peak.CODEC.fieldOf("peak").forGetter(MountainSettings::peak),
+            Codec.DOUBLE.optionalFieldOf("crest_shift", 0.0).forGetter(MountainSettings::crestShift),
+            FieldMap.Warp.CODEC.listOf().optionalFieldOf("roughness", List.of()).forGetter(MountainSettings::roughness),
+            Shelves.CODEC.fieldOf("shelves").forGetter(MountainSettings::shelves),
             FieldMap.Warp.CODEC.fieldOf("jitter").forGetter(MountainSettings::jitter),
             Ridge.CODEC.listOf().fieldOf("ridges").forGetter(MountainSettings::ridges)
     ).apply(i, MountainSettings::new));
 
-    // ノイズの種類（確認用スクリプト tools/fieldmap/preview.py と同じ値にすること）
+    // ノイズの種類と波の大きさ（確認用スクリプト tools/fieldmap/preview.py と同じ値にすること）
     private static final long JITTER_SALT_X = 303;
     private static final long JITTER_SALT_Z = 404;
-    private static final long SHELF_SALT = 707;
-    private static final long HEIGHT_SALT = 808;
-    /** 段の幅・高さのばらつきの波の大きさ（ブロック）。 */
-    private static final double VARIATION_SCALE = 450.0;
+    private static final long CREST_SALT = 707;
+    private static final long WALL_SALT = 808;
+    private static final long PEAK_SALT = 1212;
+    private static final long SHELF_SALT = 1414;
+    private static final long ROUGH_SALT = 1515;
+    private static final long SHELF_LEVEL_SALT = 1616;
+    private static final double WALL_SCALE = 350.0;
+    private static final double CREST_SCALE = 600.0;
+    private static final double SHELF_LEVEL_SCALE = 400.0;
+    /** 頂上の手前で高さが頭打ちになる位置（q の割合）。1 に近いほど頂上がとがる。 */
+    private static final double SUMMIT_Q = 0.94;
 
-    /**
-     * 山脈の中での位置（0 = 山の外・ふもと、1 = 尾根の中心）。
-     * 一番近い尾根線までの距離から求める。
-     */
-    public double position(double x, double z) {
+    /** 地点 (x, z) の、山の中での位置。一番近い尾根線までの距離から求める。 */
+    public Position position(double x, double z) {
         // ふもとの線がまっすぐにならないよう、座標を少しずらす
         double nx = x / jitter.scale();
         double nz = z / jitter.scale();
         double jx = x + jitter.amplitude() * FieldNoise.fbm(nx, nz, JITTER_SALT_X);
         double jz = z + jitter.amplitude() * FieldNoise.fbm(nx, nz, JITTER_SALT_Z);
 
-        double best = 0;
+        double bestP = 0;
+        int bestSide = 1;
         for (Ridge ridge : ridges) {
             List<FieldMap.Point> points = ridge.points();
             int n = points.size();
@@ -91,6 +118,7 @@ public record MountainSettings(Holder<Biome> biome, double biomeThreshold, List<
                 continue;
             }
             double minDistance = Double.MAX_VALUE;
+            int side = 1;
             if (n == 1) {
                 minDistance = Math.hypot(jx - points.get(0).x(), jz - points.get(0).z());
             }
@@ -98,40 +126,74 @@ public record MountainSettings(Holder<Biome> biome, double biomeThreshold, List<
             for (int s = 0; s < segments; s++) {
                 FieldMap.Point a = points.get(s);
                 FieldMap.Point b = points.get((s + 1) % n);
-                minDistance = Math.min(minDistance, Geometry.distanceToSegment(jx, jz, a.x(), a.z(), b.x(), b.z()));
+                double d = Geometry.distanceToSegment(jx, jz, a.x(), a.z(), b.x(), b.z());
+                if (d < minDistance) {
+                    minDistance = d;
+                    // 線分のどちら側か（外積の符号）
+                    double cross = (b.x() - a.x()) * (jz - a.z()) - (b.z() - a.z()) * (jx - a.x());
+                    side = cross >= 0 ? 1 : -1;
+                }
             }
-            best = Math.max(best, 1 - minDistance / ridge.width());
+            double p = 1 - minDistance / ridge.width();
+            if (p > bestP) {
+                bestP = p;
+                bestSide = side;
+            }
         }
-        return best;
+        return bestP <= 0 ? Position.OUTSIDE : new Position(bestP, bestSide);
     }
 
-    /** 山の中での位置 p の地点 (x, z) を、ふもとの地面から何ブロック盛り上げるか。 */
-    public double heightAt(double p, double x, double z) {
-        if (p <= 0 || profile.isEmpty()) {
+    /** 山の中の位置 pos の地点 (x, z) を、ふもとの地面から何ブロック盛り上げるか。 */
+    public double heightAt(Position pos, double x, double z) {
+        double p = pos.p();
+        if (p <= 0) {
             return 0;
         }
-        double shelfShift = shelfNoise * FieldNoise.fbm(x / VARIATION_SCALE, z / VARIATION_SCALE, SHELF_SALT);
-        double heightShift = heightNoise * FieldNoise.fbm(x / VARIATION_SCALE, z / VARIATION_SCALE, HEIGHT_SALT);
-
-        double prevP = 0;
-        double prevH = 0;
-        for (int i = 0; i < profile.size(); i++) {
-            ProfilePoint point = profile.get(i);
-            double pointP = point.p() + (i >= 2 ? shelfShift : 0);
-            pointP = Math.max(pointP, prevP + 0.005); // 順番が入れ替わらないように
-            double pointH = point.h() + (i >= 1 ? heightShift : 0);
-            if (p <= pointP) {
-                double t = (p - prevP) / (pointP - prevP);
-                return prevH + (pointH - prevH) * t;
-            }
-            prevP = pointP;
-            prevH = pointH;
+        // ふもとの絶壁（場所ごとに高さが違う。0 なら絶壁なし）
+        double wall = footWall.min() + (footWall.max() - footWall.min())
+                * smooth(0.5 + 0.8 * FieldNoise.fbm(x / WALL_SCALE, z / WALL_SCALE, WALL_SALT));
+        if (p < footRatio) {
+            return wall * smooth(p / footRatio);
         }
-        return prevH;
+
+        // 頂上までの進み具合 q（0 = ふもと、1 = 頂上）。頂上の線は尾根の中心からずれ、ずれた側が急になる
+        double u = pos.side() * (1 - p);   // -1〜1（尾根の中心が 0）
+        double u0 = crestShift * FieldNoise.fbm(x / CREST_SCALE, z / CREST_SCALE, CREST_SALT);
+        double q = u >= u0 ? (1 - u) / (1 - u0) : (u + 1) / (1 + u0);
+        q = clamp((q - footRatio) / (1 - footRatio));
+
+        // 頂上の高さ（場所ごとに違う）
+        double top = peak.min() + (peak.max() - peak.min())
+                * smooth(0.5 + 0.9 * FieldNoise.fbm(x / peak.scale(), z / peak.scale(), PEAK_SALT));
+        double height = wall + (top - wall) * Math.min(1, q / SUMMIT_Q);
+
+        // 平らな段：段がある場所では、ある高さで平らになり、その奥は絶壁
+        double shelfWeight = smooth((FieldNoise.fbm(x / shelves.scale(), z / shelves.scale(), SHELF_SALT)
+                - (1 - 2 * shelves.coverage())) / 0.25);
+        double level = wall + (top - wall) * (shelves.level()
+                + 0.15 * FieldNoise.fbm(x / SHELF_LEVEL_SCALE, z / SHELF_LEVEL_SCALE, SHELF_LEVEL_SALT));
+        double flat = 0;
+        if (shelfWeight > 0 && height > level && height < level + shelves.band()) {
+            height += (level - height) * shelfWeight;
+            flat = shelfWeight;
+        }
+
+        // 斜面のでこぼこ（段の上は平らなまま）
+        double rough = 0;
+        for (int i = 0; i < roughness.size(); i++) {
+            FieldMap.Warp octave = roughness.get(i);
+            rough += octave.amplitude() * FieldNoise.fbm(x / octave.scale(), z / octave.scale(), ROUGH_SALT + 2L * i);
+        }
+        height += rough * Math.min(1, q * 3) * (1 - flat);
+        return height;
     }
 
-    /** 盛り上げる高さの最大値（ブロック）。 */
-    public double maxHeight() {
-        return profile.stream().mapToDouble(ProfilePoint::h).max().orElse(0) + Math.abs(heightNoise);
+    private static double clamp(double t) {
+        return Math.max(0, Math.min(1, t));
+    }
+
+    private static double smooth(double t) {
+        t = clamp(t);
+        return t * t * (3 - 2 * t);
     }
 }
