@@ -30,17 +30,22 @@ for path in glob.glob(os.path.join(reg, "r.*.mca")):
                 pal = [str(p.get("id", "")) if hasattr(p, "get") else str(p) for p in bs.get("palette", [])]
                 data = [int(x) & ((1 << 64) - 1) for x in bs.get("data", [])]
                 secs[int(sec["Y"])] = (pal, data)
+            def block_at(sy, idx):
+                pal, data = secs[sy]
+                if len(pal) == 1: return pal[0]
+                bits = max(4, math.ceil(math.log2(len(pal)))); per = 64 // bits
+                return pal[(data[idx // per] >> (bits * (idx % per))) & ((1 << bits) - 1)]
+            AIRS = ("minecraft:air", "minecraft:cave_air", "minecraft:void_air", "")
             for i in range(256):
                 x, z = i % 16, i // 16
-                y = vals[i] - 64 - 1
-                pal, data = secs.get(y >> 4, ([], []))
-                name = "?"
-                if len(pal) == 1: name = pal[0]
-                elif pal:
-                    bits = max(4, math.ceil(math.log2(len(pal)))); per = 64 // bits
-                    idx = (y & 15) * 256 + z * 16 + x
-                    name = pal[(data[idx // per] >> (bits * (idx % per))) & ((1 << bits) - 1)]
-                top[(cx * 16 + x, cz * 16 + z)] = (name, y)
+                found = None
+                for sy in sorted(secs, reverse=True):
+                    for ly in range(15, -1, -1):
+                        n = block_at(sy, ly * 256 + z * 16 + x)
+                        if n not in AIRS:
+                            found = (n, sy * 16 + ly); break
+                    if found: break
+                if found: top[(cx * 16 + x, cz * 16 + z)] = found
 print("columns", len(top))
 COL = [("water", (60, 100, 220)), ("glass", (180, 220, 240)), ("lantern", (255, 210, 80)), ("glowstone", (255, 230, 120)),
        ("quartz", (240, 236, 228)), ("deepslate", (60, 60, 66)), ("stone_brick", (130, 130, 130)), ("andesite", (150, 152, 150)),
