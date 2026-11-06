@@ -218,18 +218,26 @@ public final class ModConstants {
     // =====================================================================
     /** 1 tick でこれ以上（ブロック）動いたら「テレポート」とみなす（OP のテレポートは壁を通す）。 */
     public static final double GATE_TELEPORT_DISTANCE = 8.0;
-    /** 壁を描く範囲（プレイヤーからの水平距離、ブロック）。 */
-    public static final int GATE_RENDER_RADIUS = 24;
-    /** 壁の高さ（プレイヤーの足元から上下、ブロック）。 */
-    public static final float GATE_RENDER_BELOW = 6f;
-    public static final float GATE_RENDER_ABOVE = 18f;
-    /** 壁の色（ARGB）。遠いほど薄くなる。 */
+    /** 壁を描く範囲（プレイヤーからの水平距離、ブロック）。この距離から見え始める。 */
+    public static final int GATE_RENDER_RADIUS = 64;
+    /** この割合の距離（0〜1）より遠いと、だんだん薄くなる。手前ではくっきり見える。 */
+    public static final float GATE_FADE_START = 0.6f;
+    /** プレイヤーがこのブロック数だけ動いたら、描く壁を計算し直す（裏で計算する）。 */
+    public static final int GATE_RECOMPUTE_STEP = 4;
+    /** 壁の高さ：地面（または目線の低いほう）から下へ・上へ（ブロック）。上の端はぼかす。 */
+    public static final float GATE_RENDER_BELOW = 8f;
+    public static final float GATE_RENDER_ABOVE = 56f;
+    /** 壁の色（ARGB）。 */
     public static final int GATE_COLOR = 0xFFFF2A2A;
-    /** 壁のいちばん濃いところの不透明度（0〜1）。 */
-    public static final float GATE_MAX_ALPHA = 0.55f;
-    /** 縞模様の間隔（ブロック）と流れる速さ（1 秒あたりブロック）。 */
-    public static final float GATE_STRIPE_SPACING = 1.5f;
-    public static final float GATE_STRIPE_SPEED = 0.6f;
+    /** 膜のいちばん濃いところの不透明度（0〜1）。 */
+    public static final float GATE_MAX_ALPHA = 0.45f;
+    /** 横の光る線：間隔（ブロック）・太さ（ブロック）・上へ流れる速さ（1 秒あたりブロック）・不透明度。 */
+    public static final float GATE_LINE_SPACING = 4f;
+    public static final float GATE_LINE_WIDTH = 0.18f;
+    public static final float GATE_LINE_SPEED = 1.2f;
+    public static final float GATE_LINE_ALPHA = 0.8f;
+    /** 壁の内部キャッシュ：覚えておく最大チャンク数（溢れたら作り直す）。 */
+    public static final int REGION_CACHE_MAX_CHUNKS = 16384;
 
     // =====================================================================
     // ワールド：場所の名前の表示

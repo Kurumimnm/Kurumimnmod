@@ -32,7 +32,8 @@ import net.neoforged.neoforge.network.PacketDistributor;
  *   <li>ゲートを通れない場所へ入ろうとしたら、直前の位置へ押し戻す（{@link GateRules}）</li>
  *   <li>フィールドボスの実績（kurumimnmod:field_boss/〇〇）を取ったら、そのフィールドを「ボス撃破済み」にする</li>
  * </ul>
- * クリエイティブ・スペクテイターは壁を通れる。OP のテレポート（一度に大きく移動したとき）も通す。
+ * 普段は当たり判定（{@link Borders}）で壁の手前で止まるので、ここは「ワープなどで当たり判定を通らずに入った」ときの保険。
+ * OP・クリエイティブも歩いては通れない。通れるのはスペクテイターと、OP のテレポート（コマンド・地図から）だけ。
  */
 @EventBusSubscriber(modid = Kurumimnmod.MOD_ID)
 public final class ExplorationTracker {
@@ -58,7 +59,7 @@ public final class ExplorationTracker {
             return;
         }
         Vec3 pos = player.position();
-        FieldRegion region = map.get().regionAt(pos.x, pos.z);
+        FieldRegion region = RegionGrid.at(map.get(), pos.x, pos.z);
         Track last = TRACKS.get(player.getUUID());
         if (last == null) {
             TRACKS.put(player.getUUID(), new Track(region, pos));
@@ -73,8 +74,7 @@ public final class ExplorationTracker {
         // 場所が変わった：入れるかどうか
         PlayerExploration exploration = player.getData(ModAttachments.EXPLORATION);
         boolean teleported = pos.distanceToSqr(last.pos()) > ModConstants.GATE_TELEPORT_DISTANCE * ModConstants.GATE_TELEPORT_DISTANCE;
-        boolean allowed = GateRules.canEnter(exploration, last.region(), region)
-                || player.isCreative() || player.isSpectator()
+        boolean allowed = Borders.mayEnter(player, last.region(), region)
                 || (teleported && isOperator(player));
         if (!allowed) {
             // 壁の手前へ押し戻す

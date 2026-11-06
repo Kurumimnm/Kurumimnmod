@@ -4,6 +4,7 @@
   "package": "io.github.kurumimnm.kurumimnmod.mixin",
   "compatibilityLevel": "JAVA_25",
   "mixins": [
+    "EntityCollisionMixin",
     "FoodDataMixin"
   ],
   "client": [],

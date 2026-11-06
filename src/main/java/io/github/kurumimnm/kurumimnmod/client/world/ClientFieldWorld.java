@@ -6,7 +6,9 @@ import io.github.kurumimnm.kurumimnmod.registry.ModAttachments;
 import io.github.kurumimnm.kurumimnmod.registry.ModWorldgen;
 import io.github.kurumimnm.kurumimnmod.world.FieldMap;
 import io.github.kurumimnm.kurumimnmod.world.FieldRegion;
-import io.github.kurumimnm.kurumimnmod.world.GateRules;
+import io.github.kurumimnm.kurumimnmod.world.Borders;
+import io.github.kurumimnm.kurumimnmod.world.FieldLookup;
+import io.github.kurumimnm.kurumimnmod.world.RegionGrid;
 import io.github.kurumimnm.kurumimnmod.world.PlayerExploration;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -25,7 +27,7 @@ import org.jspecify.annotations.Nullable;
  * <ul>
  *   <li>今いるディメンションの地図（サーバーから名前が届き、中身は同期済みのレジストリから取り出す）</li>
  *   <li>今いる場所。変わったら場所の名前を表示する（{@link LocationHud}）</li>
- *   <li>ゲートの壁の手前で止める（サーバーでも同じ判定をして押し戻すが、カクつかないようにこちらでも止める）</li>
+ *   <li>ゲートの壁の手前で止める保険（普段は当たり判定で止まる。ワープなどで入り込んだときだけ戻す）</li>
  * </ul>
  */
 @EventBusSubscriber(modid = Kurumimnmod.MOD_ID, value = Dist.CLIENT)
@@ -40,6 +42,8 @@ public final class ClientFieldWorld {
 
     @SubscribeEvent
     static void onRegisterClientPayloadHandlers(RegisterClientPayloadHandlersEvent event) {
+        // 当たり判定など共通の処理から、クライアント側の地図を引けるようにする
+        FieldLookup.setClientResolver(level -> level == Minecraft.getInstance().level ? map() : null);
         event.register(FieldWorldPayload.TYPE, (payload, context) -> {
             mapId = payload.map().orElse(null);
             map = null;
@@ -91,7 +95,7 @@ public final class ClientFieldWorld {
             return;
         }
         Vec3 pos = player.position();
-        FieldRegion now = fieldMap.regionAt(pos.x, pos.z);
+        FieldRegion now = RegionGrid.at(fieldMap, pos.x, pos.z);
         if (region == null || lastPos == null) {
             region = now;
             lastPos = pos;
@@ -104,8 +108,7 @@ public final class ClientFieldWorld {
         }
         PlayerExploration exploration = exploration(player);
         boolean teleported = pos.distanceToSqr(lastPos) > 64;
-        boolean allowed = teleported || player.isCreative() || player.isSpectator()
-                || GateRules.canEnter(exploration, region, now);
+        boolean allowed = teleported || Borders.mayEnter(player, region, now);
         if (!allowed) {
             // 壁の手前で止める
             player.setPos(lastPos.x, lastPos.y, lastPos.z);
