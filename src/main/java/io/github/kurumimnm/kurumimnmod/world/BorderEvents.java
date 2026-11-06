@@ -16,6 +16,7 @@ import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.event.level.ExplosionEvent;
+import net.neoforged.neoforge.event.level.block.BreakBlockEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 
 /**
@@ -45,7 +46,7 @@ public final class BorderEvents {
     }
 
     @SubscribeEvent
-    static void onBreak(BlockEvent.BreakEvent event) {
+    static void onBreak(BreakBlockEvent event) {
         if (blockedAt(event.getPlayer(), event.getPos())) {
             event.setCanceled(true);
         }
