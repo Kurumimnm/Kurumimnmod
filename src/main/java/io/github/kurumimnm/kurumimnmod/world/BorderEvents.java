@@ -3,6 +3,9 @@ package io.github.kurumimnm.kurumimnmod.world;
 import io.github.kurumimnm.kurumimnmod.Kurumimnmod;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.HitResult;
@@ -11,6 +14,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.EntityTeleportEvent;
 import net.neoforged.neoforge.event.entity.ProjectileImpactEvent;
+import net.neoforged.neoforge.event.entity.living.LivingChangeTargetEvent;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
@@ -28,6 +32,7 @@ import net.neoforged.neoforge.event.tick.EntityTickEvent;
  *   <li>爆発が壁の向こうを壊す・傷つける</li>
  *   <li>エンダーマン・エンダーパール・コーラスフルーツで壁の向こうへワープする</li>
  *   <li>水・溶岩が壁の向こうへ流れる</li>
+ *   <li>モブが壁の向こうのプレイヤーを狙う（敵対しない。壁がなければいつも通り狙う）</li>
  * </ul>
  * 歩いて越えられないこと自体は当たり判定（{@link Borders#wallShapes}）で止めている。
  */
@@ -104,6 +109,32 @@ public final class BorderEvents {
                 || (direct != null && direct != attacker && Borders.attackBlocked(direct, event.getEntity()))) {
             event.setCanceled(true);
         }
+    }
+
+    // ---- 敵対（狙い） ----
+
+    /** 壁の向こうのプレイヤーは狙わない。 */
+    @SubscribeEvent
+    static void onChangeTarget(LivingChangeTargetEvent event) {
+        LivingEntity target = event.getNewAboutToBeSetTarget();
+        if (target instanceof Player player && Borders.wallBetween(event.getEntity(), player)) {
+            event.setNewAboutToBeSetTarget(null);
+        }
+    }
+
+    /** 狙った後にプレイヤーが壁の向こうへ行った（テレポートなど）ときも、ときどき調べて狙いを外す。 */
+    @SubscribeEvent
+    static void onMobTick(EntityTickEvent.Post event) {
+        if (event.getEntity() instanceof Mob mob && !mob.level().isClientSide()
+                && mob.tickCount % ModConstantsHolder.TARGET_CHECK_INTERVAL == 0
+                && mob.getTarget() instanceof Player player && Borders.wallBetween(mob, player)) {
+            mob.setTarget(null);
+        }
+    }
+
+    /** 定数（ModConstants に置くほどでもない内部の間隔）。 */
+    private static final class ModConstantsHolder {
+        static final int TARGET_CHECK_INTERVAL = 10;
     }
 
     // ---- 飛び道具 ----

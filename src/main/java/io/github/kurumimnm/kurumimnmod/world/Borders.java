@@ -122,6 +122,20 @@ public final class Borders {
         return !RegionGrid.at(map, a.getX(), a.getZ()).sameZone(RegionGrid.at(map, b.getX(), b.getZ()));
     }
 
+    /** entity と player の間に、player から見て壁があるか（違う場所にいて、その境目に壁がある）。 */
+    public static boolean wallBetween(Entity entity, Player player) {
+        if (player.isSpectator()) {
+            return false;
+        }
+        FieldMap map = FieldLookup.mapOrNull(entity.level());
+        if (map == null) {
+            return false;
+        }
+        FieldRegion a = RegionGrid.at(map, entity.getX(), entity.getZ());
+        FieldRegion b = RegionGrid.at(map, player.getX(), player.getZ());
+        return !a.sameZone(b) && GateRules.hasWall(player.getData(ModAttachments.EXPLORATION), a, b);
+    }
+
     /** attacker が victim を傷つけられないか（壁越しの攻撃）。狙われたプレイヤーから見て壁があっても止める。 */
     public static boolean attackBlocked(Entity attacker, LivingEntity victim) {
         if (attacker == victim) {
