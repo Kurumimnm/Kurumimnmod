@@ -12,6 +12,7 @@ def chunk_nbt(path, lx, lz):
         f.seek(o); ln = struct.unpack(">I", f.read(4))[0]; f.read(1)
         return nbtlib.File.parse(io.BytesIO(zlib.decompress(f.read(ln - 1))))
 top = {}
+DEBUG = {(20, 20), (-30, 25), (20, -5990), (50, -6050), (40, -9040), (8, -3030)}
 for path in glob.glob(os.path.join(reg, "r.*.mca")):
     rx, rz = map(int, os.path.basename(path).split(".")[1:3])
     for lz in range(32):
@@ -46,6 +47,12 @@ for path in glob.glob(os.path.join(reg, "r.*.mca")):
                             found = (n, sy * 16 + ly); break
                     if found: break
                 if found: top[(cx * 16 + x, cz * 16 + z)] = found
+                wx, wz = cx * 16 + x, cz * 16 + z
+                if (wx, wz) in DEBUG:
+                    col = []
+                    for yy in range(60, 100):
+                        if (yy >> 4) in secs: col.append("%d:%s" % (yy, block_at(yy >> 4, (yy & 15) * 256 + z * 16 + x).replace("minecraft:", "")))
+                    print("COLUMN", wx, wz, " ".join(col))
 print("columns", len(top))
 COL = [("water", (60, 100, 220)), ("glass", (180, 220, 240)), ("lantern", (255, 210, 80)), ("glowstone", (255, 230, 120)),
        ("quartz", (240, 236, 228)), ("deepslate", (60, 60, 66)), ("stone_brick", (130, 130, 130)), ("andesite", (150, 152, 150)),
