@@ -30,6 +30,8 @@ public record TownFeature(Holder<FieldMap> map) implements Feature {
 
     /** 片付ける高さ（地面からブロック）。 */
     private static final int CLEAR_HEIGHT = 40;
+    /** 地面の穴を埋める深さ（地面からブロック）。 */
+    private static final int FILL_DEPTH = 8;
 
     @Override
     public MapCodec<TownFeature> codec() {
@@ -51,8 +53,15 @@ public record TownFeature(Holder<FieldMap> map) implements Feature {
                 continue;
             }
             TownPlan plan = TownPlanner.plan(fieldMap, town);
-            // 片付け（地面より上の木・草・雪など）
+            // 片付け（地面より上の木・草・雪など）と、地面の穴埋め（池などで空いた穴）
             for (TownPlan.Column column : plan.clearColumns(chunk)) {
+                for (int y = plan.groundY() - FILL_DEPTH; y <= plan.groundY(); y++) {
+                    pos.set(column.x(), y, column.z());
+                    var state = level.getBlockState(pos);
+                    if (state.isAir() || !state.getFluidState().isEmpty()) {
+                        level.setBlock(pos, (y == plan.groundY() ? Blocks.GRASS_BLOCK : Blocks.DIRT).defaultBlockState(), 2);
+                    }
+                }
                 for (int y = plan.groundY() + 1; y <= plan.groundY() + CLEAR_HEIGHT; y++) {
                     pos.set(column.x(), y, column.z());
                     if (!level.getBlockState(pos).isAir()) {
