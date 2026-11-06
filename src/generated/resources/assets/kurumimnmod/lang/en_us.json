@@ -70,7 +70,6 @@
   "generator.kurumimnmod.field_world": "Kurumimnmod World",
   "hud.kurumimnmod.location.area": "Area %s - Danger %s",
   "hud.kurumimnmod.location.new": "- New Location -",
-  "hud.kurumimnmod.location.town": "Town",
   "item.kurumimnmod.ice_wand": "Icicle Wand",
   "item.kurumimnmod.scarecrow_config_stick": "Scarecrow Settings Stick",
   "item.kurumimnmod.scarecrow_config_stick.desc": "Aim at a scarecrow and left-click to open its settings.",
@@ -285,5 +284,15 @@
   "town.kurumimnmod.town_6": "Town 6 (tentative)",
   "town.kurumimnmod.town_7": "Town 7 (tentative)",
   "town.kurumimnmod.town_8": "Town 8 (tentative)",
-  "town.kurumimnmod.town_9": "Town 9 (tentative)"
+  "town.kurumimnmod.town_9": "Town 9 (tentative)",
+  "town_type.kurumimnmod.castle_town": "Castle Town",
+  "town_type.kurumimnmod.city": "City",
+  "town_type.kurumimnmod.frontline_city": "Frontline City",
+  "town_type.kurumimnmod.hidden_village": "Hidden Village",
+  "town_type.kurumimnmod.mining_town": "Mining Town",
+  "town_type.kurumimnmod.port_town": "Port Town",
+  "town_type.kurumimnmod.post_town": "Post Town",
+  "town_type.kurumimnmod.temple_city": "Temple City",
+  "town_type.kurumimnmod.town": "Town",
+  "town_type.kurumimnmod.village": "Village"
 }

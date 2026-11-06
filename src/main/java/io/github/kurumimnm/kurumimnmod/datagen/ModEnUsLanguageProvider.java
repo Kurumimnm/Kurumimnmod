@@ -171,8 +171,19 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
             add("town." + MOD_ID + ".town_" + n, "Town " + n + " (tentative)");
         }
 
+        // ---- ワールド：街の種類 ----
+        add("town_type." + MOD_ID + ".hidden_village", "Hidden Village");
+        add("town_type." + MOD_ID + ".village", "Village");
+        add("town_type." + MOD_ID + ".post_town", "Post Town");
+        add("town_type." + MOD_ID + ".mining_town", "Mining Town");
+        add("town_type." + MOD_ID + ".town", "Town");
+        add("town_type." + MOD_ID + ".port_town", "Port Town");
+        add("town_type." + MOD_ID + ".castle_town", "Castle Town");
+        add("town_type." + MOD_ID + ".temple_city", "Temple City");
+        add("town_type." + MOD_ID + ".city", "City");
+        add("town_type." + MOD_ID + ".frontline_city", "Frontline City");
+
         // ---- ワールド：場所の表示・ゲート・地図 ----
-        add("hud." + MOD_ID + ".location.town", "Town");
         add("hud." + MOD_ID + ".location.area", "Area %s - Danger %s");
         add("hud." + MOD_ID + ".location.new", "- New Location -");
         add("message." + MOD_ID + ".gate.blocked", "Defeat the boss of this field to go further.");

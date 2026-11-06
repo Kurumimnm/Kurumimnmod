@@ -189,7 +189,8 @@
       "minecraft:seagrass_river"
     ],
     [
-      "minecraft:freeze_top_layer"
+      "minecraft:freeze_top_layer",
+      "kurumimnmod:field_towns"
     ]
   ],
   "has_precipitation": true,

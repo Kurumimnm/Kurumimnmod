@@ -50,14 +50,18 @@ public final class FieldMap {
     /**
      * 街。number = 街の番号（0 = 始まりの街）。座標はブロック単位（北 = -Z）。
      * radius = 街の範囲（この円の中が「街」。周りのフィールドとの境目にゲートの壁ができる）。
+     * type = 街の種類（village / town / city / port_town など。{@link io.github.kurumimnm.kurumimnmod.world.town.TownPlanner}）、
+     * style = 建物の素材（oak / spruce / birch / dark_oak / acacia / sandstone）。
      */
-    public record Town(String id, int number, int x, int z, int radius) {
+    public record Town(String id, int number, int x, int z, int radius, String type, String style) {
         public static final Codec<Town> CODEC = RecordCodecBuilder.create(i -> i.group(
                 Codec.STRING.fieldOf("id").forGetter(Town::id),
                 Codec.INT.fieldOf("number").forGetter(Town::number),
                 Codec.INT.fieldOf("x").forGetter(Town::x),
                 Codec.INT.fieldOf("z").forGetter(Town::z),
-                Codec.INT.optionalFieldOf("radius", 48).forGetter(Town::radius)
+                Codec.INT.optionalFieldOf("radius", 48).forGetter(Town::radius),
+                Codec.STRING.optionalFieldOf("type", "town").forGetter(Town::type),
+                Codec.STRING.optionalFieldOf("style", "oak").forGetter(Town::style)
         ).apply(i, Town::new));
 
         public boolean contains(double px, double pz) {
@@ -157,6 +161,13 @@ public final class FieldMap {
     private static final long ROAD_SALT_X = 909;
     private static final long ROAD_SALT_Z = 1010;
     private static final long ROAD_GAP_SALT = 1111;
+    /** 街の周りで、地面を街の高さへなだらかにつなぐ幅（ブロック）。 */
+    public static final int TOWN_BLEND = 24;
+    /** 港町の港（水）の深さ・位置（街の中心から東へ半径の何割）・大きさ（半径の何割）。 */
+    public static final int HARBOR_DEPTH = 4;
+    public static final double HARBOR_OFFSET = 0.55;
+    public static final double HARBOR_RADIUS = 0.42;
+
     /** 「worn」の道が途切れる割合の目安（ノイズがこの値より小さいところが途切れる）。 */
     private static final double WORN_GAP_THRESHOLD = -0.15;
     /** 「worn」の道の途切れの波の大きさ（ブロック）。 */
@@ -345,7 +356,45 @@ public final class FieldMap {
                 height += m.heightAt(position, x, z);
             }
         }
+        // 街の中は平らにして、周りはなだらかにつなぐ
+        for (Town town : towns) {
+            double dx = x - town.x();
+            double dz = z - town.z();
+            double reach = town.radius() + TOWN_BLEND;
+            if (Math.abs(dx) > reach || Math.abs(dz) > reach) {
+                continue;
+            }
+            double distance = Math.sqrt(dx * dx + dz * dz);
+            if (distance >= reach) {
+                continue;
+            }
+            // 地面の一番上のブロックがちょうど街の高さになるように +0.5
+            double flat = townGroundY(town) + 0.5;
+            if (inHarbor(town, x, z)) {
+                flat -= HARBOR_DEPTH;
+            }
+            double t = distance <= town.radius() ? 0 : (distance - town.radius()) / TOWN_BLEND;
+            t = t * t * (3 - 2 * t);
+            height = flat + (height - flat) * t;
+        }
         return Math.min(height, terrain.maxHeight());
+    }
+
+    /** 街の地面の高さ（地面の一番上のブロックの Y）。 */
+    public int townGroundY(Town town) {
+        return (int) Math.round(terrain.groundHeight(town.x(), town.z()));
+    }
+
+    /** 港町の港（水）の中か。 */
+    public boolean inHarbor(Town town, double x, double z) {
+        if (!"port_town".equals(town.type())) {
+            return false;
+        }
+        double hx = town.x() + town.radius() * HARBOR_OFFSET;
+        double dx = x - hx;
+        double dz = z - town.z();
+        double hr = town.radius() * HARBOR_RADIUS;
+        return dx * dx + dz * dz <= hr * hr;
     }
 
     /**
@@ -377,6 +426,12 @@ public final class FieldMap {
             return null;
         }
 
+        // 街の中には街道を敷かない（街の中の道は街の設計図で作る）
+        for (Town town : towns) {
+            if (town.contains(x, z)) {
+                return null;
+            }
+        }
         Location location = locate(x, z);
         RoadSettings.FieldRoad fieldRoad = location.field().road();
         if (location.inMountains() || fieldRoad.isNone()) {

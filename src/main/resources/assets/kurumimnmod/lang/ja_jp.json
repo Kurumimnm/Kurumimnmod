@@ -266,7 +266,6 @@
   "biome.kurumimnmod.sky_wall_range": "天壁の山脈",
 
   "town.kurumimnmod.mediana": "メディアナ",
-  "hud.kurumimnmod.location.town": "街",
   "hud.kurumimnmod.location.area": "エリア%s ・ 危険度 %s",
   "hud.kurumimnmod.location.new": "― 新しい場所 ―",
   "message.kurumimnmod.gate.blocked": "この先へ進むには、このフィールドのボスを倒す必要がある",
@@ -301,5 +300,16 @@
   "town.kurumimnmod.town_17": "街17（仮）",
   "town.kurumimnmod.town_18": "街18（仮）",
   "town.kurumimnmod.town_19": "街19（仮）",
-  "town.kurumimnmod.town_20": "街20（仮）"
+  "town.kurumimnmod.town_20": "街20（仮）",
+
+  "town_type.kurumimnmod.hidden_village": "隠れ里",
+  "town_type.kurumimnmod.village": "村",
+  "town_type.kurumimnmod.post_town": "宿場町",
+  "town_type.kurumimnmod.mining_town": "鉱山町",
+  "town_type.kurumimnmod.town": "街",
+  "town_type.kurumimnmod.port_town": "港町",
+  "town_type.kurumimnmod.castle_town": "城下町",
+  "town_type.kurumimnmod.temple_city": "神殿都市",
+  "town_type.kurumimnmod.city": "都市",
+  "town_type.kurumimnmod.frontline_city": "前線都市"
 }
