@@ -198,6 +198,8 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         add("screen." + MOD_ID + ".map.unexplored", "Unexplored");
         add("screen." + MOD_ID + ".map.coords", "X %s / Z %s");
         add("screen." + MOD_ID + ".map.help", "Drag: Move   Wheel: Zoom   M: Close");
+        add("screen." + MOD_ID + ".map.teleport.title", "Teleport?");
+        add("screen." + MOD_ID + ".map.teleport.message", "Teleport to %s (X %s / Z %s)?");
         add("screen." + MOD_ID + ".map.help_op", "Drag: Move   Wheel: Zoom   Right-click: Teleport (OP)   M: Close");
 
         // ---- フィールド（バイオーム名）。番号は設計時のフィールド番号 ----
