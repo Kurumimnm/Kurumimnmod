@@ -21,6 +21,7 @@ def pname(p):
         SEEN.add(key); print("PALETTE_KEYS", key, repr(p)[:200])
     return "?"
 top = {}
+SECTION_HITS = {}
 DEBUG = {(20, 20), (-30, 25), (20, -5990), (50, -6050), (40, -9040), (8, -3030)}
 for path in glob.glob(os.path.join(reg, "r.*.mca")):
     rx, rz = map(int, os.path.basename(path).split(".")[1:3])
@@ -34,6 +35,13 @@ for path in glob.glob(os.path.join(reg, "r.*.mca")):
                 v = int(v) & ((1 << 64) - 1)
                 for k in range(6): vals.append((v >> (10 * k)) & 1023)
             secs = {}
+            for sec in c.get("sections", []):
+                bs = sec.get("block_states")
+                if hasattr(bs, "get"):
+                    for p in bs.get("palette", []):
+                        n = pname(p)
+                        if any(k in n for k in ("_ore", "andesite", "granite", "diorite", "tuff", "gravel", "lava", "amethyst", "spawner", "pumpkin", "poppy", "dandelion", "mushroom", "dirt", "clay", "water")):
+                            SECTION_HITS[n] = SECTION_HITS.get(n, 0) + 1
             for sec in c.get("sections", []):
                 bs = sec.get("block_states")
                 if not hasattr(bs, "get"): continue
@@ -63,6 +71,7 @@ for path in glob.glob(os.path.join(reg, "r.*.mca")):
                         if (yy >> 4) in secs: col.append("%d:%s" % (yy, block_at(yy >> 4, (yy & 15) * 256 + z * 16 + x).replace("minecraft:", "")))
                     print("COLUMN", wx, wz, " ".join(col))
 print("columns", len(top))
+print("SECTIONS_WITH", sorted(SECTION_HITS.items(), key=lambda k: -k[1]))
 COL = [("water", (60, 100, 220)), ("glass", (180, 220, 240)), ("lantern", (255, 210, 80)), ("glowstone", (255, 230, 120)),
        ("quartz", (240, 236, 228)), ("deepslate", (60, 60, 66)), ("stone_brick", (130, 130, 130)), ("andesite", (150, 152, 150)),
        ("cobble", (110, 110, 110)), ("stair", (90, 70, 50)), ("planks", (170, 130, 80)), ("log", (100, 80, 50)),
