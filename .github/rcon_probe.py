@@ -25,9 +25,14 @@ if mode=="load":
               "time set night","execute positioned 40 64 0 run kmod area","execute positioned 60 64 0 run kmod area"]:
         run(c)
 elif mode=="push":
-    run("summon minecraft:zombie 40 120 0 {Motion:[4.0d,0.0d,0.0d],NoAI:1b,PersistenceRequired:1b,Tags:[\"probe\"]}")
-    run("summon minecraft:zombie 40 120 4 {Motion:[4.0d,0.0d,0.0d],PersistenceRequired:1b,Tags:[\"probe\"]}")
-    run("summon minecraft:arrow 40 120 8 {Motion:[3.0d,0.0d,0.0d],NoGravity:1b,Tags:[\"probe\"]}")
+    # 街（半径48）の内側から外へ、ゾンビと矢を飛ばす。壁が効いていれば x=48 の手前で止まる／矢は消える
+    run("execute positioned 40 0 0 positioned over motion_blocking run summon minecraft:zombie ~ ~ ~ {Motion:[2.5d,0.4d,0.0d],PersistenceRequired:1b,Tags:[\"probe\",\"p1\"]}")
+    run("execute positioned 40 0 4 positioned over motion_blocking run summon minecraft:arrow ~ ~3 ~ {Motion:[3.0d,0.0d,0.0d],NoGravity:1b,Tags:[\"probe\",\"p2\"]}")
+    # 比べる用：壁のない場所（街の中）で同じように飛ばす
+    run("execute positioned -20 0 -10 positioned over motion_blocking run summon minecraft:zombie ~ ~ ~ {Motion:[2.5d,0.4d,0.0d],PersistenceRequired:1b,Tags:[\"probe\",\"p3\"]}")
+    for k in range(4):
+        time.sleep(1.5)
+        run("execute as @e[tag=probe] run data get entity @s Pos")
 elif mode=="save":
     run("data get entity @e[tag=probe,type=zombie,limit=1,sort=nearest] Pos")
     run("execute as @e[tag=probe] run data get entity @s Pos")
