@@ -9,147 +9,189 @@
       "number": 0,
       "x": 0,
       "z": 0,
-      "radius": 64
+      "radius": 48,
+      "type": "hidden_village",
+      "style": "oak"
     },
     {
       "id": "town_1",
       "number": 1,
       "x": 0,
       "z": -3000,
-      "radius": 48
+      "radius": 40,
+      "type": "village",
+      "style": "oak"
     },
     {
       "id": "town_2",
       "number": 2,
       "x": 0,
       "z": -6000,
-      "radius": 48
+      "radius": 96,
+      "type": "city",
+      "style": "oak"
     },
     {
       "id": "town_3",
       "number": 3,
       "x": 2600,
       "z": -7500,
-      "radius": 48
+      "radius": 64,
+      "type": "port_town",
+      "style": "spruce"
     },
     {
       "id": "town_4",
       "number": 4,
       "x": -2600,
       "z": -7500,
-      "radius": 48
+      "radius": 56,
+      "type": "mining_town",
+      "style": "acacia"
     },
     {
       "id": "town_5",
       "number": 5,
       "x": 0,
       "z": -9000,
-      "radius": 48
+      "radius": 80,
+      "type": "castle_town",
+      "style": "dark_oak"
     },
     {
       "id": "town_6",
       "number": 6,
       "x": 4000,
       "z": -10500,
-      "radius": 48
+      "radius": 64,
+      "type": "port_town",
+      "style": "spruce"
     },
     {
       "id": "town_7",
       "number": 7,
       "x": 1500,
       "z": -12000,
-      "radius": 48
+      "radius": 40,
+      "type": "village",
+      "style": "birch"
     },
     {
       "id": "town_8",
       "number": 8,
       "x": -1500,
       "z": -12000,
-      "radius": 48
+      "radius": 64,
+      "type": "temple_city",
+      "style": "dark_oak"
     },
     {
       "id": "town_9",
       "number": 9,
       "x": -4000,
       "z": -10500,
-      "radius": 48
+      "radius": 48,
+      "type": "post_town",
+      "style": "sandstone"
     },
     {
       "id": "town_10",
       "number": 10,
       "x": 3200,
       "z": -14200,
-      "radius": 48
+      "radius": 72,
+      "type": "frontline_city",
+      "style": "spruce"
     },
     {
       "id": "town_11",
       "number": 11,
       "x": -3200,
       "z": -14200,
-      "radius": 48
+      "radius": 72,
+      "type": "frontline_city",
+      "style": "spruce"
     },
     {
       "id": "town_12",
       "number": 12,
       "x": -4500,
       "z": 3500,
-      "radius": 48
+      "radius": 72,
+      "type": "frontline_city",
+      "style": "dark_oak"
     },
     {
       "id": "town_13",
       "number": 13,
       "x": -1500,
       "z": 4000,
-      "radius": 48
+      "radius": 40,
+      "type": "village",
+      "style": "dark_oak"
     },
     {
       "id": "town_14",
       "number": 14,
       "x": 1500,
       "z": 4000,
-      "radius": 48
+      "radius": 48,
+      "type": "post_town",
+      "style": "sandstone"
     },
     {
       "id": "town_15",
       "number": 15,
       "x": 4500,
       "z": 3500,
-      "radius": 48
+      "radius": 56,
+      "type": "town",
+      "style": "acacia"
     },
     {
       "id": "town_16",
       "number": 16,
       "x": -3000,
       "z": 7000,
-      "radius": 48
+      "radius": 56,
+      "type": "mining_town",
+      "style": "dark_oak"
     },
     {
       "id": "town_17",
       "number": 17,
       "x": 0,
       "z": 7500,
-      "radius": 48
+      "radius": 64,
+      "type": "temple_city",
+      "style": "sandstone"
     },
     {
       "id": "town_18",
       "number": 18,
       "x": 3000,
       "z": 7000,
-      "radius": 48
+      "radius": 56,
+      "type": "town",
+      "style": "spruce"
     },
     {
       "id": "town_19",
       "number": 19,
       "x": -1500,
       "z": 10500,
-      "radius": 48
+      "radius": 40,
+      "type": "village",
+      "style": "spruce"
     },
     {
       "id": "town_20",
       "number": 20,
       "x": 1500,
       "z": 10500,
-      "radius": 48
+      "radius": 72,
+      "type": "frontline_city",
+      "style": "dark_oak"
     }
   ],
   "fields": [

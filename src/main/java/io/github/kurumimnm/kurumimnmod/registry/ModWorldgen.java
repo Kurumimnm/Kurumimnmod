@@ -6,6 +6,7 @@ import io.github.kurumimnm.kurumimnmod.world.FieldMap;
 import io.github.kurumimnm.kurumimnmod.world.FieldMapBiomeSource;
 import io.github.kurumimnm.kurumimnmod.world.FieldRoadFeature;
 import io.github.kurumimnm.kurumimnmod.world.TerrainHeightFunction;
+import io.github.kurumimnm.kurumimnmod.world.town.TownFeature;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
@@ -24,6 +25,7 @@ import net.neoforged.neoforge.registries.NewDatapackRegistryEvent;
  *   <li>BiomeSource の種類 {@code kurumimnmod:field_map}（{@link FieldMapBiomeSource}）</li>
  *   <li>地形の部品（density function）の種類 {@code kurumimnmod:terrain_height}（{@link TerrainHeightFunction}）</li>
  *   <li>地物（feature）の種類 {@code kurumimnmod:field_roads}（{@link FieldRoadFeature}・街道）</li>
+ *   <li>地物（feature）の種類 {@code kurumimnmod:field_towns}（{@link TownFeature}・街）</li>
  *   <li>データパックのレジストリ {@code kurumimnmod:field_map}（地図 JSON の置き場所）
  *       … {@code data/<名前空間>/kurumimnmod/field_map/<名前>.json}</li>
  * </ul>
@@ -57,6 +59,10 @@ public final class ModWorldgen {
     /** 街道を敷く地物。 */
     public static final DeferredHolder<MapCodec<? extends Feature>, MapCodec<FieldRoadFeature>> FIELD_ROADS =
             FEATURE_TYPES.register("field_roads", () -> FieldRoadFeature.CODEC);
+
+    /** 街を建てる地物。 */
+    public static final DeferredHolder<MapCodec<? extends Feature>, MapCodec<TownFeature>> FIELD_TOWNS =
+            FEATURE_TYPES.register("field_towns", () -> TownFeature.CODEC);
 
     public static void register(IEventBus modEventBus) {
         FEATURE_TYPES.register(modEventBus);

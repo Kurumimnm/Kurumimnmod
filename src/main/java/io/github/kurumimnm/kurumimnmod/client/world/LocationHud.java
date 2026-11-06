@@ -69,10 +69,11 @@ public final class LocationHud {
                 .orElse(Component.literal("?"));
     }
 
-    /** 場所の補足（フィールドなら「エリア N ・ 危険度 D」、街なら「街」）。 */
+    /** 場所の補足（フィールドなら「エリア N ・ 危険度 D」、街なら街の種類）。 */
     public static Component sub(FieldMap map, FieldRegion region) {
         if (region.isTown()) {
-            return Component.translatable(KEY + ".town");
+            String type = map.town(region.town()).map(FieldMap.Town::type).orElse("town");
+            return Component.translatable("town_type." + Kurumimnmod.MOD_ID + "." + type);
         }
         int danger = map.field(region.field()).map(f -> f.tier() + region.area()).orElse(region.area());
         return Component.translatable(KEY + ".area", region.area(), danger);

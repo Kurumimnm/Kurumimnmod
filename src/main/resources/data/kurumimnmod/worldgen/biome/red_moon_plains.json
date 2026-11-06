@@ -195,7 +195,8 @@
       "minecraft:patch_firefly_bush_near_water"
     ],
     [
-      "minecraft:freeze_top_layer"
+      "minecraft:freeze_top_layer",
+      "kurumimnmod:field_towns"
     ]
   ],
   "has_precipitation": false,
