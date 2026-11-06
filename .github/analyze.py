@@ -11,6 +11,15 @@ def chunk_nbt(path, lx, lz):
         if o == 0: return None
         f.seek(o); ln = struct.unpack(">I", f.read(4))[0]; f.read(1)
         return nbtlib.File.parse(io.BytesIO(zlib.decompress(f.read(ln - 1))))
+SEEN = set()
+def pname(p):
+    if not hasattr(p, "get"): return str(p)
+    for k in ("id", "Name", "name", "block"):
+        if k in p: return str(p[k])
+    key = tuple(sorted(p.keys()))
+    if key not in SEEN:
+        SEEN.add(key); print("PALETTE_KEYS", key, repr(p)[:200])
+    return "?"
 top = {}
 DEBUG = {(20, 20), (-30, 25), (20, -5990), (50, -6050), (40, -9040), (8, -3030)}
 for path in glob.glob(os.path.join(reg, "r.*.mca")):
@@ -28,7 +37,7 @@ for path in glob.glob(os.path.join(reg, "r.*.mca")):
             for sec in c.get("sections", []):
                 bs = sec.get("block_states")
                 if not hasattr(bs, "get"): continue
-                pal = [str(p.get("id", "")) if hasattr(p, "get") else str(p) for p in bs.get("palette", [])]
+                pal = [pname(p) for p in bs.get("palette", [])]
                 data = [int(x) & ((1 << 64) - 1) for x in bs.get("data", [])]
                 secs[int(sec["Y"])] = (pal, data)
             def block_at(sy, idx):
