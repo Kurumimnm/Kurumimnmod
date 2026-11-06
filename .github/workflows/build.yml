@@ -16,7 +16,7 @@ jobs:
         run: |
           mkdir -p run
           echo "eula=true" > run/eula.txt
-          printf 'level-type=kurumimnmod\\:field_world\nlevel-seed=12345\nonline-mode=false\nenable-rcon=true\nrcon.password=probe\nrcon.port=25575\n' > run/server.properties
+          printf 'level-type=kurumimnmod\\:field_world\nlevel-seed=12345\nonline-mode=false\nenable-rcon=true\nrcon.password=probe\nrcon.port=25575\npause-when-empty-seconds=0\n' > run/server.properties
           cat run/server.properties
       - name: Run server (stop after start)
         run: |

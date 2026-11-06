@@ -25,8 +25,8 @@ if mode=="load":
               "time set night","execute positioned 40 64 0 run kmod area","execute positioned 60 64 0 run kmod area"]:
         run(c)
 elif mode=="push":
-    run("summon minecraft:zombie 40 200 0 {Motion:[4.0d,0.0d,0.0d],NoAI:1b,PersistenceRequired:1b,Tags:[\"probe\"]}")
-    run("summon minecraft:zombie 40 200 4 {Motion:[4.0d,0.0d,0.0d],PersistenceRequired:1b,Tags:[\"probe\"]}")
+    run("summon minecraft:zombie 40 120 0 {Motion:[4.0d,0.0d,0.0d],NoAI:1b,PersistenceRequired:1b,Tags:[\"probe\"]}")
+    run("summon minecraft:zombie 40 120 4 {Motion:[4.0d,0.0d,0.0d],PersistenceRequired:1b,Tags:[\"probe\"]}")
     run("summon minecraft:arrow 40 120 8 {Motion:[3.0d,0.0d,0.0d],NoGravity:1b,Tags:[\"probe\"]}")
 elif mode=="save":
     run("data get entity @e[tag=probe,type=zombie,limit=1,sort=nearest] Pos")
