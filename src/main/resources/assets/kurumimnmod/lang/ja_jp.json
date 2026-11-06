@@ -281,6 +281,8 @@
   "screen.kurumimnmod.map.coords": "X %s ／ Z %s",
   "screen.kurumimnmod.map.help": "ドラッグ：移動　ホイール：拡大縮小　M：閉じる",
   "screen.kurumimnmod.map.help_op": "ドラッグ：移動　ホイール：拡大縮小　右クリック：テレポート（OP）　M：閉じる",
+  "screen.kurumimnmod.map.teleport.title": "テレポートしますか？",
+  "screen.kurumimnmod.map.teleport.message": "%s（X %s ／ Z %s）へテレポートします。",
   "town.kurumimnmod.town_1": "街1（仮）",
   "town.kurumimnmod.town_2": "街2（仮）",
   "town.kurumimnmod.town_3": "街3（仮）",

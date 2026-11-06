@@ -1,5 +1,6 @@
 package io.github.kurumimnm.kurumimnmod.client.world;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import io.github.kurumimnm.kurumimnmod.Kurumimnmod;
 import io.github.kurumimnm.kurumimnmod.client.ModKeyMappings;
 import io.github.kurumimnm.kurumimnmod.config.ModConstants;
@@ -9,6 +10,7 @@ import io.github.kurumimnm.kurumimnmod.world.FieldRegion;
 import io.github.kurumimnm.kurumimnmod.world.PlayerExploration;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -22,7 +24,7 @@ import net.neoforged.neoforge.client.network.ClientPacketDistributor;
  * <ul>
  *   <li>行ったことのあるエリア・街だけが見える。エリアの境目は白い線</li>
  *   <li>ドラッグで移動、ホイールで拡大縮小。マウスを乗せた場所の名前を表示</li>
- *   <li>OP は右クリックでその場所へテレポート</li>
+ *   <li>OP は右クリック →「テレポートしますか？」で「はい」を押すと、その場所へテレポート</li>
  * </ul>
  */
 public final class WorldMapScreen extends Screen {
@@ -165,7 +167,7 @@ public final class WorldMapScreen extends Screen {
 
     @Override
     public boolean mouseDragged(MouseButtonEvent event, double dx, double dy) {
-        if (event.button() == 0) {
+        if (event.button() == InputConstants.MOUSE_BUTTON_LEFT) {
             centerX -= dx * blocksPerScreenPixel();
             centerZ -= dy * blocksPerScreenPixel();
             dragged = true;
@@ -176,15 +178,30 @@ public final class WorldMapScreen extends Screen {
 
     @Override
     public boolean mouseReleased(MouseButtonEvent event) {
-        // 右クリック（ドラッグしていない）で、OP ならその場所へテレポート
-        if (event.button() == 1 && !dragged && isOperator()) {
-            int bx = (int) Math.floor(toBlockX(event.x()));
-            int bz = (int) Math.floor(toBlockZ(event.y()));
-            ClientPacketDistributor.sendToServer(new MapTeleportPayload(bx, bz));
-            this.onClose();
+        // 右クリック（ドラッグしていない）で、OP なら「テレポートしますか？」を出す
+        // ※ 26.3 のマウスボタンの番号は 左=1・中=2・右=3（InputConstants.MOUSE_BUTTON_*）。昔の 0/1 とは違う
+        if (event.button() == InputConstants.MOUSE_BUTTON_RIGHT && !dragged && isOperator()) {
+            confirmTeleport((int) Math.floor(toBlockX(event.x())), (int) Math.floor(toBlockZ(event.y())));
             return true;
         }
         return super.mouseReleased(event);
+    }
+
+    /** 確認画面を出す。「はい」でテレポートして地図を閉じ、「いいえ」で地図に戻る（位置・拡大率はそのまま）。 */
+    private void confirmTeleport(int bx, int bz) {
+        FieldRegion region = map.regionAt(bx + 0.5, bz + 0.5);
+        Component place = exploration().visited(region)
+                ? LocationHud.name(map, region)
+                : Component.translatable(KEY + ".unexplored");
+        this.minecraft.gui.setScreen(new ConfirmScreen(yes -> {
+            if (yes) {
+                ClientPacketDistributor.sendToServer(new MapTeleportPayload(bx, bz));
+                this.minecraft.gui.setScreen(null);
+            } else {
+                this.minecraft.gui.setScreen(this);
+            }
+        }, Component.translatable(KEY + ".teleport.title"),
+                Component.translatable(KEY + ".teleport.message", place, bx, bz)));
     }
 
     @Override

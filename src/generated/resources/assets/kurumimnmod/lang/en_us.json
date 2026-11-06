@@ -185,6 +185,8 @@
   "screen.kurumimnmod.map.help_op": "Drag: Move   Wheel: Zoom   Right-click: Teleport (OP)   M: Close",
   "screen.kurumimnmod.map.hover": "%s (%s)",
   "screen.kurumimnmod.map.loading": "Drawing the map...",
+  "screen.kurumimnmod.map.teleport.message": "Teleport to %s (X %s / Z %s)?",
+  "screen.kurumimnmod.map.teleport.title": "Teleport?",
   "screen.kurumimnmod.map.unexplored": "Unexplored",
   "screen.kurumimnmod.scarecrow": "Scarecrow Settings",
   "screen.kurumimnmod.scarecrow.armor": "Armor",
