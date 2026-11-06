@@ -1,6 +1,7 @@
 package io.github.kurumimnm.kurumimnmod.world;
 
 import io.github.kurumimnm.kurumimnmod.Kurumimnmod;
+import io.github.kurumimnm.kurumimnmod.config.ModConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -126,15 +127,10 @@ public final class BorderEvents {
     @SubscribeEvent
     static void onMobTick(EntityTickEvent.Post event) {
         if (event.getEntity() instanceof Mob mob && !mob.level().isClientSide()
-                && mob.tickCount % ModConstantsHolder.TARGET_CHECK_INTERVAL == 0
+                && mob.tickCount % ModConstants.GATE_TARGET_CHECK_TICKS == 0
                 && mob.getTarget() instanceof Player player && Borders.wallBetween(mob, player)) {
             mob.setTarget(null);
         }
-    }
-
-    /** 定数（ModConstants に置くほどでもない内部の間隔）。 */
-    private static final class ModConstantsHolder {
-        static final int TARGET_CHECK_INTERVAL = 10;
     }
 
     // ---- 飛び道具 ----

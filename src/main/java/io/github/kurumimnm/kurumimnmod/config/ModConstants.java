@@ -238,6 +238,8 @@ public final class ModConstants {
     public static final float GATE_LINE_ALPHA = 0.8f;
     /** モブ・アイテムの壁は、狙っているプレイヤー（いなければこの距離以内のいちばん近いプレイヤー）から見た壁で決める。 */
     public static final double GATE_MOB_PLAYER_RANGE = 128.0;
+    /** モブの狙いが壁の向こうのプレイヤーになっていないか調べる間隔（tick）。 */
+    public static final int GATE_TARGET_CHECK_TICKS = 10;
     /** 壁の内部キャッシュ：覚えておく最大チャンク数（溢れたら作り直す）。 */
     public static final int REGION_CACHE_MAX_CHUNKS = 16384;
 
