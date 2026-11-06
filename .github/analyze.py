@@ -14,7 +14,7 @@ def chunk_nbt(path, lx, lz):
 SEEN = set()
 def pname(p):
     if not hasattr(p, "get"): return str(p)
-    for k in ("id", "Name", "name", "block"):
+    for k in ("id", "Name", "name", "block", ""):
         if k in p: return str(p[k])
     key = tuple(sorted(p.keys()))
     if key not in SEEN:
