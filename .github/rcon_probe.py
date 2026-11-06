@@ -13,11 +13,10 @@ mode=sys.argv[1]
 if mode=="load":
     for c in ["locate structure kurumimnmod:spawn_house",
               "execute positioned 0 64 0 run kmod area","execute positioned 900 64 0 run kmod area","execute positioned 0 64 1000 run kmod area",
-              # 南北の断面（x=0〜31、z=-1600〜1800）と東西の断面（z=0〜31、x=-1600〜1600）
-              "forceload add 0 -1600 31 99","forceload add 0 100 31 1800",
-              "forceload add -1600 0 -1 31","forceload add 0 0 1600 31",
-              # 峠のあたり（x=-400〜400, z=-1000〜-700）
-              "forceload add -400 -1000 -1 -700","forceload add 0 -1000 400 -700",
+              # 街：メディアナ・1（村）・2（都市）・5（城下町）・3（港町）
+              "forceload add -80 -80 79 79","forceload add -48 -3048 47 -2953",
+              "forceload add -112 -6112 111 -5889","forceload add -96 -9096 95 -8905",
+              "forceload add 2504 -7596 2695 -7405",
               "execute positioned 0 64 -900 run kmod area"]:
         run(c)
 elif mode=="save":
