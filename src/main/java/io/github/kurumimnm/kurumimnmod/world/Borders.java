@@ -1,11 +1,13 @@
 package io.github.kurumimnm.kurumimnmod.world;
 
+import io.github.kurumimnm.kurumimnmod.config.ModConstants;
 import io.github.kurumimnm.kurumimnmod.registry.ModAttachments;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.OwnableEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
@@ -19,9 +21,11 @@ import org.jspecify.annotations.Nullable;
  * ボーダー（赤い壁）を「越えられない壁」にするためのルール。サーバー・クライアント共通。
  * <ul>
  *   <li><b>プレイヤー</b>：{@link GateRules#canEnter} で入れない場所には入れない。OP・クリエイティブも同じ（スペクテイターだけ素通り）</li>
- *   <li><b>プレイヤーが乗っている乗り物・プレイヤーのペット</b>：そのプレイヤーと同じルール</li>
- *   <li><b>それ以外（モブ・アイテム・飛び道具など）</b>：自分のいる「場所」（街／フィールド）から出られない。
- *       同じフィールドのエリア同士は自由に動ける</li>
+ *   <li><b>プレイヤーが乗っている乗り物・プレイヤーのペット・プレイヤーの飛び道具</b>：そのプレイヤーと同じルール</li>
+ *   <li><b>それ以外（モブ・アイテムなど）</b>：壁（{@link GateRules#hasWall}）がある境目は越えられず、壁越しに攻撃もできない。
+ *       壁がなければいつも通り動ける。壁は人によって違うので、モブが狙っているプレイヤー、
+ *       いなければ近く（{@link ModConstants#GATE_MOB_PLAYER_RANGE} ブロック以内）のいちばん近いプレイヤーから見た壁で決める。
+ *       近くにプレイヤーがいなければ越えられない</li>
  * </ul>
  * 場所は柱（1 ブロック）単位で決める（{@link RegionGrid}）。
  */
@@ -37,9 +41,32 @@ public final class Borders {
 
     /**
      * そのエンティティのルールを決めるプレイヤー。
-     * 本人がプレイヤーならその人、乗っているプレイヤーがいればその人、飼い主がプレイヤーならその人。いなければ null。
+     *
+     * @param player     そのプレイヤー
+     * @param controlled true = プレイヤー本人・乗っている乗り物・ペット・プレイヤーの飛び道具（そのプレイヤーとして入れるかで決める）。
+     *                   false = モブ・アイテムなど（そのプレイヤーから見て壁があるかで決める）
      */
-    public static @Nullable Player governingPlayer(Entity entity) {
+    public record Rule(Player player, boolean controlled) {}
+
+    /** そのエンティティのルール。決められるプレイヤーがいなければ null（＝ほかの場所へは出られない）。 */
+    public static @Nullable Rule ruleFor(Entity entity) {
+        Player controller = controller(entity);
+        if (controller != null) {
+            return new Rule(controller, true);
+        }
+        Entity actor = entity;
+        if (entity instanceof Projectile projectile && projectile.getOwner() != null) {
+            actor = projectile.getOwner(); // モブの矢などは撃ったモブと同じ
+        }
+        if (actor instanceof Mob mob && mob.getTarget() instanceof Player target) {
+            return new Rule(target, false);
+        }
+        Player nearest = actor.level().getNearestPlayer(actor, ModConstants.GATE_MOB_PLAYER_RANGE);
+        return nearest == null ? null : new Rule(nearest, false);
+    }
+
+    /** そのエンティティを動かしているプレイヤー（本人・乗っている人・飼い主・飛び道具を撃った人）。いなければ null。 */
+    public static @Nullable Player controller(Entity entity) {
         if (entity instanceof Player player) {
             return player;
         }
@@ -62,14 +89,17 @@ public final class Borders {
         if (from.sameZone(to)) {
             return true;
         }
-        Player player = governingPlayer(entity);
-        if (player == null) {
-            return false; // モブ・アイテムなどは自分の場所から出られない
+        Rule rule = ruleFor(entity);
+        if (rule == null) {
+            return false;
         }
-        if (player.isSpectator()) {
-            return true;
+        if (rule.player().isSpectator()) {
+            return rule.controlled();
         }
-        return GateRules.canEnter(player.getData(ModAttachments.EXPLORATION), from, to);
+        PlayerExploration exploration = rule.player().getData(ModAttachments.EXPLORATION);
+        return rule.controlled()
+                ? GateRules.canEnter(exploration, from, to)
+                : !GateRules.hasWall(exploration, from, to);
     }
 
     /** entity が、今いる場所から座標 (x, z) の場所へ手を出せないか（壊す・置く・叩く・使う）。 */
@@ -92,9 +122,25 @@ public final class Borders {
         return !RegionGrid.at(map, a.getX(), a.getZ()).sameZone(RegionGrid.at(map, b.getX(), b.getZ()));
     }
 
-    /** attacker が victim を傷つけられないか（壁越しの攻撃）。 */
+    /** attacker が victim を傷つけられないか（壁越しの攻撃）。狙われたプレイヤーから見て壁があっても止める。 */
     public static boolean attackBlocked(Entity attacker, LivingEntity victim) {
-        return attacker != victim && blocked(attacker, victim.getX(), victim.getZ());
+        if (attacker == victim) {
+            return false;
+        }
+        FieldMap map = FieldLookup.mapOrNull(attacker.level());
+        if (map == null) {
+            return false;
+        }
+        FieldRegion from = RegionGrid.at(map, attacker.getX(), attacker.getZ());
+        FieldRegion to = RegionGrid.at(map, victim.getX(), victim.getZ());
+        if (from.sameZone(to)) {
+            return false;
+        }
+        if (victim instanceof Player player && !player.isSpectator()
+                && GateRules.hasWall(player.getData(ModAttachments.EXPLORATION), from, to)) {
+            return true;
+        }
+        return !mayEnter(attacker, from, to);
     }
 
     // =====================================================================
