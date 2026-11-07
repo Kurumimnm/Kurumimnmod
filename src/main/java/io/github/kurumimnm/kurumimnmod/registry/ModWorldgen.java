@@ -5,6 +5,7 @@ import io.github.kurumimnm.kurumimnmod.Kurumimnmod;
 import io.github.kurumimnm.kurumimnmod.world.FieldMap;
 import io.github.kurumimnm.kurumimnmod.world.FieldMapBiomeSource;
 import io.github.kurumimnm.kurumimnmod.world.FieldRoadFeature;
+import io.github.kurumimnm.kurumimnmod.world.FieldWaterFeature;
 import io.github.kurumimnm.kurumimnmod.world.TerrainHeightFunction;
 import io.github.kurumimnm.kurumimnmod.world.town.TownFeature;
 import net.minecraft.core.Registry;
@@ -55,6 +56,10 @@ public final class ModWorldgen {
 
     public static final DeferredRegister<MapCodec<? extends Feature>> FEATURE_TYPES =
             DeferredRegister.create(Registries.FEATURE_TYPE, Kurumimnmod.MOD_ID);
+
+    /** 地形 v2 の湖・川の水を置く地物。 */
+    public static final DeferredHolder<MapCodec<? extends Feature>, MapCodec<FieldWaterFeature>> FIELD_WATER =
+            FEATURE_TYPES.register("field_water", () -> FieldWaterFeature.CODEC);
 
     /** 街道を敷く地物。 */
     public static final DeferredHolder<MapCodec<? extends Feature>, MapCodec<FieldRoadFeature>> FIELD_ROADS =

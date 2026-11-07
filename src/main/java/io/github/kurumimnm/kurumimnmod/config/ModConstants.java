@@ -238,6 +238,22 @@ public final class ModConstants {
     public static final float GATE_LINE_ALPHA = 0.8f;
     /** モブ・アイテムの壁は、狙っているプレイヤー（いなければこの距離以内のいちばん近いプレイヤー）から見た壁で決める。 */
     public static final double GATE_MOB_PLAYER_RANGE = 128.0;
+    /** モブの狙いが壁の向こうのプレイヤーになっていないか調べる間隔（tick）。 */
+    public static final int GATE_TARGET_CHECK_TICKS = 10;
+    // =====================================================================
+    // ワールド：地形 v2（ワールド作成時に計算する地形）
+    // =====================================================================
+
+    /** 計算のたびに、確認用の上空図（world/data/kurumimnmod/terrain/*_preview.png）を書き出す。 */
+    public static final boolean TERRAIN_WRITE_PREVIEW = true;
+    /** 範囲の外へ出る道を、今までの地形の道とつなぐとき探す範囲（ブロック）。 */
+    public static final int TERRAIN_ROAD_JOIN_SEARCH = 160;
+    /** 湖・川の底のブロック（id）。浅い所は砂、深い所は砂利。 */
+    public static final String TERRAIN_WATER_BED_SHALLOW = "sand";
+    public static final String TERRAIN_WATER_BED_DEEP = "gravel";
+    /** この深さ（ブロック）以上を「深い」とする。 */
+    public static final int TERRAIN_WATER_DEEP = 3;
+
     /** 壁の内部キャッシュ：覚えておく最大チャンク数（溢れたら作り直す）。 */
     public static final int REGION_CACHE_MAX_CHUNKS = 16384;
 
