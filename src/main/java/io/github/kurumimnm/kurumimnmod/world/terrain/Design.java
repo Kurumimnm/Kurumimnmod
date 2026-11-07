@@ -238,7 +238,7 @@ final class Design {
                             h = h + (bankTop - h) * w;
                         }
                         if (w > 0.5) {
-                            mask[0] |= HARD;
+                            mask[0] |= HARD | FILL; // 土手は崩さない。土手にせき止められた窪みは湖にせず埋める
                         }
                     }
                 }
