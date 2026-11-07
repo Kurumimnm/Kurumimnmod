@@ -101,6 +101,8 @@ public class GriffinEntity extends PathfinderMob implements NeutralMob, GeoEntit
     private static final String ACTION_CONTROLLER = "action";
     /** 羽ばたきの音を鳴らす間隔（tick）。fly アニメーションの 1 周（1 秒）に合わせる。 */
     private static final int FLAP_SOUND_INTERVAL = 20;
+    /** 着地点を探すときに試す位置の数。 */
+    private static final int LANDING_SEARCH_TRIES = 10;
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
@@ -216,15 +218,27 @@ public class GriffinEntity extends PathfinderMob implements NeutralMob, GeoEntit
             return;
         }
         this.landingTicks++;
-        if (isNoGravity() && this.navigation.isDone()
-                && getY() - level().getHeight(Heightmap.Types.MOTION_BLOCKING, getBlockX(), getBlockZ()) < 2.0) {
+        boolean overSolidGround = isSolidGround(getBlockX(), getBlockZ());
+        if (isNoGravity() && overSolidGround && this.navigation.isDone()
+                && getY() - groundHeight(getBlockX(), getBlockZ()) < 2.0) {
             // 着地点のすぐ上まで来た：羽ばたくのをやめて足を下ろす
             setNoGravity(false);
-        } else if (this.landingTicks > ModConstants.GRIFFIN_LANDING_TIMEOUT_TICKS && isNoGravity()) {
-            // 着地点が見つからないなど：羽ばたくのをやめて下りる（落下ダメージは受けない）
+        } else if (isNoGravity() && overSolidGround && this.landingTicks > ModConstants.GRIFFIN_LANDING_TIMEOUT_TICKS) {
+            // 着地点まで行けないなど：その場で羽ばたくのをやめて下りる（落下ダメージは受けない）
             this.navigation.stop();
             setNoGravity(false);
         }
+    }
+
+    /** その位置の地面の高さ（一番上のブロックの 1 つ上の Y）。 */
+    private int groundHeight(int x, int z) {
+        return level().getHeight(Heightmap.Types.MOTION_BLOCKING, x, z);
+    }
+
+    /** その位置の一番上が水・溶岩などの液体でなく、降りられる地面か。 */
+    private boolean isSolidGround(int x, int z) {
+        BlockPos top = new BlockPos(x, groundHeight(x, z) - 1, z);
+        return level().getFluidState(top).isEmpty() && top.getY() > level().getMinY();
     }
 
     /** 空中にいる理由があるか（戦闘中・水の上・気まぐれ飛行中・飛び立った直後）。 */
@@ -499,22 +513,24 @@ public class GriffinEntity extends PathfinderMob implements NeutralMob, GeoEntit
         @Override
         public void start() {
             int range = ModConstants.GRIFFIN_AIR_WANDER_RANGE;
-            boolean landing = !wantsToStayAirborne();
-            int spread = landing ? range / 3 : range;
-            int x = getBlockX() + getRandom().nextInt(spread * 2 + 1) - spread;
-            int z = getBlockZ() + getRandom().nextInt(spread * 2 + 1) - spread;
-            int groundY = level().getHeight(Heightmap.Types.MOTION_BLOCKING, x, z);
-            BlockPos ground = new BlockPos(x, groundY - 1, z);
-            boolean solidGround = level().getFluidState(ground).isEmpty();
-            double y;
-            if (landing && solidGround) {
-                y = groundY;
-            } else {
-                y = groundY + ModConstants.GRIFFIN_AIR_WANDER_MIN_HEIGHT + getRandom().nextInt(
-                        ModConstants.GRIFFIN_AIR_WANDER_MAX_HEIGHT - ModConstants.GRIFFIN_AIR_WANDER_MIN_HEIGHT + 1);
-                // 建築限界より上に行かないように
-                y = Math.min(y, level().getMaxY() - 2);
+            if (!wantsToStayAirborne()) {
+                // ---- 着地：近くから順に、液体でない地面を探す（水の上なら陸地まで飛んでいく） ----
+                for (int i = 0; i < LANDING_SEARCH_TRIES; i++) {
+                    int spread = i < LANDING_SEARCH_TRIES / 2 ? range / 3 : range;
+                    int x = getBlockX() + getRandom().nextInt(spread * 2 + 1) - spread;
+                    int z = getBlockZ() + getRandom().nextInt(spread * 2 + 1) - spread;
+                    if (isSolidGround(x, z)) {
+                        navigation.moveTo(x + 0.5, groundHeight(x, z), z + 0.5, ModConstants.GRIFFIN_AIR_WANDER_SPEED_MODIFIER);
+                        return;
+                    }
+                }
             }
+            // ---- 空中をうろつく（着地点が見つからなかったときも、場所を変えてまた探す） ----
+            int x = getBlockX() + getRandom().nextInt(range * 2 + 1) - range;
+            int z = getBlockZ() + getRandom().nextInt(range * 2 + 1) - range;
+            double y = groundHeight(x, z) + ModConstants.GRIFFIN_AIR_WANDER_MIN_HEIGHT + getRandom().nextInt(
+                    ModConstants.GRIFFIN_AIR_WANDER_MAX_HEIGHT - ModConstants.GRIFFIN_AIR_WANDER_MIN_HEIGHT + 1);
+            y = Math.min(y, level().getMaxY() - 2); // 建築限界より上に行かないように
             navigation.moveTo(x + 0.5, y, z + 0.5, ModConstants.GRIFFIN_AIR_WANDER_SPEED_MODIFIER);
         }
     }
