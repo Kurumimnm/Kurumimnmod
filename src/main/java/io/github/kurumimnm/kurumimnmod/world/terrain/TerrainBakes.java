@@ -38,7 +38,7 @@ public final class TerrainBakes {
     @SubscribeEvent
     static void onServerAboutToStart(ServerAboutToStartEvent event) {
         MinecraftServer server = event.getServer();
-        long seed = server.getWorldData().worldGenOptions().seed();
+        long seed = server.getWorldGenSettings().options().seed();
         Registry<FieldMap> maps = server.registryAccess().lookupOrThrow(ModWorldgen.FIELD_MAP);
         for (Map.Entry<ResourceKey<FieldMap>, FieldMap> entry : maps.entrySet()) {
             FieldMap map = entry.getValue();
