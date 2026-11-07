@@ -4,14 +4,13 @@
       "default": {
         "max_delay": 24000,
         "min_delay": 12000,
-        "sound": "minecraft:music.overworld.jagged_peaks"
+        "sound": "minecraft:music.overworld.stony_peaks"
       }
     },
-    "minecraft:gameplay/increased_fire_burnout": true,
-    "minecraft:visual/sky_color": "#859dff"
+    "minecraft:visual/sky_color": "#76a8ff"
   },
   "carvers": [],
-  "downfall": 0.9,
+  "downfall": 0.3,
   "effects": {
     "water_color": "#3f76e4"
   },
@@ -19,6 +18,7 @@
     [],
     [],
     [
+      "kurumimnmod:field_water",
       "kurumimnmod:field_roads"
     ],
     [],
@@ -34,5 +34,5 @@
     ]
   ],
   "has_precipitation": true,
-  "temperature": -0.7
+  "temperature": 0.46
 }

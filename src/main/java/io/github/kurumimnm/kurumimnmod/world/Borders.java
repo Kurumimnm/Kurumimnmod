@@ -26,6 +26,7 @@ import org.jspecify.annotations.Nullable;
  *       壁がなければいつも通り動ける。壁は人によって違うので、モブが狙っているプレイヤー、
  *       いなければ近く（{@link ModConstants#GATE_MOB_PLAYER_RANGE} ブロック以内）のいちばん近いプレイヤーから見た壁で決める。
  *       近くにプレイヤーがいなければ越えられない</li>
+ *   <li><b>街は安全地帯</b>：モブ・アイテムなどは、壁が消えた街にも外から入れない（街の中のプレイヤーを狙わない・攻撃しない）</li>
  * </ul>
  * 場所は柱（1 ブロック）単位で決める（{@link RegionGrid}）。
  */
@@ -89,6 +90,10 @@ public final class Borders {
         if (from.sameZone(to)) {
             return true;
         }
+        // 街は安全地帯：プレイヤーが動かしていないもの（モブ・アイテムなど）は、壁が消えた街にも入れない
+        if (to.isTown() && controller(entity) == null) {
+            return false;
+        }
         Rule rule = ruleFor(entity);
         if (rule == null) {
             return false;
@@ -134,6 +139,20 @@ public final class Borders {
         FieldRegion a = RegionGrid.at(map, entity.getX(), entity.getZ());
         FieldRegion b = RegionGrid.at(map, player.getX(), player.getZ());
         return !a.sameZone(b) && GateRules.hasWall(player.getData(ModAttachments.EXPLORATION), a, b);
+    }
+
+    /** モブ entity がプレイヤーを狙えないか（壁の向こう、または街の中＝安全地帯にいる）。 */
+    public static boolean cannotTarget(Entity entity, Player player) {
+        if (wallBetween(entity, player)) {
+            return true;
+        }
+        FieldMap map = FieldLookup.mapOrNull(entity.level());
+        if (map == null || controller(entity) != null) {
+            return false;
+        }
+        FieldRegion a = RegionGrid.at(map, entity.getX(), entity.getZ());
+        FieldRegion b = RegionGrid.at(map, player.getX(), player.getZ());
+        return b.isTown() && !a.sameZone(b);
     }
 
     /** attacker が victim を傷つけられないか（壁越しの攻撃）。狙われたプレイヤーから見て壁があっても止める。 */

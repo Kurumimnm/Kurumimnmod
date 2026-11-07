@@ -33,7 +33,7 @@ import net.neoforged.neoforge.event.tick.EntityTickEvent;
  *   <li>爆発が壁の向こうを壊す・傷つける</li>
  *   <li>エンダーマン・エンダーパール・コーラスフルーツで壁の向こうへワープする</li>
  *   <li>水・溶岩が壁の向こうへ流れる</li>
- *   <li>モブが壁の向こうのプレイヤーを狙う（敵対しない。壁がなければいつも通り狙う）</li>
+ *   <li>モブが壁の向こう・街の中のプレイヤーを狙う（敵対しない。壁がなければいつも通り狙う）</li>
  * </ul>
  * 歩いて越えられないこと自体は当たり判定（{@link Borders#wallShapes}）で止めている。
  */
@@ -118,7 +118,7 @@ public final class BorderEvents {
     @SubscribeEvent
     static void onChangeTarget(LivingChangeTargetEvent event) {
         LivingEntity target = event.getNewAboutToBeSetTarget();
-        if (target instanceof Player player && Borders.wallBetween(event.getEntity(), player)) {
+        if (target instanceof Player player && Borders.cannotTarget(event.getEntity(), player)) {
             event.setNewAboutToBeSetTarget(null);
         }
     }
@@ -128,7 +128,7 @@ public final class BorderEvents {
     static void onMobTick(EntityTickEvent.Post event) {
         if (event.getEntity() instanceof Mob mob && !mob.level().isClientSide()
                 && mob.tickCount % ModConstants.GATE_TARGET_CHECK_TICKS == 0
-                && mob.getTarget() instanceof Player player && Borders.wallBetween(mob, player)) {
+                && mob.getTarget() instanceof Player player && Borders.cannotTarget(mob, player)) {
             mob.setTarget(null);
         }
     }

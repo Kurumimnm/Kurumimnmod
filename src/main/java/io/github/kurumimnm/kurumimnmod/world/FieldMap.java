@@ -6,6 +6,9 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.kurumimnm.kurumimnmod.registry.ModWorldgen;
 import java.util.List;
 import java.util.Optional;
+import io.github.kurumimnm.kurumimnmod.world.terrain.TerrainBake;
+import io.github.kurumimnm.kurumimnmod.world.terrain.TerrainBakes;
+import io.github.kurumimnm.kurumimnmod.world.terrain.TerrainDesign;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.world.level.biome.Biome;
@@ -138,7 +141,8 @@ public final class FieldMap {
             Field.CODEC.listOf().fieldOf("fields").forGetter(FieldMap::fields),
             TerrainSettings.CODEC.fieldOf("terrain").forGetter(FieldMap::terrain),
             MountainSettings.CODEC.optionalFieldOf("mountains").forGetter(FieldMap::mountains),
-            RoadSettings.CODEC.optionalFieldOf("roads").forGetter(FieldMap::roads)
+            RoadSettings.CODEC.optionalFieldOf("roads").forGetter(FieldMap::roads),
+            TerrainDesign.CODEC.optionalFieldOf("design").forGetter(FieldMap::design)
     ).apply(i, FieldMap::new)).validate(FieldMap::validate);
 
     /** フィールドが 1 つもない地図は読み込みエラーにする。 */
@@ -185,6 +189,11 @@ public final class FieldMap {
     private final double[] roadBX;
     private final double[] roadBZ;
 
+    /** 地形 v2 の設計図（あれば、ワールド作成時にその範囲の地形を計算する）。 */
+    private final Optional<TerrainDesign> design;
+    /** 計算済みの地形 v2（サーバーでワールドを開いている間だけ。{@link TerrainBakes} が入れる）。 */
+    private volatile @org.jspecify.annotations.Nullable TerrainBake bake;
+
     // 判定を速くするため、基準点を配列に展開しておく
     private final int[] seedX;
     private final int[] seedZ;
@@ -192,7 +201,8 @@ public final class FieldMap {
     private final Field[] seedField;
 
     public FieldMap(Warp warp, List<Town> towns, List<Field> fields, TerrainSettings terrain,
-                    Optional<MountainSettings> mountains, Optional<RoadSettings> roads) {
+                    Optional<MountainSettings> mountains, Optional<RoadSettings> roads, Optional<TerrainDesign> design) {
+        this.design = design;
         this.warp = warp;
         this.towns = List.copyOf(towns);
         this.fields = List.copyOf(fields);
@@ -269,6 +279,19 @@ public final class FieldMap {
         return roads;
     }
 
+    public Optional<TerrainDesign> design() {
+        return design;
+    }
+
+    /** 計算済みの地形 v2 を持たせる（null で外す）。 */
+    public void attachBake(@org.jspecify.annotations.Nullable TerrainBake bake) {
+        this.bake = bake;
+    }
+
+    public @org.jspecify.annotations.Nullable TerrainBake bake() {
+        return bake;
+    }
+
     /** id から街を探す。 */
     public Optional<Town> town(String id) {
         return towns.stream().filter(t -> t.id().equals(id)).findFirst();
@@ -324,8 +347,13 @@ public final class FieldMap {
                 best = i;
             }
         }
-        boolean inMountains = mountains.isPresent()
-                && mountainPosition(x, z) > mountains.get().biomeThreshold();
+        TerrainBake v2 = bake;
+        boolean inMountains;
+        if (v2 != null && v2.weight(x, z) >= 0.5) {
+            inMountains = mountains.isPresent() && v2.isMountain(x, z); // 地形 v2：高い所が山のバイオーム
+        } else {
+            inMountains = mountains.isPresent() && mountainPosition(x, z) > mountains.get().biomeThreshold();
+        }
         return new Location(seedField[best], seedArea[best], inMountains);
     }
 
@@ -348,13 +376,14 @@ public final class FieldMap {
      * 基本の地面（terrain）＋ 山脈（mountains）。上限は terrain.max_height。
      */
     public double terrainHeight(double x, double z) {
-        double height = terrain.groundHeight(x, z);
-        if (mountains.isPresent()) {
-            MountainSettings m = mountains.get();
-            MountainSettings.Position position = m.position(x, z);
-            if (position.p() > 0) {
-                height += m.heightAt(position, x, z);
-            }
+        double height;
+        TerrainBake v2 = bake;
+        if (v2 != null && v2.covers(x, z)) {
+            // 地形 v2 の範囲。縁では今までの地形とまぜる
+            double w = v2.weight(x, z);
+            height = v2.height(x, z, w < 1 ? v1BaseHeight(x, z) : 0);
+        } else {
+            height = v1BaseHeight(x, z);
         }
         // 街の中は平らにして、周りはなだらかにつなぐ
         for (Town town : towns) {
@@ -380,8 +409,25 @@ public final class FieldMap {
         return Math.min(height, terrain.maxHeight());
     }
 
+    /** 今までの地形（v1）：基本の地面＋山脈。街の平らにする処理の前。 */
+    public double v1BaseHeight(double x, double z) {
+        double height = terrain.groundHeight(x, z);
+        if (mountains.isPresent()) {
+            MountainSettings m = mountains.get();
+            MountainSettings.Position position = m.position(x, z);
+            if (position.p() > 0) {
+                height += m.heightAt(position, x, z);
+            }
+        }
+        return height;
+    }
+
     /** 街の地面の高さ（地面の一番上のブロックの Y）。 */
     public int townGroundY(Town town) {
+        TerrainBake v2 = bake;
+        if (v2 != null && v2.weight(town.x(), town.z()) >= 0.5) {
+            return (int) Math.round(v2.rawHeight(town.x(), town.z()));
+        }
         return (int) Math.round(terrain.groundHeight(town.x(), town.z()));
     }
 
@@ -402,6 +448,62 @@ public final class FieldMap {
      * 道はルートの線分の近く・山脈の外・フィールドの road が none 以外の場所にだけできる。
      */
     public RoadHit roadAt(double x, double z) {
+        TerrainBake v2 = bake;
+        if (v2 != null && v2.weight(x, z) >= 0.5) {
+            return roadAtV2(v2, x, z);
+        }
+        return roadAtV1(x, z);
+    }
+
+    /** 地形 v2 の道（計算のときに経路探索で引いた道）。 */
+    private RoadHit roadAtV2(TerrainBake v2, double x, double z) {
+        if (roads.isEmpty()) {
+            return null;
+        }
+        RoadSettings r = roads.get();
+        double distance = v2.roadDistance(x, z);
+        if (distance > r.maxHalfWidth() + 1) {
+            return null;
+        }
+        for (Town town : towns) {
+            if (town.contains(x, z)) {
+                return null;
+            }
+        }
+        if (!Double.isNaN(v2.waterLevel(x, z))) {
+            return null; // 水の上には敷かない（橋は M3）
+        }
+        RoadSettings.FieldRoad fieldRoad = locate(x, z).field().road();
+        RoadSettings.Style style = r.styles().get(fieldRoad.isNone() ? "dirt" : fieldRoad.style());
+        if (style == null) {
+            style = r.styles().values().iterator().next();
+        }
+        double halfWidth = style.width() / 2.0;
+        if (distance > halfWidth) {
+            return null;
+        }
+        boolean edge = halfWidth >= 1.5 && distance > halfWidth - 1;
+        return new RoadHit(style, edge ? style.edge() : style.surface());
+    }
+
+    /** (x, z) のまわり radius 以内で、今までの地形（v1）の道がある一番近い地点（なければ (x, z) のまま）。 */
+    public double[] nearestV1Road(double x, double z, int radius) {
+        double[] best = {x, z};
+        double bestDistance = Double.MAX_VALUE;
+        for (int dz = -radius; dz <= radius; dz += 2) {
+            for (int dx = -radius; dx <= radius; dx += 2) {
+                double d = dx * dx + dz * dz;
+                if (d < bestDistance && roadAtV1(x + dx, z + dz) != null) {
+                    bestDistance = d;
+                    best = new double[]{x + dx, z + dz};
+                }
+            }
+        }
+        return best;
+    }
+
+    /** 今までの地形（v1）の道：ルートの線分の近く。 */
+    private RoadHit roadAtV1(double x, double z) {
         if (roads.isEmpty() || roadAX.length == 0) {
             return null;
         }

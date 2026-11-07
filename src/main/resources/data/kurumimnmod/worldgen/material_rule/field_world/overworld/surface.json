@@ -502,8 +502,7 @@
               "biome_is": [
                 "minecraft:frozen_peaks",
                 "minecraft:jagged_peaks",
-                "kurumimnmod:dragon_peaks",
-                "kurumimnmod:sky_wall_range"
+                "kurumimnmod:dragon_peaks"
               ]
             },
             "then_run": {
