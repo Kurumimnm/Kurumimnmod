@@ -83,6 +83,66 @@ public final class ModConstants {
     public static final int DAMAGE_NUMBER_COLOR_BREAK = 0xFFFF5050;   // HP を削り切った一撃（赤）
 
 
+    // ---- グリフォン（中立モブ。普段は地上を歩き、戦闘・落下・水中では飛ぶ） ----
+    // ※ 鎧付き個体の出現率・防御力は Config の [mobs.griffin]。ここは登録時の値と AI の調整値。
+    /** 当たり判定の幅・高さ（ブロック）。モデル（griffin.geo.json）の胴体に合わせてある。 */
+    public static final float GRIFFIN_WIDTH = 1.3f;
+    public static final float GRIFFIN_HEIGHT = 1.9f;
+    /** 目の高さ（ブロック）。頭の位置に合わせる。 */
+    public static final float GRIFFIN_EYE_HEIGHT = 1.75f;
+    /** 何チャンク先のプレイヤーまで見えるか。 */
+    public static final int GRIFFIN_TRACKING_RANGE = 10;
+    /** 影の半径（ブロック）。 */
+    public static final float GRIFFIN_SHADOW_RADIUS = 0.8f;
+
+    /** 最大 HP。 */
+    public static final double GRIFFIN_MAX_HEALTH = 40.0;
+    /** 地上の移動速度（バニラの属性値。ウマ ≒ 0.225、オオカミ = 0.3）。 */
+    public static final double GRIFFIN_MOVEMENT_SPEED = 0.25;
+    /** 飛行速度（バニラの属性値。ミツバチ = 0.6）。実際の速さは GRIFFIN_AIR_ACCELERATION も影響する。 */
+    public static final double GRIFFIN_FLYING_SPEED = 0.6;
+    /** 空中での加速の倍率。大きいほど速く飛ぶ（巡航 ≒ 飛行速度² × この値 / 0.09 ブロック/tick）。 */
+    public static final float GRIFFIN_AIR_ACCELERATION = 0.1f;
+    /** 攻撃力（防具・防御力で軽減される前）。 */
+    public static final double GRIFFIN_ATTACK_DAMAGE = 6.0;
+    /** 索敵範囲（ブロック）。仲間を呼ぶ範囲（水平）もこの値。 */
+    public static final double GRIFFIN_FOLLOW_RANGE = 32.0;
+    /** ノックバック耐性（0.0〜1.0）。 */
+    public static final double GRIFFIN_KNOCKBACK_RESISTANCE = 0.3;
+
+    /** 怒りが続く時間（秒）の範囲。攻撃した相手をこの時間追いかける。 */
+    public static final int GRIFFIN_ANGER_MIN_SECONDS = 20;
+    public static final int GRIFFIN_ANGER_MAX_SECONDS = 39;
+    /** 攻撃中の移動速度の倍率。 */
+    public static final double GRIFFIN_ATTACK_SPEED_MODIFIER = 1.3;
+    /** 地上をうろつくときの移動速度の倍率。 */
+    public static final double GRIFFIN_WANDER_SPEED_MODIFIER = 0.8;
+    /** 空中をうろつくときの移動速度の倍率。 */
+    public static final double GRIFFIN_AIR_WANDER_SPEED_MODIFIER = 1.0;
+    /** 何もしていないときに気まぐれで飛び立つ確率（毎 tick 1 / この値。1200 で平均 1 分に 1 回）。 */
+    public static final int GRIFFIN_IDLE_TAKEOFF_CHANCE = 1200;
+    /** 気まぐれで飛ぶ時間（tick）の範囲。終わると着地する。 */
+    public static final int GRIFFIN_IDLE_FLIGHT_MIN_TICKS = 200;
+    public static final int GRIFFIN_IDLE_FLIGHT_MAX_TICKS = 500;
+    /** 飛び立ったあと、最低これだけは飛び続ける（tick）。すぐ着地してバタつくのを防ぐ。 */
+    public static final int GRIFFIN_MIN_FLIGHT_TICKS = 40;
+    /** 着地しようとしてもこれだけ着地できなければ、羽ばたきをやめて降りる（tick）。 */
+    public static final int GRIFFIN_LANDING_TIMEOUT_TICKS = 200;
+    /** この距離（ブロック）以上落ちたら翼を広げて飛ぶ（崖から落ちたとき）。落下ダメージは受けない。 */
+    public static final double GRIFFIN_FALL_TAKEOFF_DISTANCE = 3.0;
+    /** 飛び立つときの上向きの勢い（ブロック/tick）。 */
+    public static final double GRIFFIN_TAKEOFF_BOOST = 0.45;
+    /** 空中でうろつく範囲（水平・ブロック）。 */
+    public static final int GRIFFIN_AIR_WANDER_RANGE = 12;
+    /** 空中でうろつく高さ（地面からのブロック数）の範囲。 */
+    public static final int GRIFFIN_AIR_WANDER_MIN_HEIGHT = 4;
+    public static final int GRIFFIN_AIR_WANDER_MAX_HEIGHT = 10;
+    /** 頭がプレイヤーの方を向く角度の上限（度）。左右・上下。 */
+    public static final float GRIFFIN_HEAD_MAX_YAW = 50f;
+    public static final float GRIFFIN_HEAD_MAX_PITCH = 35f;
+    /** 鳴き声の高さ（オウムの声を低くして使う）。 */
+    public static final float GRIFFIN_VOICE_PITCH = 0.55f;
+
     // ---- 氷柱（氷柱の杖の弾）。ダメージ・速さなどの調整値は Config の [magic.iceWand] ----
     /** 当たり判定の大きさ（ブロック）。 */
     public static final float ICE_ICICLE_SIZE = 0.5f;

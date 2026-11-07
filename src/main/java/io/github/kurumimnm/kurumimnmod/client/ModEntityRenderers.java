@@ -2,6 +2,7 @@ package io.github.kurumimnm.kurumimnmod.client;
 
 import io.github.kurumimnm.kurumimnmod.Kurumimnmod;
 import io.github.kurumimnm.kurumimnmod.client.scarecrow.ScarecrowRenderer;
+import io.github.kurumimnm.kurumimnmod.client.renderer.GriffinRenderer;
 import io.github.kurumimnm.kurumimnmod.client.renderer.IceIcicleRenderer;
 import io.github.kurumimnm.kurumimnmod.registry.ModEntities;
 import net.neoforged.api.distmarker.Dist;
@@ -33,6 +34,9 @@ public final class ModEntityRenderers {
 
         // カカシ（頭上のダメージ数字も描く専用レンダラー）
         event.registerEntityRenderer(ModEntities.SCARECROW.get(), context -> new ScarecrowRenderer<>(context));
+
+        // グリフォン（鎧の表示切り替え・頭の向きを扱う専用レンダラー）
+        event.registerEntityRenderer(ModEntities.GRIFFIN.get(), context -> new GriffinRenderer<>(context));
 
 
         // 氷柱の杖の氷柱（飛ぶ方向に向けて回転させる専用レンダラー）

@@ -139,6 +139,11 @@
   "kurumimnmod.configuration.enabled": "表示する",
   "kurumimnmod.configuration.range": "表示距離",
   "kurumimnmod.configuration.hostileOnly": "敵対モブのみ",
+  "kurumimnmod.configuration.mobs": "モブ",
+  "kurumimnmod.configuration.griffin": "グリフォン",
+  "kurumimnmod.configuration.armoredChance": "鎧付きで出現する確率",
+  "kurumimnmod.configuration.normalDefense": "防御力（鎧なし）",
+  "kurumimnmod.configuration.armoredDefense": "防御力（鎧付き）",
 
   "item.kurumimnmod.scarecrow_summon_stick": "カカシ召喚用ステッキ",
   "item.kurumimnmod.scarecrow_summon_stick.desc": "ブロックを右クリックでカカシを召喚",
@@ -147,6 +152,9 @@
   "item.kurumimnmod.scarecrow_config_stick.desc": "カカシを狙って左クリックで設定画面を開く",
 
   "entity.kurumimnmod.scarecrow": "カカシ",
+
+  "entity.kurumimnmod.griffin": "グリフォン",
+  "item.kurumimnmod.griffin_spawn_egg": "グリフォンのスポーンエッグ",
 
   "message.kurumimnmod.scarecrow.op_only": "OP権限が必要です",
   "message.kurumimnmod.scarecrow.no_space": "ここにはカカシを召喚できません（スペースが足りません）",
