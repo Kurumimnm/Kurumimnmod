@@ -100,9 +100,13 @@ final class Hydro {
         }
     }
 
-    /** いちばん急に下る隣のマス（流れる先）。少し揺らして、まっすぐな筋ができないようにする。 */
+    /**
+     * 流れる先のマス。下っている隣のマスから、急なほど選ばれやすいように乱数で選ぶ
+     * （いつも一番急な方へ流すと、斜面にまっすぐな筋が並んでしまうため）。random が null なら一番急な方。
+     */
     static void receivers(float[] h, boolean[] fixed, int n, double cell, Random random, float jitter,
                           int[] receiver, float[] distance) {
+        double[] weight = new double[8];
         for (int j = 0; j < n; j++) {
             for (int i = 0; i < n; i++) {
                 int idx = j * n + i;
@@ -111,22 +115,43 @@ final class Hydro {
                 if (fixed[idx]) {
                     continue;
                 }
-                float hi = h[idx] + (jitter > 0 ? (float) random.nextGaussian() * jitter : 0);
+                double total = 0;
                 double best = 0;
+                int bestK = -1;
                 for (int k = 0; k < 8; k++) {
                     int ii = i + DI[k];
                     int jj = j + DJ[k];
+                    weight[k] = 0;
                     if (ii < 0 || jj < 0 || ii >= n || jj >= n) {
                         continue;
                     }
                     double d = (DI[k] != 0 && DJ[k] != 0) ? cell * 1.41421356 : cell;
-                    double s = (hi - h[jj * n + ii]) / d;
-                    if (s > best) {
-                        best = s;
-                        receiver[idx] = jj * n + ii;
-                        distance[idx] = (float) d;
+                    double s = (h[idx] - h[jj * n + ii]) / d;
+                    if (s > 0) {
+                        weight[k] = s * s;
+                        total += weight[k];
+                        if (s > best) {
+                            best = s;
+                            bestK = k;
+                        }
                     }
                 }
+                if (bestK < 0) {
+                    continue;
+                }
+                int pick = bestK;
+                if (random != null && jitter > 0) {
+                    double r = random.nextDouble() * total;
+                    for (int k = 0; k < 8; k++) {
+                        r -= weight[k];
+                        if (weight[k] > 0 && r <= 0) {
+                            pick = k;
+                            break;
+                        }
+                    }
+                }
+                receiver[idx] = (j + DJ[pick]) * n + i + DI[pick];
+                distance[idx] = (float) ((DI[pick] != 0 && DJ[pick] != 0) ? cell * 1.41421356 : cell);
             }
         }
     }
@@ -168,22 +193,25 @@ final class Hydro {
         }
     }
 
-    /** 急すぎる斜面を崩す（talus＝1 マスで許される高さの差）。 */
+    /** 急すぎる斜面を崩す（talus＝1 マスで許される高さの差）。斜めの隣も見るので、格子の向きの筋ができにくい。 */
     static void thermal(float[] h, boolean[] fixed, boolean[] keep, float[] talus, int n, int sweeps) {
-        int[] ni = {1, -1, 0, 0};
-        int[] nj = {0, 0, 1, -1};
         for (int s = 0; s < sweeps; s++) {
-            for (int j = 1; j < n - 1; j++) {
-                for (int i = 1; i < n - 1; i++) {
+            // 向きの偏りが出ないよう、往復で調べる
+            boolean reverse = (s & 1) == 1;
+            for (int jj0 = 1; jj0 < n - 1; jj0++) {
+                int j = reverse ? n - 1 - jj0 : jj0;
+                for (int ii0 = 1; ii0 < n - 1; ii0++) {
+                    int i = reverse ? n - 1 - ii0 : ii0;
                     int idx = j * n + i;
                     if (fixed[idx] || keep[idx]) {
                         continue;
                     }
-                    for (int k = 0; k < 4; k++) {
-                        int nb = (j + nj[k]) * n + i + ni[k];
+                    for (int k = 0; k < 8; k++) {
+                        int nb = (j + DJ[k]) * n + i + DI[k];
+                        float limit = (DI[k] != 0 && DJ[k] != 0) ? talus[idx] * 1.41421356f : talus[idx];
                         float d = h[idx] - h[nb];
-                        if (d > talus[idx]) {
-                            float move = 0.5f * (d - talus[idx]);
+                        if (d > limit) {
+                            float move = 0.25f * (d - limit);
                             h[idx] -= move;
                             if (!fixed[nb] && !keep[nb]) {
                                 h[nb] += move;
