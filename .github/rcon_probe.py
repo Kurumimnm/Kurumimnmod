@@ -9,28 +9,23 @@ s=socket.create_connection(("127.0.0.1",25575),timeout=600)
 pkt(s,1,3,"probe");rd(s)
 def run(c):
     pkt(s,2,2,c);r=rd(s);print(">",c);print(r);sys.stdout.flush();return r
-def at(x,z,cmd):
-    return run(f"execute positioned {x} 0 {z} positioned over motion_blocking run {cmd}")
-def info(tag):
-    for p in ["Pos","Health","Armored","Flying","anger_end_time","NoGravity"]:
-        run(f"data get entity @e[tag={tag},limit=1] {p}")
 run("time set day"); run("difficulty normal")
-for cx in (0, 600):
-    run(f"forceload add {cx-48} -48 {cx+47} 47")
-time.sleep(10)
-print("==== C. near water at 0,0")
-for i,(x,z) in enumerate([(0,0),(3,0)]):
-    run(f'execute positioned {x} 0 {z} positioned over motion_blocking run summon kurumimnmod:griffin ~ ~ ~ {{Tags:["w","w{i}"]}}')
-run('execute positioned 6 0 6 positioned over motion_blocking run summon minecraft:pig ~ ~ ~ {Tags:["victim2"]}')
+# A: small pool (15x15) at x=600 / B: large pool (41x41, land beyond search range 12) at x=800
+run("forceload add 560 -48 640 47")
+run("forceload add 750 -48 850 47")
+time.sleep(8)
+Y=200
+for cx,plat,pool in ((600,20,7),(800,30,20)):
+    run(f"fill {cx-plat} {Y-2} {-plat} {cx+plat} {Y-1} {plat} minecraft:stone")
+    run(f"fill {cx-pool} {Y-1} {-pool} {cx+pool} {Y-1} {pool} minecraft:water")
 time.sleep(2)
-run("damage @e[tag=w0,limit=1] 2 minecraft:mob_attack by @e[tag=victim2,limit=1]")
-time.sleep(6)
-run("execute if entity @e[tag=victim2]")
-run("kill @e[tag=victim2]")
+for tag,x,z in (("a0",600,0),("a1",603,3),("b0",800,0),("b1",804,-3)):
+    run(f'summon kurumimnmod:griffin {x}.5 {Y-1} {z}.5 {{Tags:["g","{tag}"]}}')
 for k in range(12):
-    time.sleep(5)
-    print("t=",5*(k+1))
-    run("execute as @e[tag=w] run data get entity @s Flying")
-    run("execute as @e[tag=w] run data get entity @s Pos")
-    run("execute as @e[tag=w] run data get entity @s NoGravity")
-    run("execute as @e[tag=w] at @s positioned over motion_blocking if block ~ ~-1 ~ minecraft:water")
+    time.sleep(10)
+    print("==== t=",10*(k+1))
+    for tag in ("a0","a1","b0","b1"):
+        run(f"data get entity @e[tag={tag},limit=1] Flying")
+        run(f"data get entity @e[tag={tag},limit=1] Pos")
+        run(f"execute as @e[tag={tag}] at @s if block ~ ~-0.5 ~ minecraft:stone")
+        run(f"execute as @e[tag={tag}] at @s if entity @s[nbt={{OnGround:1b}}]")
