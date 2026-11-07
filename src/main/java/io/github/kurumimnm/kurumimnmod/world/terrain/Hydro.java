@@ -227,13 +227,46 @@ final class Hydro {
     // 道（経路探索）
     // =====================================================================
 
-    /** 坂がゆるく、水を避ける道筋。ブロック座標の折れ線 [x0, z0, x1, z1, ...]。見つからなければ null。 */
-    static float[] road(float[] h, float[] water, int n, TerrainDesign.Region region, TerrainBaker.RoadRequest request, BakeNoise noise) {
+    /** 道の点の列をつないだ折れ線（ブロック座標 [x0, z0, x1, z1, ...]）。区間ごとに経路探索（橋はまっすぐ）。 */
+    static float[] road(float[] h, float[] water, byte[] mask, int n, TerrainDesign.Region region,
+                        TerrainBaker.RoadRequest request, BakeNoise noise) {
+        List<double[]> all = new ArrayList<>();
+        List<double[]> pts = request.points();
+        for (int k = 0; k + 1 < pts.size(); k++) {
+            List<double[]> part;
+            if (request.straight().get(k)) {
+                part = new ArrayList<>();
+                part.add(pts.get(k));
+                part.add(pts.get(k + 1));
+            } else {
+                part = segment(h, water, mask, n, region, pts.get(k), pts.get(k + 1), noise);
+                if (part == null) {
+                    part = new ArrayList<>();
+                    part.add(pts.get(k));
+                    part.add(pts.get(k + 1));
+                }
+            }
+            if (!all.isEmpty()) {
+                part.remove(0);
+            }
+            all.addAll(part);
+        }
+        float[] line = new float[all.size() * 2];
+        for (int k = 0; k < all.size(); k++) {
+            line[2 * k] = (float) all.get(k)[0];
+            line[2 * k + 1] = (float) all.get(k)[1];
+        }
+        return line;
+    }
+
+    /** 1 区間の経路探索。坂・水・崖・峡谷を避ける。 */
+    private static List<double[]> segment(float[] h, float[] water, byte[] mask, int n, TerrainDesign.Region region,
+                                          double[] from, double[] to, BakeNoise noise) {
         double cell = region.cell();
-        int si = clamp((int) ((request.fromX() - region.x0()) / cell), n);
-        int sj = clamp((int) ((request.fromZ() - region.z0()) / cell), n);
-        int ti = clamp((int) ((request.toX() - region.x0()) / cell), n);
-        int tj = clamp((int) ((request.toZ() - region.z0()) / cell), n);
+        int si = clamp((int) ((from[0] - region.x0()) / cell), n);
+        int sj = clamp((int) ((from[1] - region.z0()) / cell), n);
+        int ti = clamp((int) ((to[0] - region.x0()) / cell), n);
+        int tj = clamp((int) ((to[1] - region.z0()) / cell), n);
         double[] g = new double[n * n];
         Arrays.fill(g, Double.MAX_VALUE);
         int[] prev = new int[n * n];
@@ -266,10 +299,12 @@ final class Hydro {
                 double grade = Math.abs(h[nb] - h[idx]) / d;
                 double x = region.x0() + (ii + 0.5) * cell;
                 double z = region.z0() + (jj + 0.5) * cell;
-                // 坂がきついほど高い。少し揺らして、まっすぐすぎない道にする
                 double c = d * (1 + 30 * grade * grade + (grade > 0.35 ? 200 : 0) + 0.25 * (1 + noise.fbm(x, z, 160, 2, 777)));
                 if (!Float.isNaN(water[nb])) {
-                    c += 40 * d; // 川を渡るのは高い（渡るなら狭い所で）
+                    c += 40 * d;
+                }
+                if ((mask[nb] & (Design.GORGE | Design.SEA)) != 0) {
+                    c += 400 * d; // 峡谷の壁・海は通らない（橋で渡る）
                 }
                 double ng = g[idx] + c;
                 if (ng < g[nb]) {
@@ -288,8 +323,12 @@ final class Hydro {
         for (int cur = goal; cur != -1; cur = prev[cur]) {
             pts.add(0, new double[]{region.x0() + (cur % n + 0.5) * cell, region.z0() + (cur / n + 0.5) * cell});
         }
-        pts.set(0, new double[]{request.fromX(), request.fromZ()});
-        pts.set(pts.size() - 1, new double[]{request.toX(), request.toZ()});
+        pts.set(0, from);
+        if (pts.size() == 1) {
+            pts.add(to);
+        } else {
+            pts.set(pts.size() - 1, to);
+        }
         // 角を丸める（チャイキン法 2 回）
         for (int pass = 0; pass < 2; pass++) {
             List<double[]> next = new ArrayList<>();
@@ -303,12 +342,7 @@ final class Hydro {
             next.add(pts.get(pts.size() - 1));
             pts = next;
         }
-        float[] line = new float[pts.size() * 2];
-        for (int k = 0; k < pts.size(); k++) {
-            line[2 * k] = (float) pts.get(k)[0];
-            line[2 * k + 1] = (float) pts.get(k)[1];
-        }
-        return line;
+        return pts;
     }
 
     private static int clamp(int v, int n) {

@@ -5,8 +5,9 @@ package io.github.kurumimnm.kurumimnmod.world;
  * <ul>
  *   <li>壁は「場所」の境目（街 ↔ フィールド、フィールド ↔ フィールド）にある。同じフィールドのエリア同士の間にはない</li>
  *   <li>止めるのは「入るとき」だけ。行ったことのある場所へは自由に戻れる</li>
- *   <li>街から周りのフィールドへは自由に出られる（一度行った街の周りの壁は消える）</li>
- *   <li>フィールド A から、まだ行ったことのない場所（フィールド B・街）へ入るには、A のフィールドボスを倒している必要がある</li>
+ *   <li>場所ごとに「入るのに必要な進行フラグ」（地図の unlock）がある。フラグを持っていれば入れる
+ *       （例：gate＝緋の関所のボスを倒した。設計書 B-4 の進行フラグ）</li>
+ *   <li>フラグは実績 kurumimnmod:progress/フラグ名 で管理する（{@link ExplorationTracker}）</li>
  * </ul>
  */
 public final class GateRules {
@@ -21,10 +22,7 @@ public final class GateRules {
         if (to.isTown() ? exploration.towns().contains(to.town()) : exploration.fields().contains(to.field())) {
             return true; // 行ったことのある場所へは戻れる
         }
-        if (from.isTown()) {
-            return true; // 街からはどのフィールドへも出られる
-        }
-        return exploration.clearedFields().contains(from.field()); // 今いるフィールドのボスを倒していれば先へ進める
+        return to.unlock() == null || to.unlock().isEmpty() || exploration.flags().contains(to.unlock());
     }
 
     /** a と b の境目に壁を表示するか（どちらか向きに通れなければ表示）。 */

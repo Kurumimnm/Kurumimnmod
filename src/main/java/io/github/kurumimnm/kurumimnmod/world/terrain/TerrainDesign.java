@@ -92,36 +92,98 @@ public record TerrainDesign(Region region, double baseHeight, double baseNoise, 
     }
 
     /**
-     * 地形の部品。type で中身の意味が変わる（使わない項目は省略してよい）。
+     * 地形の部品。type で意味が変わる。数値の項目は自由に書け（{@link #num}）、文字の項目は {@link #str}。
      * <ul>
+     *   <li>{@code coast}：points＝陸地の輪郭（多角形）。外は海。beach＝海へ下がる幅、ocean_floor＝沖の海底の高さ</li>
+     *   <li>{@code area}：points（多角形）または center＋radius（円）の範囲を height の高さにする。noise＝起伏、edge＝周りへつなぐ幅、
+     *       style＝plain（なだらか）／plateau（崖で区切った台地。崖は崩れない）／dunes（砂丘）／mesas（メサが点在）</li>
      *   <li>{@code range}：points に沿った山並み。peak＝頂上の高さ、width＝尾根から麓までの幅、rough＝ごつごつ具合（0〜1）</li>
      *   <li>{@code arc}：center を中心に radius の円弧に沿った山並み（from〜to 度、0 度＝東、90 度＝南）。wobble＝半径の揺れ</li>
-     *   <li>{@code basin}：center の周り radius の内側を floor の高さの盆地にする。width＝周りの山へつなぐ幅</li>
-     *   <li>{@code gorge}：points に沿って幅 width の切れ込み。底の高さは floor から floorEnd へ下がる。meander＝蛇行の大きさ</li>
+     *   <li>{@code basin}：center の周り radius の内側を floor の高さの盆地にする。width＝周りへつなぐ幅</li>
+     *   <li>{@code crater}：center の周り radius のすり鉢。floor＝底、rim＝縁の盛り上がり（ブロック）</li>
+     *   <li>{@code volcano}：center、radius（裾野）、peak（火口の縁）、crater（火口の半径）、floor（火口の底）、base（裾野の高さ）</li>
+     *   <li>{@code canyon}：points に沿った切り立った谷。width＝底の幅、wall＝壁の厚み（小さいほど垂直）、floor→floor_end＝底の高さ、
+     *       rim＝縁の高さ、water＝底の水面（沼。省略で水なし）</li>
+     *   <li>{@code gorge}：points に沿った切れ込み（侵食の前に入れる。川が流れる峡谷）。width、floor→floor_end、meander＝蛇行</li>
+     *   <li>{@code river}：points に沿った川（侵食の後に掘る）。width＝水面の幅、depth＝深さ、level→level_end＝水面の高さ、bank＝岸の幅</li>
      *   <li>{@code lake}：center の周り rx×rz の窪み（depth の深さ）。水がたまって湖になる</li>
+     *   <li>{@code bridge}：points の 2 点を結ぶ橋。deck＝橋の面の高さ、width＝幅。道はここを通る</li>
      * </ul>
+     * jitter（シードで形を変える）は range・arc・crater にだけかかる。海岸・台地・谷・川・橋は設計どおりの位置。
      */
-    public record Landform(String type, List<List<Double>> points, List<Double> center, double peak, double width,
-                           double rough, double radius, double from, double to, double wobble, double floor,
-                           double floorEnd, double meander, double rx, double rz, double depth) {
-        private static final Codec<List<Double>> POINT = Codec.DOUBLE.listOf();
-        public static final Codec<Landform> CODEC = RecordCodecBuilder.create(i -> i.group(
-                Codec.STRING.fieldOf("type").forGetter(Landform::type),
-                POINT.listOf().optionalFieldOf("points", List.of()).forGetter(Landform::points),
-                POINT.optionalFieldOf("center", List.of(0.0, 0.0)).forGetter(Landform::center),
-                Codec.DOUBLE.optionalFieldOf("peak", 0.0).forGetter(Landform::peak),
-                Codec.DOUBLE.optionalFieldOf("width", 0.0).forGetter(Landform::width),
-                Codec.DOUBLE.optionalFieldOf("rough", 0.6).forGetter(Landform::rough),
-                Codec.DOUBLE.optionalFieldOf("radius", 0.0).forGetter(Landform::radius),
-                Codec.DOUBLE.optionalFieldOf("from", 0.0).forGetter(Landform::from),
-                Codec.DOUBLE.optionalFieldOf("to", 0.0).forGetter(Landform::to),
-                Codec.DOUBLE.optionalFieldOf("wobble", 0.0).forGetter(Landform::wobble),
-                Codec.DOUBLE.optionalFieldOf("floor", 0.0).forGetter(Landform::floor),
-                Codec.DOUBLE.optionalFieldOf("floor_end", 0.0).forGetter(Landform::floorEnd),
-                Codec.DOUBLE.optionalFieldOf("meander", 0.0).forGetter(Landform::meander),
-                Codec.DOUBLE.optionalFieldOf("rx", 0.0).forGetter(Landform::rx),
-                Codec.DOUBLE.optionalFieldOf("rz", 0.0).forGetter(Landform::rz),
-                Codec.DOUBLE.optionalFieldOf("depth", 0.0).forGetter(Landform::depth)
-        ).apply(i, Landform::new));
+    public record Landform(String type, List<List<Double>> points, List<Double> center,
+                           java.util.Map<String, Double> nums, java.util.Map<String, String> strs) {
+
+        public double num(String key, double fallback) {
+            Double v = nums.get(key);
+            return v == null ? fallback : v;
+        }
+
+        public boolean has(String key) {
+            return nums.containsKey(key);
+        }
+
+        public String str(String key, String fallback) {
+            return strs.getOrDefault(key, fallback);
+        }
+
+        public double cx() {
+            return center.isEmpty() ? 0 : center.get(0);
+        }
+
+        public double cz() {
+            return center.size() < 2 ? 0 : center.get(1);
+        }
+
+        /** 平らな JSON（{"type":..., "points":..., "peak": 500, "style": "plateau"}）を読む。数値以外の項目は文字として持つ。 */
+        public static final Codec<Landform> CODEC = Codec.PASSTHROUGH.comapFlatMap(Landform::parse, Landform::encode);
+
+        private static <T> com.mojang.serialization.DataResult<Landform> parse(com.mojang.serialization.Dynamic<T> dyn) {
+            String type = dyn.get("type").asString("");
+            if (type.isEmpty()) {
+                return com.mojang.serialization.DataResult.error(() -> "landform needs a type");
+            }
+            List<List<Double>> points = dyn.get("points").asList(p -> p.asList(v -> v.asDouble(0)));
+            List<Double> center = dyn.get("center").asList(v -> v.asDouble(0));
+            java.util.Map<String, Double> nums = new java.util.TreeMap<>();
+            java.util.Map<String, String> strs = new java.util.TreeMap<>();
+            dyn.getMapValues().result().ifPresent(map -> map.forEach((k, v) -> {
+                String key = k.asString("");
+                if (key.equals("type") || key.equals("points") || key.equals("center")) {
+                    return;
+                }
+                var number = v.asNumber().result();
+                if (number.isPresent()) {
+                    nums.put(key, number.get().doubleValue());
+                } else {
+                    v.asString().result().ifPresent(text -> strs.put(key, text));
+                }
+            }));
+            return com.mojang.serialization.DataResult.success(new Landform(type, List.copyOf(points), List.copyOf(center),
+                    java.util.Collections.unmodifiableMap(nums), java.util.Collections.unmodifiableMap(strs)));
+        }
+
+        private com.mojang.serialization.Dynamic<?> encode() {
+            com.mojang.serialization.JsonOps ops = com.mojang.serialization.JsonOps.INSTANCE;
+            com.google.gson.JsonObject o = new com.google.gson.JsonObject();
+            o.addProperty("type", type);
+            if (!points.isEmpty()) {
+                com.google.gson.JsonArray arr = new com.google.gson.JsonArray();
+                for (List<Double> p : points) {
+                    com.google.gson.JsonArray q = new com.google.gson.JsonArray();
+                    p.forEach(q::add);
+                    arr.add(q);
+                }
+                o.add("points", arr);
+            }
+            if (!center.isEmpty()) {
+                com.google.gson.JsonArray q = new com.google.gson.JsonArray();
+                center.forEach(q::add);
+                o.add("center", q);
+            }
+            nums.forEach(o::addProperty);
+            strs.forEach(o::addProperty);
+            return new com.mojang.serialization.Dynamic<>(ops, o);
+        }
     }
 }

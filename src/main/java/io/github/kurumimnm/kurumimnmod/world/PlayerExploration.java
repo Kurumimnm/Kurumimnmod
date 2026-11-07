@@ -15,9 +15,9 @@ import net.minecraft.network.codec.StreamCodec;
  * @param towns         行ったことのある街の id
  * @param fields        行ったことのあるフィールドの番号
  * @param areas         行ったことのあるエリア（フィールド番号 × 100 ＋ エリア番号）。地図はこの単位で解放される
- * @param clearedFields フィールドボスを倒したフィールドの番号（実績 kurumimnmod:field_boss/〇〇 と連動）
+ * @param flags         持っている進行フラグ（gate など。実績 kurumimnmod:progress/〇〇 と連動）
  */
-public record PlayerExploration(Set<String> towns, Set<Integer> fields, Set<Integer> areas, Set<Integer> clearedFields) {
+public record PlayerExploration(Set<String> towns, Set<Integer> fields, Set<Integer> areas, Set<String> flags) {
 
     public static final PlayerExploration EMPTY = new PlayerExploration(Set.of(), Set.of(), Set.of(), Set.of());
 
@@ -25,21 +25,21 @@ public record PlayerExploration(Set<String> towns, Set<Integer> fields, Set<Inte
         towns = Set.copyOf(towns);
         fields = Set.copyOf(fields);
         areas = Set.copyOf(areas);
-        clearedFields = Set.copyOf(clearedFields);
+        flags = Set.copyOf(flags);
     }
 
     public static final Codec<PlayerExploration> CODEC = RecordCodecBuilder.create(i -> i.group(
             Codec.STRING.listOf().xmap(Set::copyOf, List::copyOf).optionalFieldOf("towns", Set.of()).forGetter(PlayerExploration::towns),
             Codec.INT.listOf().xmap(Set::copyOf, List::copyOf).optionalFieldOf("fields", Set.of()).forGetter(PlayerExploration::fields),
             Codec.INT.listOf().xmap(Set::copyOf, List::copyOf).optionalFieldOf("areas", Set.of()).forGetter(PlayerExploration::areas),
-            Codec.INT.listOf().xmap(Set::copyOf, List::copyOf).optionalFieldOf("cleared_fields", Set.of()).forGetter(PlayerExploration::clearedFields)
+            Codec.STRING.listOf().xmap(Set::copyOf, List::copyOf).optionalFieldOf("flags", Set.of()).forGetter(PlayerExploration::flags)
     ).apply(i, PlayerExploration::new));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, PlayerExploration> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.STRING_UTF8.apply(ByteBufCodecs.collection(HashSet::new)), e -> new HashSet<>(e.towns()),
             ByteBufCodecs.VAR_INT.apply(ByteBufCodecs.collection(HashSet::new)), e -> new HashSet<>(e.fields()),
             ByteBufCodecs.VAR_INT.apply(ByteBufCodecs.collection(HashSet::new)), e -> new HashSet<>(e.areas()),
-            ByteBufCodecs.VAR_INT.apply(ByteBufCodecs.collection(HashSet::new)), e -> new HashSet<>(e.clearedFields()),
+            ByteBufCodecs.STRING_UTF8.apply(ByteBufCodecs.collection(HashSet::new)), e -> new HashSet<>(e.flags()),
             PlayerExploration::new);
 
     public boolean visited(FieldRegion region) {
@@ -54,7 +54,7 @@ public record PlayerExploration(Set<String> towns, Set<Integer> fields, Set<Inte
             }
             Set<String> newTowns = new HashSet<>(towns);
             newTowns.add(region.town());
-            return new PlayerExploration(newTowns, fields, areas, clearedFields);
+            return new PlayerExploration(newTowns, fields, areas, flags);
         }
         if (fields.contains(region.field()) && areas.contains(region.areaKey())) {
             return this;
@@ -63,14 +63,14 @@ public record PlayerExploration(Set<String> towns, Set<Integer> fields, Set<Inte
         newFields.add(region.field());
         Set<Integer> newAreas = new HashSet<>(areas);
         newAreas.add(region.areaKey());
-        return new PlayerExploration(towns, newFields, newAreas, clearedFields);
+        return new PlayerExploration(towns, newFields, newAreas, flags);
     }
 
-    public PlayerExploration withCleared(Set<Integer> cleared) {
-        return new PlayerExploration(towns, fields, areas, cleared);
+    public PlayerExploration withFlags(Set<String> newFlags) {
+        return new PlayerExploration(towns, fields, areas, newFlags);
     }
 
     public PlayerExploration withVisited(Set<String> newTowns, Set<Integer> newFields, Set<Integer> newAreas) {
-        return new PlayerExploration(newTowns, newFields, newAreas, clearedFields);
+        return new PlayerExploration(newTowns, newFields, newAreas, flags);
     }
 }

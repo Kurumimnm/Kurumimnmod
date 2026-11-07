@@ -44,6 +44,18 @@ public final class ClientFieldWorld {
     static void onRegisterClientPayloadHandlers(RegisterClientPayloadHandlersEvent event) {
         // 当たり判定など共通の処理から、クライアント側の地図を引けるようにする
         FieldLookup.setClientResolver(level -> level == Minecraft.getInstance().level ? map() : null);
+        event.register(io.github.kurumimnm.kurumimnmod.network.FieldTerrainPayload.TYPE, (payload, context) -> {
+            FieldMap fieldMap = map();
+            if (fieldMap == null || fieldMap.design().isEmpty() || fieldMap.bake() != null) {
+                return; // シングルプレイでサーバーと同じ地図を共有している場合は、サーバーの細かいデータをそのまま使う
+            }
+            try {
+                fieldMap.attachBake(io.github.kurumimnm.kurumimnmod.world.terrain.TerrainBake.fromNetwork(payload.data(), fieldMap.design().get()));
+                WorldMapImage.clear();
+            } catch (java.io.IOException e) {
+                // 地図が今までの地形の色で描かれるだけ
+            }
+        });
         event.register(FieldWorldPayload.TYPE, (payload, context) -> {
             mapId = payload.map().orElse(null);
             map = null;
@@ -96,6 +108,9 @@ public final class ClientFieldWorld {
         }
         Vec3 pos = player.position();
         FieldRegion now = RegionGrid.at(fieldMap, pos.x, pos.z);
+        if (!now.isTown()) {
+            now = fieldMap.regionAt(pos.x, pos.y, pos.z); // 上層・下層のエリアを高さで分ける
+        }
         if (region == null || lastPos == null) {
             region = now;
             lastPos = pos;

@@ -72,7 +72,19 @@ public final class TerrainBakes {
                 LOGGER.info("[地形v2] {} の保存データを読みました", id);
             }
             map.attachBake(bake);
+            try {
+                NETWORK.put(map, bake.toNetwork(ModConstants.TERRAIN_NETWORK_FACTOR));
+            } catch (Exception e) {
+                LOGGER.error("[地形v2] 地図用のデータを作れませんでした", e);
+            }
         }
+    }
+
+    /** クライアントへ送る粗い地形データ（地図ごと）。 */
+    private static final Map<FieldMap, byte[]> NETWORK = new java.util.IdentityHashMap<>();
+
+    public static synchronized byte[] networkData(FieldMap map) {
+        return NETWORK.get(map);
     }
 
     @SubscribeEvent
@@ -81,6 +93,7 @@ public final class TerrainBakes {
         for (FieldMap map : maps) {
             map.attachBake(null);
         }
+        NETWORK.clear();
     }
 
     /** 範囲の中の街（川がよけて流れる平らな台にする）。 */
@@ -94,11 +107,17 @@ public final class TerrainBakes {
         return pads;
     }
 
-    /** 範囲の中で道を引く区間。範囲の外へ出る道は、今までの地形の道と縁でつながる所までにする。 */
+    /** 道（地図の roads のルート）。経由地のうち、橋の両端が続けて並んでいる所は、まっすぐ橋を渡る。 */
     private static List<TerrainBaker.RoadRequest> roads(FieldMap map, TerrainDesign design) {
         List<TerrainBaker.RoadRequest> requests = new ArrayList<>();
         if (map.roads().isEmpty()) {
             return requests;
+        }
+        List<double[]> bridges = new ArrayList<>();
+        for (TerrainDesign.Landform l : design.landforms()) {
+            if (l.type().equals("bridge") && l.points().size() >= 2) {
+                bridges.add(new double[]{l.points().get(0).get(0), l.points().get(0).get(1), l.points().get(1).get(0), l.points().get(1).get(1)});
+            }
         }
         for (RoadSettings.Route route : map.roads().get().routes()) {
             var from = map.town(route.from());
@@ -112,21 +131,28 @@ public final class TerrainBakes {
                 pts.add(new double[]{via.x(), via.z()});
             }
             pts.add(new double[]{to.get().x(), to.get().z()});
-            boolean fromIn = inner(design, pts.get(0)[0], pts.get(0)[1]);
-            boolean toIn = inner(design, pts.get(pts.size() - 1)[0], pts.get(pts.size() - 1)[1]);
-            if (fromIn && toIn) {
-                requests.add(new TerrainBaker.RoadRequest(pts.get(0)[0], pts.get(0)[1], pts.get(pts.size() - 1)[0], pts.get(pts.size() - 1)[1]));
-            } else if (fromIn || toIn) {
-                List<double[]> walk = new ArrayList<>(pts);
-                if (!fromIn) {
-                    java.util.Collections.reverse(walk);
-                }
-                double[] exit = exitPoint(design, walk);
-                double[] joined = map.nearestV1Road(exit[0], exit[1], ModConstants.TERRAIN_ROAD_JOIN_SEARCH);
-                requests.add(new TerrainBaker.RoadRequest(walk.get(0)[0], walk.get(0)[1], joined[0], joined[1]));
+            List<Boolean> straight = new ArrayList<>();
+            for (int k = 0; k + 1 < pts.size(); k++) {
+                straight.add(isBridge(bridges, pts.get(k), pts.get(k + 1)));
             }
+            requests.add(new TerrainBaker.RoadRequest(pts, straight));
         }
         return requests;
+    }
+
+    private static boolean isBridge(List<double[]> bridges, double[] a, double[] b) {
+        for (double[] br : bridges) {
+            boolean forward = near(a, br[0], br[1]) && near(b, br[2], br[3]);
+            boolean backward = near(a, br[2], br[3]) && near(b, br[0], br[1]);
+            if (forward || backward) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean near(double[] p, double x, double z) {
+        return Math.abs(p[0] - x) <= 3 && Math.abs(p[1] - z) <= 3;
     }
 
     /** 縁のつなぎ目の真ん中より内側か（そこから内は v2 の道）。 */

@@ -56,7 +56,7 @@ public final class FieldMap {
      * type = 街の種類（village / town / city / port_town など。{@link io.github.kurumimnm.kurumimnmod.world.town.TownPlanner}）、
      * style = 建物の素材（oak / spruce / birch / dark_oak / acacia / sandstone）。
      */
-    public record Town(String id, int number, int x, int z, int radius, String type, String style) {
+    public record Town(String id, int number, int x, int z, int radius, String type, String style, String unlock) {
         public static final Codec<Town> CODEC = RecordCodecBuilder.create(i -> i.group(
                 Codec.STRING.fieldOf("id").forGetter(Town::id),
                 Codec.INT.fieldOf("number").forGetter(Town::number),
@@ -64,7 +64,8 @@ public final class FieldMap {
                 Codec.INT.fieldOf("z").forGetter(Town::z),
                 Codec.INT.optionalFieldOf("radius", 48).forGetter(Town::radius),
                 Codec.STRING.optionalFieldOf("type", "town").forGetter(Town::type),
-                Codec.STRING.optionalFieldOf("style", "oak").forGetter(Town::style)
+                Codec.STRING.optionalFieldOf("style", "oak").forGetter(Town::style),
+                Codec.STRING.optionalFieldOf("unlock", "").forGetter(Town::unlock)
         ).apply(i, Town::new));
 
         public boolean contains(double px, double pz) {
@@ -74,21 +75,30 @@ public final class FieldMap {
         }
     }
 
-    /** エリアの基準点。area = エリア番号（1 = 本道、大きいほど深い）。 */
-    public record AreaSeed(int area, int x, int z) {
+    /**
+     * エリアの基準点。area = エリア番号。y = エリアの高さ（上層・下層を分けるのに使う。省略すると高さを見ない）。
+     */
+    public record AreaSeed(int area, int x, int z, int y) {
+        /** 高さの指定なし。 */
+        public static final int NO_Y = Integer.MIN_VALUE;
         public static final Codec<AreaSeed> CODEC = RecordCodecBuilder.create(i -> i.group(
                 Codec.INT.fieldOf("area").forGetter(AreaSeed::area),
                 Codec.INT.fieldOf("x").forGetter(AreaSeed::x),
-                Codec.INT.fieldOf("z").forGetter(AreaSeed::z)
+                Codec.INT.fieldOf("z").forGetter(AreaSeed::z),
+                Codec.INT.optionalFieldOf("y", NO_Y).forGetter(AreaSeed::y)
         ).apply(i, AreaSeed::new));
     }
 
     /**
      * フィールド。biome = このフィールドのバイオーム、tier = 危険度の基準（出発する街の番号）、
      * road = このフィールドを通る道の種類と状態（省略すると道なし。{@link RoadSettings} 参照）。
+     * unlock = 入るのに必要な進行フラグ（例：gate。空なら誰でも入れる。{@link GateRules}）、
+     * circle = [x, z, 半径] の円で範囲を決める（旧都など。基準点より優先）、sea = 海（海岸線の外）、
+     * mountain_biome = 高い所を山のバイオームにするか（雪山のフィールドは false）。
      */
     public record Field(String id, int number, Holder<Biome> biome, int tier, List<AreaSeed> areas,
-                        RoadSettings.FieldRoad road, int mapColor) {
+                        RoadSettings.FieldRoad road, int mapColor, String unlock, List<Double> circle, boolean sea,
+                        boolean mountainBiome) {
         public static final Codec<Field> CODEC = RecordCodecBuilder.create(i -> i.group(
                 Codec.STRING.fieldOf("id").forGetter(Field::id),
                 Codec.INT.fieldOf("number").forGetter(Field::number),
@@ -96,8 +106,22 @@ public final class FieldMap {
                 Codec.INT.fieldOf("tier").forGetter(Field::tier),
                 AreaSeed.CODEC.listOf().fieldOf("areas").forGetter(Field::areas),
                 RoadSettings.FieldRoad.CODEC.optionalFieldOf("road", RoadSettings.FieldRoad.NONE).forGetter(Field::road),
-                COLOR_CODEC.optionalFieldOf("map_color", 0x7FB238).forGetter(Field::mapColor)
+                COLOR_CODEC.optionalFieldOf("map_color", 0x7FB238).forGetter(Field::mapColor),
+                Codec.STRING.optionalFieldOf("unlock", "").forGetter(Field::unlock),
+                Codec.DOUBLE.listOf().optionalFieldOf("circle", List.of()).forGetter(Field::circle),
+                Codec.BOOL.optionalFieldOf("sea", false).forGetter(Field::sea),
+                Codec.BOOL.optionalFieldOf("mountain_biome", true).forGetter(Field::mountainBiome)
         ).apply(i, Field::new));
+
+        /** 円で範囲を決めるフィールド（旧都など）なら、その円の中か。 */
+        public boolean inCircle(double x, double z) {
+            if (circle.size() < 3) {
+                return false;
+            }
+            double dx = x - circle.get(0);
+            double dz = z - circle.get(1);
+            return dx * dx + dz * dz <= circle.get(2) * circle.get(2);
+        }
     }
 
     /** 道の判定結果。block = 置くブロック。 */
@@ -194,6 +218,12 @@ public final class FieldMap {
     /** 計算済みの地形 v2（サーバーでワールドを開いている間だけ。{@link TerrainBakes} が入れる）。 */
     private volatile @org.jspecify.annotations.Nullable TerrainBake bake;
 
+    // 海・円のフィールドと、海岸線（設計図の coast）
+    private final @org.jspecify.annotations.Nullable Field seaField;
+    private final List<Field> circleFields;
+    private final double @org.jspecify.annotations.Nullable [] coastXs;
+    private final double @org.jspecify.annotations.Nullable [] coastZs;
+
     // 判定を速くするため、基準点を配列に展開しておく
     private final int[] seedX;
     private final int[] seedZ;
@@ -234,6 +264,13 @@ public final class FieldMap {
         this.roadAZ = segments.stream().mapToDouble(v -> v[1]).toArray();
         this.roadBX = segments.stream().mapToDouble(v -> v[2]).toArray();
         this.roadBZ = segments.stream().mapToDouble(v -> v[3]).toArray();
+
+        this.seaField = this.fields.stream().filter(Field::sea).findFirst().orElse(null);
+        this.circleFields = this.fields.stream().filter(f -> f.circle().size() >= 3).toList();
+        double[][] coast = design.flatMap(d -> d.landforms().stream().filter(l -> l.type().equals("coast")).findFirst())
+                .map(l -> io.github.kurumimnm.kurumimnmod.world.terrain.Shapes2D.toArrays(l.points())).orElse(null);
+        this.coastXs = coast == null ? null : coast[0];
+        this.coastZs = coast == null ? null : coast[1];
 
         int count = 0;
         for (Field field : this.fields) {
@@ -309,11 +346,11 @@ public final class FieldMap {
     public FieldRegion regionAt(double x, double z) {
         for (Town town : towns) {
             if (town.contains(x, z)) {
-                return FieldRegion.town(town.id());
+                return FieldRegion.town(town.id(), unlockOf(FieldRegion.town(town.id())));
             }
         }
         Location location = locate(x, z);
-        return FieldRegion.field(location.field().number(), location.area());
+        return FieldRegion.field(location.field().number(), location.area(), location.field().unlock());
     }
 
     /** 番号から街を探す。 */
@@ -329,6 +366,17 @@ public final class FieldMap {
         if (seedField.length == 0) {
             return null;
         }
+        // 海岸線の外は海のフィールド
+        if (seaField != null && coastXs != null
+                && io.github.kurumimnm.kurumimnmod.world.terrain.Shapes2D.coastDistance(x, z, coastXs, coastZs) < 0) {
+            return new Location(seaField, nearestArea(seaField, x, z), false);
+        }
+        // 円で決めるフィールド（旧都など）
+        for (Field field : circleFields) {
+            if (field.inCircle(x, z)) {
+                return new Location(field, nearestArea(field, x, z), false);
+            }
+        }
         // 境界を自然な形にするため、判定する座標を少しずらす
         double nx = x / warp.scale();
         double nz = z / warp.scale();
@@ -336,9 +384,12 @@ public final class FieldMap {
         double wz = z + warp.amplitude() * FieldNoise.fbm(nx, nz, WARP_SALT_Z);
 
         // いちばん近い基準点を探す（基準点は数百個なので全件調べても十分速い）
-        int best = 0;
+        int best = -1;
         double bestDistance = Double.MAX_VALUE;
         for (int i = 0; i < seedField.length; i++) {
+            if (seedField[i].sea() || seedField[i].circle().size() >= 3) {
+                continue;
+            }
             double dx = seedX[i] - wx;
             double dz = seedZ[i] - wz;
             double distance = dx * dx + dz * dz;
@@ -347,14 +398,98 @@ public final class FieldMap {
                 best = i;
             }
         }
+        if (best < 0) {
+            best = 0;
+        }
         TerrainBake v2 = bake;
         boolean inMountains;
-        if (v2 != null && v2.weight(x, z) >= 0.5) {
+        if (!seedField[best].mountainBiome()) {
+            inMountains = false;
+        } else if (v2 != null && v2.weight(x, z) >= 0.5) {
             inMountains = mountains.isPresent() && v2.isMountain(x, z); // 地形 v2：高い所が山のバイオーム
         } else {
             inMountains = mountains.isPresent() && mountainPosition(x, z) > mountains.get().biomeThreshold();
         }
         return new Location(seedField[best], seedArea[best], inMountains);
+    }
+
+    /** フィールドの中で (x, z) にいちばん近いエリア（高さは見ない）。 */
+    private static int nearestArea(Field field, double x, double z) {
+        int best = field.areas().isEmpty() ? 1 : field.areas().get(0).area();
+        double bestDistance = Double.MAX_VALUE;
+        for (AreaSeed seed : field.areas()) {
+            double dx = seed.x() - x;
+            double dz = seed.z() - z;
+            double d = dx * dx + dz * dz;
+            if (d < bestDistance) {
+                bestDistance = d;
+                best = seed.area();
+            }
+        }
+        return best;
+    }
+
+    /** 上層・下層を区別するときの高さの重み（高さ 1 ブロックの差を水平何ブロックとみなすか）。 */
+    private static final double AREA_Y_WEIGHT = 8.0;
+
+    /**
+     * 高さも見た「場所」。同じ XZ に上層と下層のエリアがあるとき（峡谷の上と底、地下など）、高さで分ける。
+     * フィールドは {@link #regionAt(double, double)} と同じ（壁は XZ だけで決まる）。
+     */
+    public FieldRegion regionAt(double x, double y, double z) {
+        FieldRegion flat = regionAt(x, z);
+        if (flat.isTown()) {
+            return flat;
+        }
+        Optional<Field> field = field(flat.field());
+        if (field.isEmpty() || field.get().areas().stream().noneMatch(a -> a.y() != AreaSeed.NO_Y)) {
+            return flat;
+        }
+        int best = flat.area();
+        double bestDistance = Double.MAX_VALUE;
+        for (AreaSeed seed : field.get().areas()) {
+            double dx = seed.x() - x;
+            double dz = seed.z() - z;
+            double dy = seed.y() == AreaSeed.NO_Y ? 0 : (seed.y() - y) * AREA_Y_WEIGHT;
+            double d = dx * dx + dz * dz + dy * dy;
+            if (d < bestDistance) {
+                bestDistance = d;
+                best = seed.area();
+            }
+        }
+        return FieldRegion.field(flat.field(), best, flat.unlock());
+    }
+
+    /** その場所に入るのに必要な進行フラグ（空なら不要）。街は、指定がなければ街の中心があるフィールドと同じ。 */
+    public String unlockOf(FieldRegion region) {
+        if (region.isTown()) {
+            Optional<Town> town = town(region.town());
+            if (town.isEmpty()) {
+                return "";
+            }
+            if (!town.get().unlock().isEmpty()) {
+                return town.get().unlock().equals("none") ? "" : town.get().unlock();
+            }
+            Location location = locate(town.get().x(), town.get().z());
+            return location == null ? "" : location.field().unlock();
+        }
+        return field(region.field()).map(Field::unlock).orElse("");
+    }
+
+    /** 地図で使っている進行フラグの一覧。 */
+    public java.util.Set<String> flags() {
+        java.util.Set<String> flags = new java.util.TreeSet<>();
+        fields.forEach(f -> {
+            if (!f.unlock().isEmpty()) {
+                flags.add(f.unlock());
+            }
+        });
+        towns.forEach(t -> {
+            if (!t.unlock().isEmpty() && !t.unlock().equals("none")) {
+                flags.add(t.unlock());
+            }
+        });
+        return flags;
     }
 
     /** その地点のバイオーム（山脈の中なら山脈のバイオーム）。 */
@@ -470,8 +605,8 @@ public final class FieldMap {
                 return null;
             }
         }
-        if (!Double.isNaN(v2.waterLevel(x, z))) {
-            return null; // 水の上には敷かない（橋は M3）
+        if (!Double.isNaN(v2.waterLevel(x, z)) || v2.onBridge(x, z)) {
+            return null; // 水の上・橋の上には敷かない（橋は橋の床を別に作る）
         }
         RoadSettings.FieldRoad fieldRoad = locate(x, z).field().road();
         RoadSettings.Style style = r.styles().get(fieldRoad.isNone() ? "dirt" : fieldRoad.style());
