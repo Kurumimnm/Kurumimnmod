@@ -2678,7 +2678,7 @@
       "cell": 8,
       "blend": 384
     },
-    "base_height": 72,
+    "base_height": 86,
     "base_noise": 10,
     "jitter": 110,
     "erosion": {
@@ -2690,7 +2690,7 @@
       "talus_gorge": 80
     },
     "river": {
-      "min_cells": 900,
+      "min_cells": 2500,
       "depth": 3
     },
     "mountain_biome_above": 200,
@@ -2824,7 +2824,7 @@
         ],
         "radius": 280,
         "width": 300,
-        "floor": 94
+        "floor": 98
       },
       {
         "type": "lake",
@@ -2860,9 +2860,9 @@
             -1700.0
           ]
         ],
-        "width": 42,
-        "floor": 94,
-        "floor_end": 82,
+        "width": 64,
+        "floor": 96,
+        "floor_end": 90,
         "meander": 40
       },
       {
@@ -2951,9 +2951,9 @@
             -2850.0
           ]
         ],
-        "width": 26,
-        "floor": 80,
-        "floor_end": 77,
+        "width": 40,
+        "floor": 88,
+        "floor_end": 86,
         "meander": 30
       }
     ]

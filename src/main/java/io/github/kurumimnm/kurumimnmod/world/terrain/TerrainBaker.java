@@ -23,6 +23,14 @@ public final class TerrainBaker {
 
     private TerrainBaker() {}
 
+    /** 細かい決まり（設計図で変えるほどではないもの）。 */
+    static final class ModLimits {
+        /** これより小さい窪み（マス数）は湖にせず埋める。 */
+        static final int LAKE_MIN_CELLS = 60;
+        /** これより浅い窪み（ブロック）は湖にせず埋める。 */
+        static final double LAKE_MIN_DEPTH = 2.0;
+    }
+
     /** 道を引く区間（ブロック座標）。 */
     public record RoadRequest(double fromX, double fromZ, double toX, double toZ) {}
 
@@ -108,7 +116,7 @@ public final class TerrainBaker {
         double[] area = new double[n * n];
         for (int it = 0; it < er.iterations(); it++) {
             Hydro.priorityFill(h, fixed, n, 0.02f, filled);
-            Hydro.receivers(filled, fixed, n, cell, random, 0.03f, receiver, distance);
+            Hydro.receivers(filled, fixed, n, cell, random, 1f, receiver, distance);
             Hydro.order(filled, order);
             float[] eroded = filled.clone();
             Hydro.streamPower(eroded, receiver, distance, order, kField, area, cell * cell);
@@ -123,20 +131,61 @@ public final class TerrainBaker {
         Hydro.priorityFill(h, fixed, n, 0.0f, filled);
         float[] routing = new float[n * n];
         Hydro.priorityFill(h, fixed, n, 0.02f, routing);
-        Hydro.receivers(routing, fixed, n, cell, random, 0f, receiver, distance);
+        Hydro.receivers(routing, fixed, n, cell, null, 0f, receiver, distance);
         Hydro.order(routing, order);
         Hydro.accumulate(receiver, order, area, cell * cell);
         float[] water = new float[n * n];
         byte[] river = new byte[n * n];
         Arrays.fill(water, Float.NaN);
-        double minArea = design.river().minCells() * cell * cell;
+        // 湖：窪みにたまる水。小さな窪み・高い所の窪みは埋めて平らにする（侵食でできた細かい穴を残さない）
+        boolean[] lakeCell = new boolean[n * n];
         for (int idx = 0; idx < n * n; idx++) {
-            if (pad[idx]) {
+            lakeCell[idx] = !pad[idx] && filled[idx] - h[idx] > 0.5f;
+        }
+        int[] stack = new int[n * n];
+        boolean[] seen = new boolean[n * n];
+        List<Integer> component = new ArrayList<>();
+        for (int start0 = 0; start0 < n * n; start0++) {
+            if (!lakeCell[start0] || seen[start0]) {
                 continue;
             }
-            if (filled[idx] - h[idx] > 0.5f) {
-                water[idx] = filled[idx]; // 湖：窪みのふちの高さまで水がたまる
-            } else if (area[idx] > minArea && !fixed[idx]) {
+            component.clear();
+            int top = 0;
+            stack[top++] = start0;
+            seen[start0] = true;
+            double maxDepth = 0;
+            while (top > 0) {
+                int idx = stack[--top];
+                component.add(idx);
+                maxDepth = Math.max(maxDepth, filled[idx] - h[idx]);
+                int i = idx % n;
+                int j = idx / n;
+                for (int k = 0; k < 4; k++) {
+                    int ii = i + (k == 0 ? 1 : k == 1 ? -1 : 0);
+                    int jj = j + (k == 2 ? 1 : k == 3 ? -1 : 0);
+                    if (ii < 0 || jj < 0 || ii >= n || jj >= n) {
+                        continue;
+                    }
+                    int nb = jj * n + ii;
+                    if (lakeCell[nb] && !seen[nb]) {
+                        seen[nb] = true;
+                        stack[top++] = nb;
+                    }
+                }
+            }
+            boolean keep = component.size() >= ModLimits.LAKE_MIN_CELLS && maxDepth >= ModLimits.LAKE_MIN_DEPTH
+                    && filled[start0] < design.mountainBiomeAbove();
+            for (int idx : component) {
+                if (keep) {
+                    water[idx] = filled[idx];
+                } else {
+                    h[idx] = filled[idx]; // 埋める
+                }
+            }
+        }
+        double minArea = design.river().minCells() * cell * cell;
+        for (int idx = 0; idx < n * n; idx++) {
+            if (!pad[idx] && Float.isNaN(water[idx]) && area[idx] > minArea && !fixed[idx]) {
                 river[idx] = 1;
                 water[idx] = h[idx] - 0.4f;
             }
@@ -224,7 +273,8 @@ public final class TerrainBaker {
                     if (d >= f.width()) {
                         continue;
                     }
-                    double prof = Math.pow(1 - BakeNoise.smooth(d / f.width()), 1.2);
+                    // 斜面は下へいくほどゆるく（くぼんだ形）、尾根は細く
+                    double prof = Math.pow(1 - BakeNoise.smooth(d / f.width()), 1.8);
                     double rr = 0.6 * noise.ridged(mx, mz, f.width() * 0.75, 6, s.salt()) + 0.4 * noise.ridged(mx, mz, 260, 5, s.salt() + 5);
                     double add = (f.peak() - base) * prof * (1 - f.rough() + f.rough() * rr) * (0.9 + 0.1 * prof);
                     h = Math.max(h, base + add);
@@ -247,7 +297,8 @@ public final class TerrainBaker {
                     double gz = z + f.meander() * noise.fbm(x, z, 360, 2, s.salt() + 1);
                     double[] t = new double[1];
                     double d = polylineDistance(gx, gz, s.xs(), s.zs(), t);
-                    double slot = 1 - BakeNoise.smooth(d / f.width());
+                    // 底は幅の半分まで平ら（川と道が並んで通れる）、そこから壁
+                    double slot = 1 - BakeNoise.smooth((d - f.width() * 0.5) / (f.width() * 0.5));
                     if (slot > 0) {
                         double floor = f.floor() + (f.floorEnd() - f.floor()) * t[0];
                         h = h * (1 - slot) + Math.min(h, floor) * slot;
