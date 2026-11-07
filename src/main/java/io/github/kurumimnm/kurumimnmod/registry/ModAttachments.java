@@ -6,6 +6,7 @@ import io.github.kurumimnm.kurumimnmod.status.PlayerStats;
 import net.minecraft.network.codec.ByteBufCodecs;
 import io.github.kurumimnm.kurumimnmod.level.KillContribution;
 import io.github.kurumimnm.kurumimnmod.level.PlayerLevel;
+import io.github.kurumimnm.kurumimnmod.world.PlayerExploration;
 import java.util.function.Supplier;
 import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -55,6 +56,17 @@ public final class ModAttachments {
             () -> AttachmentType.builder(() -> -1f)
                     .serialize(Codec.FLOAT.fieldOf("mana"))
                     .sync((holder, to) -> holder == to, ByteBufCodecs.FLOAT)
+                    .build());
+
+    /**
+     * 探索の記録（行ったことのある街・フィールド・エリア、倒したフィールドボス）。
+     * 保存・死亡後も維持・本人にだけ同期（ゲートの壁・地図・場所の表示に使う）。
+     */
+    public static final Supplier<AttachmentType<PlayerExploration>> EXPLORATION = ATTACHMENT_TYPES.register("exploration",
+            () -> AttachmentType.builder(() -> PlayerExploration.EMPTY)
+                    .serialize(PlayerExploration.CODEC.fieldOf("exploration"))
+                    .copyOnDeath()
+                    .sync((holder, to) -> holder == to, PlayerExploration.STREAM_CODEC)
                     .build());
 
     /**

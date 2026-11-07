@@ -1,0 +1,138 @@
+package io.github.kurumimnm.kurumimnmod.client.world;
+
+import io.github.kurumimnm.kurumimnmod.Kurumimnmod;
+import io.github.kurumimnm.kurumimnmod.network.FieldWorldPayload;
+import io.github.kurumimnm.kurumimnmod.registry.ModAttachments;
+import io.github.kurumimnm.kurumimnmod.registry.ModWorldgen;
+import io.github.kurumimnm.kurumimnmod.world.FieldMap;
+import io.github.kurumimnm.kurumimnmod.world.FieldRegion;
+import io.github.kurumimnm.kurumimnmod.world.Borders;
+import io.github.kurumimnm.kurumimnmod.world.FieldLookup;
+import io.github.kurumimnm.kurumimnmod.world.RegionGrid;
+import io.github.kurumimnm.kurumimnmod.world.PlayerExploration;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.phys.Vec3;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
+import net.neoforged.neoforge.client.network.event.RegisterClientPayloadHandlersEvent;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import org.jspecify.annotations.Nullable;
+
+/**
+ * クライアント側の「フィールドマップのワールド」の状態（クライアント専用）。
+ * <ul>
+ *   <li>今いるディメンションの地図（サーバーから名前が届き、中身は同期済みのレジストリから取り出す）</li>
+ *   <li>今いる場所。変わったら場所の名前を表示する（{@link LocationHud}）</li>
+ *   <li>ゲートの壁の手前で止める保険（普段は当たり判定で止まる。ワープなどで入り込んだときだけ戻す）</li>
+ * </ul>
+ */
+@EventBusSubscriber(modid = Kurumimnmod.MOD_ID, value = Dist.CLIENT)
+public final class ClientFieldWorld {
+
+    private ClientFieldWorld() {}
+
+    private static @Nullable Identifier mapId;
+    private static @Nullable FieldMap map;
+    private static @Nullable FieldRegion region;
+    private static @Nullable Vec3 lastPos;
+
+    @SubscribeEvent
+    static void onRegisterClientPayloadHandlers(RegisterClientPayloadHandlersEvent event) {
+        // 当たり判定など共通の処理から、クライアント側の地図を引けるようにする
+        FieldLookup.setClientResolver(level -> level == Minecraft.getInstance().level ? map() : null);
+        event.register(io.github.kurumimnm.kurumimnmod.network.FieldTerrainPayload.TYPE, (payload, context) -> {
+            FieldMap fieldMap = map();
+            if (fieldMap == null || fieldMap.design().isEmpty() || fieldMap.bake() != null) {
+                return; // シングルプレイでサーバーと同じ地図を共有している場合は、サーバーの細かいデータをそのまま使う
+            }
+            try {
+                fieldMap.attachBake(io.github.kurumimnm.kurumimnmod.world.terrain.TerrainBake.fromNetwork(payload.data(), fieldMap.design().get()));
+                WorldMapImage.clear();
+            } catch (java.io.IOException e) {
+                // 地図が今までの地形の色で描かれるだけ
+            }
+        });
+        event.register(FieldWorldPayload.TYPE, (payload, context) -> {
+            mapId = payload.map().orElse(null);
+            map = null;
+            region = null;
+            lastPos = null;
+            LocationHud.reset();
+        });
+    }
+
+    @SubscribeEvent
+    static void onLoggingOut(ClientPlayerNetworkEvent.LoggingOut event) {
+        mapId = null;
+        map = null;
+        region = null;
+        lastPos = null;
+        LocationHud.reset();
+        WorldMapImage.clear();
+    }
+
+    /** 今いるディメンションの地図（フィールドマップのワールドでなければ null）。 */
+    public static @Nullable FieldMap map() {
+        if (map == null && mapId != null) {
+            Minecraft mc = Minecraft.getInstance();
+            if (mc.level != null) {
+                map = mc.level.registryAccess().lookup(ModWorldgen.FIELD_MAP)
+                        .flatMap(registry -> registry.getOptional(mapId))
+                        .orElse(null);
+            }
+        }
+        return map;
+    }
+
+    /** 今いる場所（不明なら null）。 */
+    public static @Nullable FieldRegion region() {
+        return region;
+    }
+
+    public static PlayerExploration exploration(LocalPlayer player) {
+        return player.getData(ModAttachments.EXPLORATION);
+    }
+
+    @SubscribeEvent
+    static void onPlayerTick(PlayerTickEvent.Post event) {
+        if (!(event.getEntity() instanceof LocalPlayer player)) {
+            return;
+        }
+        FieldMap fieldMap = map();
+        if (fieldMap == null) {
+            return;
+        }
+        Vec3 pos = player.position();
+        FieldRegion now = RegionGrid.at(fieldMap, pos.x, pos.z);
+        if (!now.isTown()) {
+            now = fieldMap.regionAt(pos.x, pos.y, pos.z); // 上層・下層のエリアを高さで分ける
+        }
+        if (region == null || lastPos == null) {
+            region = now;
+            lastPos = pos;
+            LocationHud.onEnter(fieldMap, null, now, !exploration(player).visited(now));
+            return;
+        }
+        if (now.equals(region)) {
+            lastPos = pos;
+            return;
+        }
+        PlayerExploration exploration = exploration(player);
+        boolean teleported = pos.distanceToSqr(lastPos) > 64;
+        boolean allowed = teleported || Borders.mayEnter(player, region, now);
+        if (!allowed) {
+            // 壁の手前で止める
+            player.setPos(lastPos.x, lastPos.y, lastPos.z);
+            player.setDeltaMovement(Vec3.ZERO);
+            return;
+        }
+        FieldRegion previous = region;
+        region = now;
+        lastPos = pos;
+        LocationHud.onEnter(fieldMap, previous, now, !exploration.visited(now));
+    }
+}

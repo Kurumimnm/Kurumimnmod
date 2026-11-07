@@ -19,7 +19,7 @@ public final class ModNetwork {
     private ModNetwork() {}
 
     /** 通信の互換バージョン（パケットの中身を変えたら上げる）。 */
-    private static final String VERSION = "1";
+    private static final String VERSION = "3";
 
     @SubscribeEvent
     static void onRegisterPayloads(RegisterPayloadHandlersEvent event) {
@@ -41,5 +41,12 @@ public final class ModNetwork {
 
 
         registrar.playToServer(CastWandPayload.TYPE, CastWandPayload.STREAM_CODEC, CastWandPayload::handle);
+
+        // ---- ワールド（フィールドマップ） ----
+        // サーバー → クライアント（受け取ったときの処理は client/world/ClientFieldWorld で登録）
+        registrar.playToClient(FieldWorldPayload.TYPE, FieldWorldPayload.STREAM_CODEC);
+        registrar.playToClient(FieldTerrainPayload.TYPE, FieldTerrainPayload.STREAM_CODEC);
+        // クライアント → サーバー（地図画面からのテレポート。OP のみ）
+        registrar.playToServer(MapTeleportPayload.TYPE, MapTeleportPayload.STREAM_CODEC, MapTeleportPayload::handle);
     }
 }
