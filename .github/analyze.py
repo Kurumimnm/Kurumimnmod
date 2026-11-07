@@ -98,3 +98,18 @@ for name, cx, cz, r in AREAS:
             if t: names[t[0]] = names.get(t[0], 0) + 1
     print("TOWN", name, "height range", (min(hs), max(hs)) if hs else None, sorted(names.items(), key=lambda k: -k[1])[:12])
     print("PNG_" + name, base64.b64encode(open(f"/tmp/{name}.png", "rb").read()).decode())
+
+# ---- 地形 v2 の計算結果（道の端・街1のまわり） ----
+import gzip, struct, glob
+for f in glob.glob("run/world/data/kurumimnmod/terrain/*.bin.gz"):
+    d = gzip.open(f).read()
+    magic, fmt, seed, hsh, n = struct.unpack(">iiqii", d[:24])
+    off = 24 + n * n * 9
+    count = struct.unpack(">i", d[off:off + 4])[0]; off += 4
+    print("BAKE", f, "n", n, "roads", count)
+    for r in range(count):
+        ln = struct.unpack(">i", d[off:off + 4])[0]; off += 4
+        pts = struct.unpack(">%df" % ln, d[off:off + 4 * ln]); off += 4 * ln
+        xy = list(zip(pts[0::2], pts[1::2]))
+        near = [(round(x), round(z)) for x, z in xy if abs(x) < 250 and abs(z + 3000) < 250]
+        print("ROAD", r, "start", xy[0], "end", xy[-1], "points", len(xy), "near_town1", near[::4])
