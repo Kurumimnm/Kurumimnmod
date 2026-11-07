@@ -121,23 +121,27 @@ public final class StatEvents {
      * 敵（攻撃したエンティティがいるダメージ）から受けるダメージを減らす。
      * 防具・エンチャント・耐性エフェクトの計算が終わったあとの値から引く。
      * 落下・溶岩・溺れなど、攻撃者のいないダメージは対象外。/kill や奈落も対象外。
+     * <p>
+     * 対象：プレイヤー（防御力ステータス）と、{@link DefenseHolder} を実装した Mob（グリフォンなど）。
+     * カカシは計測表示のため ScarecrowEvents で同じ式を使って別に処理している。
      */
     @SubscribeEvent
     static void onDamagePre(LivingDamageEvent.Pre event) {
-        if (!(event.getEntity() instanceof ServerPlayer player)) {
+        LivingEntity entity = event.getEntity();
+        float reduction;
+        if (entity instanceof ServerPlayer player) {
+            reduction = StatManager.defenseReduction(player);
+        } else if (entity instanceof DefenseHolder holder && !entity.level().isClientSide()) {
+            reduction = StatManager.defenseReduction(holder.getDefense());
+        } else {
             return;
         }
         DamageSource source = event.getSource();
-        if (source.getEntity() == null || source.getEntity() == player
+        if (source.getEntity() == null || source.getEntity() == entity
                 || source.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
             return;
         }
-        float reduction = StatManager.defenseReduction(player);
-        if (reduction <= 0 || event.getNewDamage() <= 0) {
-            return;
-        }
-        float minDamage = (float) Math.min(ModConfigs.defenseMinDamage(), event.getNewDamage());
-        event.setNewDamage(Math.max(minDamage, event.getNewDamage() - reduction));
+        event.setNewDamage(StatManager.applyDefense(event.getNewDamage(), reduction));
     }
 
     // =====================================================================
