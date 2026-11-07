@@ -22,7 +22,7 @@ def pname(p):
     return "?"
 top = {}
 SECTION_HITS = {}
-DEBUG = {(20, 20), (-30, 25), (20, -5990), (50, -6050), (40, -9040), (8, -3030)}
+DEBUG = {(0, 3000), (0, 3040), (-2800, 2080), (-2800, 2300), (-3350, -3120), (-3300, -3050), (-3000, 6850), (0, 5600)}
 for path in glob.glob(os.path.join(reg, "r.*.mca")):
     rx, rz = map(int, os.path.basename(path).split(".")[1:3])
     for lz in range(32):
@@ -67,7 +67,7 @@ for path in glob.glob(os.path.join(reg, "r.*.mca")):
                 wx, wz = cx * 16 + x, cz * 16 + z
                 if (wx, wz) in DEBUG:
                     col = []
-                    for yy in range(60, 100):
+                    for yy in range(-64, 140):
                         if (yy >> 4) in secs: col.append("%d:%s" % (yy, block_at(yy >> 4, (yy & 15) * 256 + z * 16 + x).replace("minecraft:", "")))
                     print("COLUMN", wx, wz, " ".join(col))
 print("columns", len(top))
@@ -83,7 +83,7 @@ def color(n):
     for k, c in COL:
         if k in n: return c
     return (200, 0, 200)
-AREAS = [("mediana", 0, 0, 250), ("gorge", 0, -972, 126), ("town1", 0, -3000, 90)]
+AREAS = [("fastoria", 0, 5600, 120), ("crimson_bridge", 0, 3000, 120), ("misty_bridge", -2790, 2080, 300), ("rift_bridge", -3340, -3120, 160), ("south_coast", -3000, 6760, 120)]
 for name, cx, cz, r in AREAS:
     img = np.zeros((2 * r, 2 * r, 3), dtype=np.uint8); hs = []
     for dz in range(-r, r):
@@ -111,5 +111,4 @@ for f in glob.glob("run/world/data/kurumimnmod/terrain/*.bin.gz"):
         ln = struct.unpack(">i", d[off:off + 4])[0]; off += 4
         pts = struct.unpack(">%df" % ln, d[off:off + 4 * ln]); off += 4 * ln
         xy = list(zip(pts[0::2], pts[1::2]))
-        near = [(round(x), round(z)) for x, z in xy if abs(x) < 250 and abs(z + 3000) < 250]
-        print("ROAD", r, "start", xy[0], "end", xy[-1], "points", len(xy), "near_town1", near[::4])
+        print("ROAD", r, "start", xy[0], "end", xy[-1], "points", len(xy))
