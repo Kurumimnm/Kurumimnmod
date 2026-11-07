@@ -22,20 +22,13 @@ jobs:
           pick() { # jar dir regex
             unzip -Z1 "$1" | grep -E "$3" | while read -r f; do unzip -o -q "$1" "$f" -d "$2"; done
           }
-          pick "$MC" cls/mc '/(NeutralMob|Bee|Wolf|PolarBear|ZombifiedPiglin|Parrot|HurtByTargetGoal|ResetUniversalAngerTargetGoal|FlyingMoveControl|FlyingPathNavigation|MeleeAttackGoal|SpawnEggItem|WaterAvoidingRandomFlyingGoal|AbstractHorse|FlyingAnimal|EntityReference)(\$[^/]*)?\.class$'
-          pick "$MC" cls/mc '/world/entity/(Mob|PathfinderMob|AgeableMob)\.class$'
-          pick "$GL" cls/gl 'com/geckolib/renderer/(GeoEntityRenderer|base/GeoRenderer|base/GeoRenderState|base/RenderPassInfo|base/BoneSnapshots|layer/GeoRenderLayer|layer/builtin/TextureLayerGeoLayer)(\$[^/]*)?\.class$'
-          pick "$GL" cls/gl 'com/geckolib/(model/GeoModel|model/DefaultedEntityGeoModel|model/DefaultedGeoModel|animation/state/AnimationTest|animation/AnimationController|constant/DataTickets|cache/model/GeoBone|animatable/GeoAnimatable|animatable/GeoEntity)\.class$'
-          pick "$UNI" cls/neo '(DeferredSpawnEggItem|DeferredRegister\$Items)\.class$'
+          pick "$MC" cls/mc '/(LivingEntity|ItemModelGenerators|GameRules)\.class$'
+          pick "$MC" cls/mc 'renderer/entity/state/(LivingEntityRenderState|EntityRenderState)\.class$'
+          pick "$MC" cls/mc 'world/item/Item\$Properties\.class$'
+          pick "$GL" cls/gl 'com/geckolib/animation/state/BoneSnapshot\.class$'
+          pick "$UNI" cls/neo 'neoforge/registries/(GameData|NeoForgeRegistriesSetup|RegistryManager)\.class$'
           find cls -name '*.class' | sed 's/^/CLASS /'
           java -jar vf.jar -dgs=1 -ind="    " cls out > /dev/null 2>&1 || true
           find out -name '*.java' | sort | while read -r f; do echo "################ $f"; cat "$f"; done
           echo "################ GREP"
-          javap -cp "$MC" net.minecraft.world.item.Item\$Properties | grep -i -E "spawn|entity"
-          javap -cp "$MC" -c -constants net.minecraft.world.item.Items | grep -i -m5 -E "spawn_egg|registerSpawnEgg"
-          javap -cp "$MC" -p net.minecraft.world.item.Items | grep -i spawn
-          javap -cp "$MC" -p net.minecraft.client.data.models.ItemModelGenerators | grep -i -E "spawn|Flat"
-          javap -cp "$MC" -c -constants net.minecraft.world.entity.EntityType | grep -E "entities/|entity/" | head
-          javap -cp "$MC" -p net.minecraft.world.entity.EntityType\$Builder | head -60
-          javap -cp "$MC" -p net.minecraft.world.entity.ai.attributes.Attributes | grep -E "FLYING|ARMOR|FOLLOW|KNOCK|ATTACK"
-          unzip -Z1 "$GL" | grep -E '^com/geckolib/(renderer|model|cache/model|animation)/' | grep -v '\$' 
+          javap -cp "$UNI:$MC" -p net.neoforged.neoforge.event.entity.living.LivingDamageEvent\$Pre
