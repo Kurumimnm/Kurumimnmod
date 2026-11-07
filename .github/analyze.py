@@ -83,7 +83,7 @@ def color(n):
     for k, c in COL:
         if k in n: return c
     return (200, 0, 200)
-AREAS = [("mediana", 0, 0, 80), ("town1", 0, -3000, 48), ("town2_city", 0, -6000, 112), ("town5_castle", 0, -9000, 96), ("town3_port", 2600, -7500, 96)]
+AREAS = [("mediana", 0, 0, 250), ("gorge", 0, -950, 150), ("town1", 0, -3000, 90)]
 for name, cx, cz, r in AREAS:
     img = np.zeros((2 * r, 2 * r, 3), dtype=np.uint8); hs = []
     for dz in range(-r, r):

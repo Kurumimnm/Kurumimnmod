@@ -31,12 +31,13 @@ jobs:
           sleep 60
           python3 .github/rcon_probe.py push || true
           # 強制読み込みしたチャンクの生成を待つ
-          for i in $(seq 1 40); do sleep 10; tail -c 300 server_out.txt | tr -d '\r' | tail -1; done
+          for i in $(seq 1 60); do sleep 10; tail -c 300 server_out.txt | tr -d '\r' | tail -1; done
           python3 .github/rcon_probe.py save || true
           sleep 10
           pkill -f runServer || true; pkill -f java || true
           grep -nE "ERROR|Exception|Caused by|kurumimnmod|Done \(|Preparing spawn|level-type" server_out.txt | grep -v "DEBUG" | head -150
-          echo ----; grep -n "level.dat\|Preparing level" server_out.txt | head
+          echo ----; grep -n "level.dat\|Preparing level\|地形v2" server_out.txt | head -20
+          for f in $(find . -name "*_preview.png" -path "*terrain*"); do echo "PNG_bake $(base64 -w0 $f)"; done
       - name: Analyze terrain
         if: always()
         run: |

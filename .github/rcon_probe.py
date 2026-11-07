@@ -15,9 +15,8 @@ if mode=="load":
               "locate structure minecraft:stronghold","locate structure minecraft:ruined_portal",
               "execute positioned 0 64 0 run kmod area","execute positioned 900 64 0 run kmod area","execute positioned 0 64 1000 run kmod area",
               # 街：メディアナ・1（村）・2（都市）・5（城下町）・3（港町）
-              "forceload add -80 -80 79 79","forceload add -48 -3048 47 -2953",
-              "forceload add -112 -6112 111 -5889","forceload add -96 -9096 95 -8905",
-              "forceload add 2504 -7596 2695 -7405",
+              "forceload add -256 -256 255 255","forceload add -160 -1100 159 -801","forceload add -96 -3096 95 -2905",
+
               "execute positioned 0 64 -900 run kmod area",
               # 山脈の斜面（安山岩・鉱石・湧き水が出ていないか）
               "forceload add -48 880 47 975",
