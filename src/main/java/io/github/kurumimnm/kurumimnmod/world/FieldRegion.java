@@ -9,15 +9,24 @@ package io.github.kurumimnm.kurumimnmod.world;
  * @param town  街の id（フィールドなら null）
  * @param field フィールドの番号（街なら 0）
  * @param area  エリアの番号（街なら 0）
+ * @param unlock 入るのに必要な進行フラグ（空なら誰でも入れる。{@link GateRules}）
  */
-public record FieldRegion(String town, int field, int area) {
+public record FieldRegion(String town, int field, int area, String unlock) {
 
     public static FieldRegion town(String id) {
-        return new FieldRegion(id, 0, 0);
+        return new FieldRegion(id, 0, 0, "");
+    }
+
+    public static FieldRegion town(String id, String unlock) {
+        return new FieldRegion(id, 0, 0, unlock);
     }
 
     public static FieldRegion field(int field, int area) {
-        return new FieldRegion(null, field, area);
+        return new FieldRegion(null, field, area, "");
+    }
+
+    public static FieldRegion field(int field, int area, String unlock) {
+        return new FieldRegion(null, field, area, unlock);
     }
 
     public boolean isTown() {

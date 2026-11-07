@@ -41,6 +41,8 @@ public final class TerrainBake {
     private final List<float[]> roads;
     private final float[] slope;
     private final BakeNoise noise;
+    /** 設計の部品（峡谷の壁・川の水路・橋をブロック単位で作るのに使う）。計算のときと同じ乱数でずらす。 */
+    private final Design shapes;
 
     TerrainBake(TerrainDesign design, long seed, float[] height, float[] water, byte[] river, List<float[]> roads) {
         this.design = design;
@@ -52,6 +54,7 @@ public final class TerrainBake {
         this.river = river;
         this.roads = roads;
         this.noise = new BakeNoise(seed ^ 0x9E3779B9L);
+        this.shapes = Design.prepare(design, new java.util.Random(seed ^ 0x5DEECE66DL));
         // 斜面の角度（度）。岩のでこぼこを足す量に使う
         this.slope = new float[n * n];
         double cell = region.cell();
@@ -116,6 +119,8 @@ public final class TerrainBake {
                 }
             }
         }
+        // 峡谷の壁・川の水路（粗いマスでは表せないので、ここでブロック単位に作る）
+        h = shapes.sharpen(noise, x, z, h);
         return v1 + (h - v1) * w;
     }
 
@@ -123,6 +128,10 @@ public final class TerrainBake {
     public double waterLevel(double x, double z) {
         if (weight(x, z) < 0.999) {
             return Double.NaN;
+        }
+        double designed = shapes.designedWater(noise, x, z);
+        if (!Double.isNaN(designed)) {
+            return designed;
         }
         return waterLevelRaw(x, z);
     }
@@ -152,6 +161,58 @@ public final class TerrainBake {
     /** 山のバイオーム（岩肌・雪線より上は雪）にするか。 */
     public boolean isMountain(double x, double z) {
         return weight(x, z) >= 0.5 && rawHeight(x, z) > design.mountainBiomeAbove() + 15 * noise.fbm(x, z, 90, 2, 71);
+    }
+
+    /**
+     * 橋（設計図の bridge）。from/to＝両端、deckFrom/deckTo＝両端の橋の面の高さ（間はまっすぐな坂）、width＝幅。
+     * 設計図に deck が書いていなければ、両端の地面の高さ＋1 にする（川の両岸の高さが違っても段差ができない）。
+     */
+    public record Bridge(double fromX, double fromZ, double toX, double toZ, int deckFrom, int deckTo, int width) {
+        /** 橋の始まりから along ブロックの所の橋の面の高さ。 */
+        public int deckAt(double along) {
+            double length = Math.hypot(toX - fromX, toZ - fromZ);
+            double t = length < 1 ? 0 : Math.max(0, Math.min(1, along / length));
+            return (int) Math.round(deckFrom + (deckTo - deckFrom) * t);
+        }
+    }
+
+    public List<Bridge> bridges() {
+        List<Bridge> list = new ArrayList<>();
+        for (Design.Shape s : shapes.bridges()) {
+            if (s.xs().length >= 2) {
+                TerrainDesign.Landform f = s.form();
+                double from = f.has("deck") ? f.num("deck", 90) : rawHeight(s.xs()[0], s.zs()[0]) + 1;
+                double to = f.has("deck") ? f.num("deck_end", f.num("deck", 90)) : rawHeight(s.xs()[1], s.zs()[1]) + 1;
+                list.add(new Bridge(s.xs()[0], s.zs()[0], s.xs()[1], s.zs()[1],
+                        (int) Math.round(from), (int) Math.round(to), (int) Math.round(f.num("width", 7))));
+            }
+        }
+        return list;
+    }
+
+    /** その地点が橋の上（橋の床の範囲）か。 */
+    public boolean onBridge(double x, double z) {
+        for (Design.Shape s : shapes.bridges()) {
+            if (s.xs().length < 2) {
+                continue;
+            }
+            double vx = s.xs()[1] - s.xs()[0];
+            double vz = s.zs()[1] - s.zs()[0];
+            double length = Math.sqrt(vx * vx + vz * vz);
+            double px = x - s.xs()[0];
+            double pz = z - s.zs()[0];
+            double along = (px * vx + pz * vz) / Math.max(1, length);
+            double side = Math.abs(-px * vz + pz * vx) / Math.max(1, length);
+            if (along >= -2 && along <= length + 2 && side <= s.form().num("width", 7) / 2 + 1) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** 海面の高さ。 */
+    public double seaLevel() {
+        return shapes.seaLevel();
     }
 
     /** いちばん近い道の中心線までの距離（道がなければ大きな値）。 */
@@ -300,6 +361,67 @@ public final class TerrainBake {
         }
     }
 
+    // =====================================================================
+    // クライアントへ送る（地図画面用の粗いデータ）
+    // =====================================================================
+
+    /** factor マスを 1 マスにまとめた粗いデータを、送れる形（gzip）にする。 */
+    public byte[] toNetwork(int factor) throws IOException {
+        int m = n / factor;
+        java.io.ByteArrayOutputStream bytes = new java.io.ByteArrayOutputStream();
+        try (DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new GZIPOutputStream(bytes)))) {
+            out.writeInt(FORMAT);
+            out.writeLong(seed);
+            out.writeInt(factor);
+            out.writeInt(m);
+            for (int j = 0; j < m; j++) {
+                for (int i = 0; i < m; i++) {
+                    double sum = 0;
+                    int wet = 0;
+                    double level = 0;
+                    for (int dj = 0; dj < factor; dj++) {
+                        for (int di = 0; di < factor; di++) {
+                            int idx = (j * factor + dj) * n + i * factor + di;
+                            sum += height[idx];
+                            if (!Float.isNaN(water[idx])) {
+                                wet++;
+                                level += water[idx];
+                            }
+                        }
+                    }
+                    int count = factor * factor;
+                    out.writeShort((short) Math.round(sum / count * 4));
+                    out.writeShort(wet * 2 >= count ? (short) Math.round(level / wet * 4) : Short.MIN_VALUE);
+                }
+            }
+        }
+        return bytes.toByteArray();
+    }
+
+    /** {@link #toNetwork} で作ったデータを読む（クライアント）。design は同じ地図の設計図。 */
+    public static TerrainBake fromNetwork(byte[] data, TerrainDesign design) throws IOException {
+        try (DataInputStream in = new DataInputStream(new BufferedInputStream(new GZIPInputStream(new java.io.ByteArrayInputStream(data))))) {
+            if (in.readInt() != FORMAT) {
+                return null;
+            }
+            long seed = in.readLong();
+            int factor = in.readInt();
+            int m = in.readInt();
+            TerrainDesign.Region r = design.region();
+            TerrainDesign coarse = new TerrainDesign(new TerrainDesign.Region(r.x0(), r.z0(), r.size(), r.cell() * factor, r.blend()),
+                    design.baseHeight(), design.baseNoise(), design.jitter(), design.erosion(), design.river(),
+                    design.mountainBiomeAbove(), design.landforms());
+            float[] height = new float[m * m];
+            float[] water = new float[m * m];
+            for (int k = 0; k < m * m; k++) {
+                height[k] = in.readShort() / 4f;
+                short w = in.readShort();
+                water[k] = w == Short.MIN_VALUE ? Float.NaN : w / 4f;
+            }
+            return new TerrainBake(coarse, seed, height, water, new byte[m * m], List.of());
+        }
+    }
+
     /** 確認用の画像（上から見た地図：陰影・高さの色・水・道）。 */
     public void writePreview(Path file) throws IOException {
         BufferedImage image = new BufferedImage(n, n, BufferedImage.TYPE_INT_RGB);
@@ -316,11 +438,11 @@ public final class TerrainBake {
                 if (!Float.isNaN(water[idx])) {
                     rgb = river[idx] == 1 ? 0x3E78C8 : 0x2F5FA8;
                 } else {
-                    double t = Math.max(0, Math.min(1, (h - 70) / 340));
+                    double t = Math.max(0, Math.min(1, (h - 64) / 200));
                     int r = (int) (90 + 120 * t);
                     int g = (int) (140 + 60 * t - 40 * t * t);
                     int b = (int) (70 + 150 * t * t);
-                    if (h > 330) {
+                    if (h > 230) {
                         r = g = b = 235;
                     }
                     double k = 0.35 + 0.85 * shade;

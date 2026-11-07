@@ -19,7 +19,7 @@ import net.minecraft.world.level.biome.Climate;
  * <p>
  * ワールドプリセットの JSON では次のように書く:
  * <pre>{@code
- * "biome_source": { "type": "kurumimnmod:field_map", "map": "kurumimnmod:first_continent" }
+ * "biome_source": { "type": "kurumimnmod:field_map", "map": "kurumimnmod:astralia" }
  * }</pre>
  */
 public final class FieldMapBiomeSource extends BiomeSource {

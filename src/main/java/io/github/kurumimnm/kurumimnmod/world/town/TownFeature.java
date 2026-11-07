@@ -19,7 +19,7 @@ import net.minecraft.world.level.levelgen.feature.Feature;
  * バイオームの「top_layer_modification」の段階の最後に入れている。
  * <pre>{@code
  * data/kurumimnmod/worldgen/feature/field_towns.json:
- * { "type": "kurumimnmod:field_towns", "map": "kurumimnmod:first_continent" }
+ * { "type": "kurumimnmod:field_towns", "map": "kurumimnmod:astralia" }
  * }</pre>
  */
 public record TownFeature(Holder<FieldMap> map) implements Feature {

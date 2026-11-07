@@ -6,7 +6,7 @@
         "type": "minecraft:noise",
         "biome_source": {
           "type": "kurumimnmod:field_map",
-          "map": "kurumimnmod:first_continent"
+          "map": "kurumimnmod:astralia"
         },
         "settings": "kurumimnmod:field_world"
       }

@@ -30,7 +30,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * <ul>
  *   <li>行ったことのある街・フィールド・エリアを記録する（{@link PlayerExploration}）</li>
  *   <li>ゲートを通れない場所へ入ろうとしたら、直前の位置へ押し戻す（{@link GateRules}）</li>
- *   <li>フィールドボスの実績（kurumimnmod:field_boss/〇〇）を取ったら、そのフィールドを「ボス撃破済み」にする</li>
+ *   <li>進行フラグの実績（kurumimnmod:progress/〇〇）を取ったら、そのフラグを持たせる（ゲートが開く）</li>
  * </ul>
  * 普段は当たり判定（{@link Borders}）で壁の手前で止まるので、ここは「ワープなどで当たり判定を通らずに入った」ときの保険。
  * OP・クリエイティブも歩いては通れない。通れるのはスペクテイターと、OP のテレポート（コマンド・地図から）だけ。
@@ -40,8 +40,8 @@ public final class ExplorationTracker {
 
     private ExplorationTracker() {}
 
-    /** フィールドボスの実績の置き場所（data/kurumimnmod/advancement/field_boss/フィールドID.json）。 */
-    public static final String BOSS_ADVANCEMENT_PREFIX = "field_boss/";
+    /** 進行フラグの実績の置き場所（data/kurumimnmod/advancement/progress/フラグ名.json）。 */
+    public static final String FLAG_ADVANCEMENT_PREFIX = "progress/";
 
     /** プレイヤーごとの「直前にいた場所と位置」（保存しない一時データ）。 */
     private record Track(FieldRegion region, Vec3 pos) {}
@@ -60,6 +60,9 @@ public final class ExplorationTracker {
         }
         Vec3 pos = player.position();
         FieldRegion region = RegionGrid.at(map.get(), pos.x, pos.z);
+        if (!region.isTown()) {
+            region = map.get().regionAt(pos.x, pos.y, pos.z); // 上層・下層のエリアを高さで分ける
+        }
         Track last = TRACKS.get(player.getUUID());
         if (last == null) {
             TRACKS.put(player.getUUID(), new Track(region, pos));
@@ -110,7 +113,7 @@ public final class ExplorationTracker {
     static void onLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
             TRACKS.remove(player.getUUID());
-            syncClearedFromAdvancements(player);
+            syncFlagsFromAdvancements(player);
             sendFieldWorld(player);
         }
     }
@@ -143,6 +146,13 @@ public final class ExplorationTracker {
 
     private static void sendFieldWorld(ServerPlayer player) {
         PacketDistributor.sendToPlayer(player, new FieldWorldPayload(FieldLookup.mapId(player.level())));
+        // 地図画面用の粗い地形データ
+        FieldLookup.map(player.level()).ifPresent(map -> {
+            byte[] terrain = io.github.kurumimnm.kurumimnmod.world.terrain.TerrainBakes.networkData(map);
+            if (terrain != null) {
+                PacketDistributor.sendToPlayer(player, new io.github.kurumimnm.kurumimnmod.network.FieldTerrainPayload(terrain));
+            }
+        });
     }
 
     // =====================================================================
@@ -153,32 +163,32 @@ public final class ExplorationTracker {
     static void onAdvancementEarned(AdvancementEvent.AdvancementEarnEvent event) {
         if (event.getEntity() instanceof ServerPlayer player
                 && event.getAdvancement().id().getNamespace().equals(Kurumimnmod.MOD_ID)
-                && event.getAdvancement().id().getPath().startsWith(BOSS_ADVANCEMENT_PREFIX)) {
-            syncClearedFromAdvancements(player);
+                && event.getAdvancement().id().getPath().startsWith(FLAG_ADVANCEMENT_PREFIX)) {
+            syncFlagsFromAdvancements(player);
         }
     }
 
-    /** 「ボス撃破済み」のフィールドを、実績の状態に合わせて作り直す。 */
-    public static void syncClearedFromAdvancements(ServerPlayer player) {
+    /** 持っている進行フラグを、実績の状態に合わせて作り直す。 */
+    public static void syncFlagsFromAdvancements(ServerPlayer player) {
         Optional<FieldMap> map = FieldLookup.map(player.level());
         if (map.isEmpty()) {
             return;
         }
         MinecraftServer server = player.level().getServer();
-        Set<Integer> cleared = new HashSet<>();
-        for (FieldMap.Field field : map.get().fields()) {
-            AdvancementHolder holder = server.getAdvancements().get(bossAdvancementId(field));
+        Set<String> flags = new HashSet<>();
+        for (String flag : map.get().flags()) {
+            AdvancementHolder holder = server.getAdvancements().get(flagAdvancementId(flag));
             if (holder != null && player.getAdvancements().getOrStartProgress(holder).isDone()) {
-                cleared.add(field.number());
+                flags.add(flag);
             }
         }
         PlayerExploration exploration = player.getData(ModAttachments.EXPLORATION);
-        if (!exploration.clearedFields().equals(cleared)) {
-            player.setData(ModAttachments.EXPLORATION, exploration.withCleared(cleared));
+        if (!exploration.flags().equals(flags)) {
+            player.setData(ModAttachments.EXPLORATION, exploration.withFlags(flags));
         }
     }
 
-    public static Identifier bossAdvancementId(FieldMap.Field field) {
-        return Identifier.fromNamespaceAndPath(Kurumimnmod.MOD_ID, BOSS_ADVANCEMENT_PREFIX + field.id());
+    public static Identifier flagAdvancementId(String flag) {
+        return Identifier.fromNamespaceAndPath(Kurumimnmod.MOD_ID, FLAG_ADVANCEMENT_PREFIX + flag);
     }
 }

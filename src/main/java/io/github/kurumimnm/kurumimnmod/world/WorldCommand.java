@@ -1,7 +1,7 @@
 package io.github.kurumimnm.kurumimnmod.world;
 
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import io.github.kurumimnm.kurumimnmod.registry.ModAttachments;
 import java.util.HashSet;
@@ -25,8 +25,8 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
  * <pre>
  * /kmod area                 … 今いるフィールド・エリア・危険度を表示
  * /kmod towns                … 街の番号と座標の一覧を表示（/tp で移動するとき用）
- * /kmod gate clear &lt;番号|all&gt; … フィールドボスを倒したことにする（実績を付与。ゲートのテスト用）
- * /kmod gate reset           … フィールドボスの撃破をすべて取り消す
+ * /kmod flag grant &lt;フラグ|all&gt;  … 進行フラグを持たせる（実績を付与。ゲートのテスト用。例：gate）
+ * /kmod flag revoke &lt;フラグ|all&gt; … 進行フラグを取り消す
  * /kmod explore all          … すべての街・エリアに行ったことにする（地図のテスト用）
  * /kmod explore reset        … 探索の記録を消す
  * </pre>
@@ -37,8 +37,8 @@ public final class WorldCommand {
     private WorldCommand() {}
 
     private static final String KEY = "commands." + Kurumimnmod.MOD_ID;
-    /** フィールドボスの実績の条件名（JSON の criteria と同じにする）。 */
-    private static final String BOSS_CRITERION = "defeated";
+    /** 進行フラグの実績の条件名（JSON の criteria と同じにする）。 */
+    private static final String FLAG_CRITERION = "done";
 
     @SubscribeEvent
     static void onRegisterCommands(RegisterCommandsEvent event) {
@@ -50,12 +50,13 @@ public final class WorldCommand {
                 .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                 .then(Commands.literal("area").executes(WorldCommand::area))
                 .then(Commands.literal("towns").executes(WorldCommand::towns))
-                .then(Commands.literal("gate")
-                        .then(Commands.literal("clear")
-                                .then(Commands.literal("all").executes(ctx -> clearBosses(ctx, -1)))
-                                .then(Commands.argument("field", IntegerArgumentType.integer(1))
-                                        .executes(ctx -> clearBosses(ctx, IntegerArgumentType.getInteger(ctx, "field")))))
-                        .then(Commands.literal("reset").executes(WorldCommand::resetBosses)))
+                .then(Commands.literal("flag")
+                        .then(Commands.literal("grant")
+                                .then(Commands.argument("flag", StringArgumentType.word())
+                                        .executes(ctx -> setFlag(ctx, StringArgumentType.getString(ctx, "flag"), true))))
+                        .then(Commands.literal("revoke")
+                                .then(Commands.argument("flag", StringArgumentType.word())
+                                        .executes(ctx -> setFlag(ctx, StringArgumentType.getString(ctx, "flag"), false)))))
                 .then(Commands.literal("explore")
                         .then(Commands.literal("all").executes(WorldCommand::exploreAll))
                         .then(Commands.literal("reset").executes(WorldCommand::exploreReset))));
@@ -82,8 +83,8 @@ public final class WorldCommand {
         return loc.danger();
     }
 
-    /** field = -1 ならすべて。 */
-    private static int clearBosses(CommandContext<CommandSourceStack> ctx, int field) throws CommandSyntaxException {
+    /** 進行フラグを付ける／外す。flag = all ならすべて。 */
+    private static int setFlag(CommandContext<CommandSourceStack> ctx, String flag, boolean grant) throws CommandSyntaxException {
         ServerPlayer player = ctx.getSource().getPlayerOrException();
         Optional<FieldMap> map = FieldLookup.map(player.level());
         if (map.isEmpty()) {
@@ -91,38 +92,24 @@ public final class WorldCommand {
             return 0;
         }
         int count = 0;
-        for (FieldMap.Field f : map.get().fields()) {
-            if (field != -1 && f.number() != field) {
+        for (String f : map.get().flags()) {
+            if (!flag.equals("all") && !f.equals(flag)) {
                 continue;
             }
-            AdvancementHolder holder = player.level().getServer().getAdvancements().get(ExplorationTracker.bossAdvancementId(f));
+            AdvancementHolder holder = player.level().getServer().getAdvancements().get(ExplorationTracker.flagAdvancementId(f));
             if (holder != null) {
-                player.getAdvancements().award(holder, BOSS_CRITERION);
+                if (grant) {
+                    player.getAdvancements().award(holder, FLAG_CRITERION);
+                } else {
+                    player.getAdvancements().revoke(holder, FLAG_CRITERION);
+                }
                 count++;
             }
         }
-        ExplorationTracker.syncClearedFromAdvancements(player);
+        ExplorationTracker.syncFlagsFromAdvancements(player);
         int result = count;
-        ctx.getSource().sendSuccess(() -> Component.translatable(KEY + ".gate.cleared", result), true);
+        ctx.getSource().sendSuccess(() -> Component.translatable(KEY + (grant ? ".flag.granted" : ".flag.revoked"), result, flag), true);
         return count;
-    }
-
-    private static int resetBosses(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
-        ServerPlayer player = ctx.getSource().getPlayerOrException();
-        Optional<FieldMap> map = FieldLookup.map(player.level());
-        if (map.isEmpty()) {
-            ctx.getSource().sendFailure(Component.translatable(KEY + ".area.not_field_world"));
-            return 0;
-        }
-        for (FieldMap.Field f : map.get().fields()) {
-            AdvancementHolder holder = player.level().getServer().getAdvancements().get(ExplorationTracker.bossAdvancementId(f));
-            if (holder != null) {
-                player.getAdvancements().revoke(holder, BOSS_CRITERION);
-            }
-        }
-        ExplorationTracker.syncClearedFromAdvancements(player);
-        ctx.getSource().sendSuccess(() -> Component.translatable(KEY + ".gate.reset"), true);
-        return 1;
     }
 
     private static int exploreAll(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
@@ -162,7 +149,7 @@ public final class WorldCommand {
         }
         for (FieldMap.Town town : map.get().towns()) {
             source.sendSuccess(() -> Component.translatable(KEY + ".towns.entry",
-                    town.number(), town.x(), town.z()), false);
+                    Component.translatable("town." + Kurumimnmod.MOD_ID + "." + town.id()), town.x(), town.z()), false);
         }
         return map.get().towns().size();
     }

@@ -1,20 +1,9 @@
 {
   "values": [
-    "kurumimnmod:calamity_slumber",
-    "kurumimnmod:dragon_claw_gorge",
-    "kurumimnmod:dragon_peaks",
-    "kurumimnmod:floating_rock_highlands",
-    "kurumimnmod:gray_rock_hills",
-    "kurumimnmod:great_ancient_ruins",
-    "kurumimnmod:iron_vein_mines",
-    "kurumimnmod:laboratory_valley",
-    "kurumimnmod:millennium_tree_forest",
-    "kurumimnmod:mossy_battlefield",
-    "kurumimnmod:permafrost_ice_castle",
-    "kurumimnmod:silver_snowfield",
-    "kurumimnmod:sky_wall_range",
-    "kurumimnmod:thunder_highlands",
-    "kurumimnmod:windsong_hills",
-    "kurumimnmod:world_tree_roots"
+    "kurumimnmod:ash_wastes",
+    "kurumimnmod:black_rock_plateau",
+    "kurumimnmod:eldion",
+    "kurumimnmod:northern_peaks",
+    "kurumimnmod:zenith_mountains"
   ]
 }

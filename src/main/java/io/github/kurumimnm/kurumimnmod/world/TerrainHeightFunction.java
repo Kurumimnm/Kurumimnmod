@@ -17,7 +17,7 @@ import net.minecraft.world.level.levelgen.densityfunction.SamplerContext;
  * 地形の密度は「地面の高さ − Y」で作る（kurumimnmod:field_world/final_density）ので、
  * この値より下が地面、上が空になる。バニラの地形・洞窟・川は使っていない。
  * <pre>{@code
- * { "type": "kurumimnmod:terrain_height", "map": "kurumimnmod:first_continent" }
+ * { "type": "kurumimnmod:terrain_height", "map": "kurumimnmod:astralia" }
  * }</pre>
  * 値は X・Z だけで決まる（高さ Y には関係しない）。
  */

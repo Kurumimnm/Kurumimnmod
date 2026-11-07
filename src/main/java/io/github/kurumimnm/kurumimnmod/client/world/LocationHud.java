@@ -69,14 +69,20 @@ public final class LocationHud {
                 .orElse(Component.literal("?"));
     }
 
-    /** 場所の補足（フィールドなら「エリア N ・ 危険度 D」、街なら街の種類）。 */
+    /** 場所の補足（フィールドなら「エリア N 名前 ・ 推奨Lv L」、街なら街の種類）。 */
     public static Component sub(FieldMap map, FieldRegion region) {
         if (region.isTown()) {
             String type = map.town(region.town()).map(FieldMap.Town::type).orElse("town");
             return Component.translatable("town_type." + Kurumimnmod.MOD_ID + "." + type);
         }
-        int danger = map.field(region.field()).map(f -> f.tier() + region.area()).orElse(region.area());
-        return Component.translatable(KEY + ".area", region.area(), danger);
+        Optional<FieldMap.Field> field = map.field(region.field());
+        int level = field.map(FieldMap.Field::tier).orElse(1);
+        String areaKey = "area." + Kurumimnmod.MOD_ID + "." + field.map(FieldMap.Field::id).orElse("") + "." + region.area();
+        if (net.minecraft.locale.Language.getInstance().has(areaKey)) {
+            // 「エリア3 東の丘陵 ・ 推奨Lv 1」
+            return Component.translatable(KEY + ".area_named", region.area(), Component.translatable(areaKey), level);
+        }
+        return Component.translatable(KEY + ".area", region.area(), level);
     }
 
     /** 場所が変わったとき（ClientFieldWorld から呼ばれる）。previous = null は最初の 1 回。 */

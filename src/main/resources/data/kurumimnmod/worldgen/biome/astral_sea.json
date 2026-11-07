@@ -1,0 +1,52 @@
+{
+  "attributes": {
+    "minecraft:audio/background_music": {
+      "creative": {
+        "max_delay": 24000,
+        "min_delay": 12000,
+        "sound": "minecraft:music.creative"
+      },
+      "default": {
+        "max_delay": 24000,
+        "min_delay": 12000,
+        "sound": "minecraft:music.game"
+      },
+      "underwater": {
+        "max_delay": 24000,
+        "min_delay": 12000,
+        "sound": "minecraft:music.under_water"
+      }
+    },
+    "minecraft:visual/sky_color": "#7ba4ff"
+  },
+  "carvers": [],
+  "downfall": 0.5,
+  "effects": {
+    "water_color": "#3f76e4"
+  },
+  "features": [
+    [],
+    [],
+    [
+      "kurumimnmod:field_water",
+      "kurumimnmod:field_roads"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "minecraft:trees_water",
+      "minecraft:patch_grass_badlands",
+      "minecraft:seagrass_normal"
+    ],
+    [
+      "minecraft:freeze_top_layer",
+      "kurumimnmod:field_towns"
+    ]
+  ],
+  "has_precipitation": true,
+  "temperature": 0.5
+}

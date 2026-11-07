@@ -246,6 +246,8 @@ public final class ModConstants {
 
     /** 計算のたびに、確認用の上空図（world/data/kurumimnmod/terrain/*_preview.png）を書き出す。 */
     public static final boolean TERRAIN_WRITE_PREVIEW = true;
+    /** 地図画面用にクライアントへ送る地形の粗さ（計算のマス何個を 1 つにまとめるか）。 */
+    public static final int TERRAIN_NETWORK_FACTOR = 2;
     /** 範囲の外へ出る道を、今までの地形の道とつなぐとき探す範囲（ブロック）。 */
     public static final int TERRAIN_ROAD_JOIN_SEARCH = 160;
     /** 湖・川の底のブロック（id）。浅い所は砂、深い所は砂利。 */
@@ -295,6 +297,11 @@ public final class ModConstants {
     /** エリアの境目の線の色。 */
     public static final int MAP_COLOR_AREA_LINE = 0xFFFFFFFF;
     /** 山脈の色（低いところ → 高いところ）。 */
+    /** 地図：海・湖と川の色、岩肌になり始める高さ・岩肌が一番濃くなる高さ（地形 v2）。 */
+    public static final int MAP_COLOR_SEA = 0xFF3A6EA5;
+    public static final int MAP_COLOR_WATER = 0xFF4F8FD0;
+    public static final double MAP_ROCK_FROM = 170;
+    public static final double MAP_ROCK_TO = 250;
     public static final int MAP_COLOR_MOUNTAIN_LOW = 0xFF7A766E;
     public static final int MAP_COLOR_MOUNTAIN_HIGH = 0xFFF2F2F2;
     /** 街の印の色。 */

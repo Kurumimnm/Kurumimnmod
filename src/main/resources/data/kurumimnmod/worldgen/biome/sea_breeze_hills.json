@@ -1,0 +1,44 @@
+{
+  "attributes": {
+    "minecraft:audio/background_music": {
+      "default": {
+        "max_delay": 24000,
+        "min_delay": 12000,
+        "sound": "minecraft:music.overworld.meadow"
+      }
+    },
+    "minecraft:visual/sky_color": "#7ba4ff"
+  },
+  "carvers": [],
+  "downfall": 0.8,
+  "effects": {
+    "water_color": "#0e4ecf"
+  },
+  "features": [
+    [],
+    [],
+    [
+      "kurumimnmod:field_water",
+      "kurumimnmod:field_roads"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "minecraft:patch_tall_grass_2",
+      "minecraft:patch_grass_meadow",
+      "minecraft:flower_meadow",
+      "minecraft:trees_meadow",
+      "minecraft:wildflowers_meadow"
+    ],
+    [
+      "minecraft:freeze_top_layer",
+      "kurumimnmod:field_towns"
+    ]
+  ],
+  "has_precipitation": true,
+  "temperature": 0.5
+}

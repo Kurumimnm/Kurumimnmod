@@ -44,7 +44,7 @@ public final class FieldLookup {
         return resolver == null ? null : resolver.apply(level);
     }
 
-    /** そのディメンションが使っている地図の名前（例：kurumimnmod:first_continent）。 */
+    /** そのディメンションが使っている地図の名前（例：kurumimnmod:astralia）。 */
     public static Optional<net.minecraft.resources.Identifier> mapId(ServerLevel level) {
         BiomeSource source = level.getChunkSource().getGenerator().getBiomeSource();
         if (source instanceof FieldMapBiomeSource fieldSource) {

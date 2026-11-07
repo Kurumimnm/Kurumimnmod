@@ -1,5 +1,5 @@
 """
-フィールドマップ（first_continent.json）を上から見た画像にするスクリプト。
+フィールドマップ（astralia.json）を上から見た画像にするスクリプト。
 地図 JSON を書き換えたあと、ゲームを起動せずに形を確認するために使う。
 
 使い方（リポジトリのルートで）:
@@ -16,7 +16,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-MAP = os.path.join(ROOT, "src/main/resources/data/kurumimnmod/kurumimnmod/field_map/first_continent.json")
+MAP = os.path.join(ROOT, "src/main/resources/data/kurumimnmod/kurumimnmod/field_map/astralia.json")
 OUT = os.path.join(ROOT, "docs/world/field_map_preview.png")
 STEP = 48  # 何ブロックごとに色を塗るか（小さいほど細かいが遅い）
 

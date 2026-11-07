@@ -158,6 +158,20 @@ public final class WorldMapImage {
         if (region.isTown()) {
             return 0xFFD8C8A0;
         }
+        io.github.kurumimnm.kurumimnmod.world.terrain.TerrainBake bake = map.bake();
+        if (bake != null && bake.covers(x, z)) {
+            // 地形 v2：水・高さで色を決める
+            double water = bake.waterLevel(x, z);
+            if (!Double.isNaN(water) && water > height) {
+                return water <= bake.seaLevel() + 0.5 ? ModConstants.MAP_COLOR_SEA : ModConstants.MAP_COLOR_WATER;
+            }
+            int fieldColor = 0xFF000000 | map.field(region.field()).map(FieldMap.Field::mapColor).orElse(0x7FB238);
+            if (height > ModConstants.MAP_ROCK_FROM) {
+                float t = (float) Math.max(0, Math.min(1, (height - ModConstants.MAP_ROCK_FROM) / (ModConstants.MAP_ROCK_TO - ModConstants.MAP_ROCK_FROM)));
+                return lerp(fieldColor, t > 0.6f ? ModConstants.MAP_COLOR_MOUNTAIN_HIGH : ModConstants.MAP_COLOR_MOUNTAIN_LOW, Math.min(1, t * 1.4f));
+            }
+            return fieldColor;
+        }
         if (map.mountains().isPresent() && map.mountainPosition(x, z) > map.mountains().get().biomeThreshold()) {
             float t = (float) Math.max(0, Math.min(1, (height - map.terrain().baseHeight())
                     / Math.max(1, map.terrain().maxHeight() - map.terrain().baseHeight())));

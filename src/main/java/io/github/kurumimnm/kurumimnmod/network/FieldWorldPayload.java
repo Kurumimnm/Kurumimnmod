@@ -13,7 +13,7 @@ import net.minecraft.resources.Identifier;
  * フィールドマップのワールドでなければ空。ログイン・ディメンション移動・リスポーンのときに送る。
  * 地図の中身はデータパックのレジストリとして同期済みなので、ここでは名前だけ送る。
  *
- * @param map 地図の名前（例：kurumimnmod:first_continent）
+ * @param map 地図の名前（例：kurumimnmod:astralia）
  */
 public record FieldWorldPayload(Optional<Identifier> map) implements CustomPacketPayload {
 
