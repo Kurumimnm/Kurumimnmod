@@ -176,7 +176,7 @@ public final class FieldMap {
                 : DataResult.success(map);
     }
 
-    /** 「kurumimnmod:first_continent」のように、登録済みの地図を名前で参照する Codec。 */
+    /** 「kurumimnmod:astralia」のように、登録済みの地図を名前で参照する Codec。 */
     public static final Codec<Holder<FieldMap>> CODEC = RegistryCodecs.holder(ModWorldgen.FIELD_MAP, DIRECT_CODEC);
 
     // =====================================================================

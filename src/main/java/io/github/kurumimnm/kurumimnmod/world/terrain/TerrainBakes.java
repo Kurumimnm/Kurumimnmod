@@ -161,23 +161,4 @@ public final class TerrainBakes {
         double inset = r.blend() * 0.5;
         return x > r.x0() + inset && z > r.z0() + inset && x < r.x0() + r.size() - inset && z < r.z0() + r.size() - inset;
     }
-
-    /** 折れ線を内側から外へたどり、内側の最後の点を返す。 */
-    private static double[] exitPoint(TerrainDesign design, List<double[]> pts) {
-        double[] last = pts.get(0);
-        for (int k = 0; k + 1 < pts.size(); k++) {
-            double[] a = pts.get(k);
-            double[] b = pts.get(k + 1);
-            double len = Math.hypot(b[0] - a[0], b[1] - a[1]);
-            for (double s = 0; s <= len; s += 4) {
-                double x = a[0] + (b[0] - a[0]) * s / len;
-                double z = a[1] + (b[1] - a[1]) * s / len;
-                if (!inner(design, x, z)) {
-                    return last;
-                }
-                last = new double[]{x, z};
-            }
-        }
-        return last;
-    }
 }

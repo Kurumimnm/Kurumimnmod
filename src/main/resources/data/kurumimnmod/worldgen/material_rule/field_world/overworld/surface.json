@@ -11,7 +11,10 @@
             "type": "minecraft:condition",
             "if_true": {
               "type": "minecraft:biome",
-              "biome_is": "minecraft:wooded_badlands"
+              "biome_is": [
+                "minecraft:wooded_badlands",
+                "kurumimnmod:scarlet_plateau"
+              ]
             },
             "then_run": {
               "type": "minecraft:condition",
@@ -76,8 +79,7 @@
               "type": "minecraft:biome",
               "biome_is": [
                 "minecraft:swamp",
-                "kurumimnmod:misty_lakeside",
-                "kurumimnmod:acid_marsh"
+                "kurumimnmod:misty_marsh_canyon"
               ]
             },
             "then_run": {
@@ -123,11 +125,7 @@
             "type": "minecraft:condition",
             "if_true": {
               "type": "minecraft:biome",
-              "biome_is": [
-                "minecraft:mangrove_swamp",
-                "kurumimnmod:twilight_marsh",
-                "kurumimnmod:breathing_earth"
-              ]
+              "biome_is": "minecraft:mangrove_swamp"
             },
             "then_run": {
               "type": "minecraft:condition",
@@ -179,11 +177,9 @@
           "minecraft:badlands",
           "minecraft:eroded_badlands",
           "minecraft:wooded_badlands",
-          "kurumimnmod:red_earth_wasteland",
-          "kurumimnmod:scorched_lava_plateau",
-          "kurumimnmod:calamity_scar",
-          "kurumimnmod:obsidian_volcano",
-          "kurumimnmod:corroded_land"
+          "kurumimnmod:machine_wastes",
+          "kurumimnmod:crimson_volcano",
+          "kurumimnmod:scarlet_plateau"
         ]
       },
       "then_run": {
@@ -453,8 +449,7 @@
               "biome_is": [
                 "minecraft:warm_ocean",
                 "minecraft:beach",
-                "minecraft:snowy_beach",
-                "kurumimnmod:maelstrom_coast"
+                "minecraft:snowy_beach"
               ]
             },
             "then_run": {
@@ -472,9 +467,7 @@
               "type": "minecraft:biome",
               "biome_is": [
                 "minecraft:desert",
-                "kurumimnmod:sandstorm_desert",
-                "kurumimnmod:black_sand_desert",
-                "kurumimnmod:giant_bone_wastes"
+                "kurumimnmod:great_desert"
               ]
             },
             "then_run": {
@@ -502,7 +495,7 @@
               "biome_is": [
                 "minecraft:frozen_peaks",
                 "minecraft:jagged_peaks",
-                "kurumimnmod:dragon_peaks"
+                "kurumimnmod:zenith_mountains"
               ]
             },
             "then_run": {

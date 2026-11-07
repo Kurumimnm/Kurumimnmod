@@ -5,8 +5,8 @@
     "axis": "y",
     "from_coordinate": -64,
     "from_value": 1.5,
-    "to_coordinate": 448,
-    "to_value": -2.5
+    "to_coordinate": 320,
+    "to_value": -1.5
   },
   "right": "kurumimnmod:field_world/offset"
 }

@@ -26,12 +26,12 @@ public final class TerrainBaker {
 
     /** 細かい決まり（設計図で変えるほどではないもの）。 */
     static final class Limits {
-        /** これより小さい窪み（マス数）は湖にせず埋める。 */
-        static final int LAKE_MIN_CELLS = 24;
+        /** これより小さい窪み（面積：ブロック²）は湖にせず埋める。 */
+        static final double LAKE_MIN_AREA = 40000;
         /** これより浅い窪み（ブロック）は湖にせず埋める。 */
-        static final double LAKE_MIN_DEPTH = 2.0;
+        static final double LAKE_MIN_DEPTH = 3.0;
         /** 地形の上限（Y）。 */
-        static final double MAX_HEIGHT = 300.0;
+        static final double MAX_HEIGHT = 312.0;
     }
 
     /** 道（街と街を結ぶ点の列。straight[k] が true なら k → k+1 はまっすぐ＝橋）。 */
@@ -100,6 +100,13 @@ public final class TerrainBaker {
         for (int k = 0; k < n; k++) {
             fixed[k] = fixed[(n - 1) * n + k] = fixed[k * n] = fixed[k * n + n - 1] = true;
         }
+        // 海と、設計した窪み（峡谷・裂け目・盆地・火口）は水の出口にする。川はそこへ流れ込んで終わる
+        // （窪みを水で満たしたと考えると、平らな水面の上をまっすぐ横切る不自然な川ができるため）
+        for (int idx = 0; idx < n * n; idx++) {
+            if ((mask[idx] & (Design.SEA | Design.DRY)) != 0) {
+                fixed[idx] = true;
+            }
+        }
         boolean[] keep = new boolean[n * n];
         double[] kField = new double[n * n];
         float[] talus = new float[n * n];
@@ -140,7 +147,8 @@ public final class TerrainBaker {
         Hydro.priorityFill(h, fixed, n, 0.0f, filled);
         float[] routing = new float[n * n];
         Hydro.priorityFill(h, fixed, n, 0.02f, routing);
-        Hydro.receivers(routing, fixed, n, cell, null, 0f, receiver, distance);
+        // 流れる先は下りの隣からランダムに選ぶ（平らな所で川がまっすぐな線にならないように）
+        Hydro.receivers(routing, fixed, n, cell, random, 1f, receiver, distance);
         Hydro.order(routing, order);
         Hydro.accumulate(receiver, order, area, cell * cell);
         float[] water = new float[n * n];
@@ -154,11 +162,12 @@ public final class TerrainBaker {
             }
         }
         // 湖：窪みにたまる水。小さい・浅い・高すぎる窪みは埋める。設計した窪み（峡谷・盆地・裂け目など）はそのまま残す
-        lakes(h, filled, water, mask, pad, n, design);
+        boolean[] flat = lakes(h, filled, water, mask, pad, n, design);
         // 水が集まる所の川
         double minArea = design.river().minCells() * cell * cell;
         for (int idx = 0; idx < n * n; idx++) {
-            if (!pad[idx] && Float.isNaN(water[idx]) && area[idx] > minArea && !fixed[idx] && (mask[idx] & Design.DRY) == 0) {
+            // 埋めた窪み（平ら）の上には川を引かない（流れる向きが決まらず、まっすぐな線になるため）
+            if (!pad[idx] && !flat[idx] && Float.isNaN(water[idx]) && area[idx] > minArea && !fixed[idx] && (mask[idx] & Design.DRY) == 0) {
                 river[idx] = 1;
                 water[idx] = h[idx] - 0.4f;
             }
@@ -178,7 +187,9 @@ public final class TerrainBaker {
         return new TerrainBake(design, seed, h, water, river, roadLines);
     }
 
-    private static void lakes(float[] h, float[] filled, float[] water, byte[] mask, boolean[] pad, int n, TerrainDesign design) {
+    /** 窪みを湖にするか埋めるかを決める。戻り値＝埋めて平らにしたマス。 */
+    private static boolean[] lakes(float[] h, float[] filled, float[] water, byte[] mask, boolean[] pad, int n, TerrainDesign design) {
+        boolean[] flat = new boolean[n * n];
         boolean[] lakeCell = new boolean[n * n];
         for (int idx = 0; idx < n * n; idx++) {
             lakeCell[idx] = !pad[idx] && Float.isNaN(water[idx]) && (mask[idx] & Design.SEA) == 0 && filled[idx] - h[idx] > 0.5f;
@@ -197,12 +208,14 @@ public final class TerrainBaker {
             double maxDepth = 0;
             boolean designed = false;
             boolean lakeShape = false;
+            boolean noLake = false;
             while (top > 0) {
                 int idx = stack[--top];
                 component.add(idx);
                 maxDepth = Math.max(maxDepth, filled[idx] - h[idx]);
                 designed |= (mask[idx] & Design.DRY) != 0;
                 lakeShape |= (mask[idx] & Design.LAKE) != 0;
+                noLake |= (mask[idx] & Design.FILL) != 0;
                 int i = idx % n;
                 int j = idx / n;
                 for (int k = 0; k < 4; k++) {
@@ -221,16 +234,19 @@ public final class TerrainBaker {
             if (designed && !lakeShape) {
                 continue; // 峡谷・裂け目・盆地などの設計した窪みは、水を張らずにそのまま
             }
-            boolean keep = lakeShape || (component.size() >= Limits.LAKE_MIN_CELLS && maxDepth >= Limits.LAKE_MIN_DEPTH
+            double cellArea = (double) design.region().cell() * design.region().cell();
+            boolean keep = lakeShape || (!noLake && component.size() * cellArea >= Limits.LAKE_MIN_AREA && maxDepth >= Limits.LAKE_MIN_DEPTH
                     && filled[start0] < design.mountainBiomeAbove());
             for (int idx : component) {
                 if (keep) {
                     water[idx] = filled[idx];
                 } else {
                     h[idx] = filled[idx];
+                    flat[idx] = true;
                 }
             }
         }
+        return flat;
     }
 
     /** 縁からの距離で 0（範囲の外の地形）〜1（v2）。 */

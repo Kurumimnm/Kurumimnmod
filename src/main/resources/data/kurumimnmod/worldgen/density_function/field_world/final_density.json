@@ -6,15 +6,15 @@
       "type": "minecraft:sub",
       "left": {
         "type": "kurumimnmod:terrain_height",
-        "map": "kurumimnmod:first_continent"
+        "map": "kurumimnmod:astralia"
       },
       "right": {
         "type": "minecraft:gradient",
         "axis": "y",
         "from_coordinate": -64,
         "from_value": -64.0,
-        "to_coordinate": 448,
-        "to_value": 448.0
+        "to_coordinate": 320,
+        "to_value": 320.0
       }
     },
     "right": 0.1

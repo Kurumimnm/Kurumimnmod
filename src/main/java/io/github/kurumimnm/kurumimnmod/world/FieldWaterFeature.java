@@ -20,6 +20,7 @@ import net.minecraft.world.level.levelgen.feature.Feature;
  * 地形 v2 の湖・川の水を置く地物（feature）。
  * <p>
  * 計算済みの水面（{@link TerrainBake#waterLevel}）が地面より高い所に水を入れ、底を砂・砂利にする。
+ * 海も（計算した範囲の外を含めて）ここで入れる。地形の設定（noise_settings）の海面は世界の底にしてあり、自動では水が入らない。
  * 街の中とそのまわり（平らにする所）には置かない。道より先に置く（local_modifications の最初）。
  */
 public record FieldWaterFeature(Holder<FieldMap> map) implements Feature {
@@ -42,9 +43,8 @@ public record FieldWaterFeature(Holder<FieldMap> map) implements Feature {
         }
         int chunkX = origin.getX() & ~15;
         int chunkZ = origin.getZ() & ~15;
-        if (!bake.covers(chunkX, chunkZ) && !bake.covers(chunkX + 15, chunkZ + 15)) {
-            return false;
-        }
+        // 海面（noise_settings の sea_level は使わず、海はここで入れる。内陸の裂溝・盆地が勝手に水没しないように）
+        int seaLevel = (int) Math.floor(bake.seaLevel());
         BlockState waterState = Blocks.WATER.defaultBlockState();
         BlockState shallow = block(ModConstants.TERRAIN_WATER_BED_SHALLOW);
         BlockState deep = block(ModConstants.TERRAIN_WATER_BED_DEEP);
@@ -54,7 +54,8 @@ public record FieldWaterFeature(Holder<FieldMap> map) implements Feature {
             for (int dz = 0; dz < 16; dz++) {
                 int x = chunkX + dx;
                 int z = chunkZ + dz;
-                double levelY = bake.waterLevel(x + 0.5, z + 0.5);
+                // 計算した範囲の外は海
+                double levelY = bake.covers(x + 0.5, z + 0.5) ? bake.waterLevel(x + 0.5, z + 0.5) : seaLevel;
                 if (Double.isNaN(levelY) || nearTown(fieldMap, x, z)) {
                     continue;
                 }

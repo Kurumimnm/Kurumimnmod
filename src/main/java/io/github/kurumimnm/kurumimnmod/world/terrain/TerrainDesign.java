@@ -96,7 +96,8 @@ public record TerrainDesign(Region region, double baseHeight, double baseNoise, 
      * <ul>
      *   <li>{@code coast}：points＝陸地の輪郭（多角形）。外は海。beach＝海へ下がる幅、ocean_floor＝沖の海底の高さ</li>
      *   <li>{@code area}：points（多角形）または center＋radius（円）の範囲を height の高さにする。noise＝起伏、edge＝周りへつなぐ幅、
-     *       style＝plain（なだらか）／plateau（崖で区切った台地。崖は崩れない）／dunes（砂丘）／mesas（メサが点在）</li>
+     *       style＝plain（なだらか）／plateau（崖で区切った台地。崖は崩れない）／dunes（砂丘）／mesas（メサが点在）、
+     *       wobble＝輪郭の大きなうねり（ブロック）、lakes＝0 にすると自然の湖を作らない</li>
      *   <li>{@code range}：points に沿った山並み。peak＝頂上の高さ、width＝尾根から麓までの幅、rough＝ごつごつ具合（0〜1）</li>
      *   <li>{@code arc}：center を中心に radius の円弧に沿った山並み（from〜to 度、0 度＝東、90 度＝南）。wobble＝半径の揺れ</li>
      *   <li>{@code basin}：center の周り radius の内側を floor の高さの盆地にする。width＝周りへつなぐ幅</li>

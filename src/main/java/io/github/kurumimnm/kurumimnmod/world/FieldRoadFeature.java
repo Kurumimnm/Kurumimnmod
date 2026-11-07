@@ -20,7 +20,7 @@ import net.minecraft.world.level.levelgen.feature.Feature;
  * 木や草より先に置くため、バイオームの「local_modifications」の段階に入れている。
  * <pre>{@code
  * data/kurumimnmod/worldgen/feature/field_roads.json:
- * { "type": "kurumimnmod:field_roads", "map": "kurumimnmod:first_continent" }
+ * { "type": "kurumimnmod:field_roads", "map": "kurumimnmod:astralia" }
  * }</pre>
  */
 public record FieldRoadFeature(Holder<FieldMap> map) implements Feature {
@@ -113,7 +113,7 @@ public record FieldRoadFeature(Holder<FieldMap> map) implements Feature {
                 }
                 int x = chunkX + dx;
                 int z = chunkZ + dz;
-                int y = bridge.deck();
+                int y = bridge.deckAt(along);
                 pos.set(x, y, z);
                 level.setBlock(pos, deck, 2);
                 boolean edge = side > half - 1;

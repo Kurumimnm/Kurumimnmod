@@ -20,6 +20,9 @@ final class Design {
     static final int GORGE = 4;  // 峡谷（崩れる角度をほぼ垂直に）
     static final int DRY = 8;    // 設計した窪み（湖にしない・埋めない）
     static final int LAKE = 16;  // 設計した湖
+    static final int FILL = 32;  // 自然の湖を作らない（窪みは埋める。砂漠・荒地など）
+    /** 設計した川の土手を、岸（bank）の外へなだらかにつなぐ幅（ブロック） */
+    static final double RIVER_LEVEE = 48;
 
     /** 部品 1 つ。xs/zs＝点、bounds＝影響する範囲（外接矩形）。 */
     record Shape(Landform form, double[] xs, double[] zs, double[] bounds, long salt) {}
@@ -100,12 +103,12 @@ final class Design {
     private static double reach(Landform f) {
         return switch (f.type()) {
             case "range", "arc" -> f.num("width", 500);
-            case "area" -> f.num("edge", 200);
+            case "area" -> f.num("edge", 200) + f.num("wobble", 0) * 1.1 + f.num("edge_noise", f.num("edge", 200) * 0.5);
             case "basin" -> f.num("width", 300);
             case "crater" -> f.num("radius", 200) * 0.6;
             case "canyon" -> f.num("width", 200) / 2 + f.num("wall", 10) + 64;
             case "gorge" -> f.num("width", 60) + f.num("meander", 0);
-            case "river" -> f.num("width", 20) / 2 + f.num("bank", 24) + 16;
+            case "river" -> f.num("width", 20) / 2 + f.num("bank", 24) + RIVER_LEVEE + 16;
             case "lake" -> 0;
             default -> 0;
         };
@@ -159,7 +162,7 @@ final class Design {
                 }
                 case "crater" -> {
                     double r = f.num("radius", 200);
-                    double d = Math.hypot(x - f.cx(), z - f.cz()) + 0.08 * r * noise.fbm(x, z, r * 0.6, 3, s.salt());
+                    double d = Math.max(0, Math.hypot(x - f.cx(), z - f.cz()) + 0.08 * r * noise.fbm(x, z, r * 0.6, 3, s.salt()));
                     double rimUp = f.num("rim", 6);
                     if (d < r) {
                         double floor = f.num("floor", h - 20);
@@ -223,6 +226,22 @@ final class Design {
                         mask[0] |= HARD;
                     }
                 }
+                case "river" -> {
+                    // 設計した川の両岸：地面が水面より低い所は土手を盛る（水が宙に浮かないように）。水路は生成中に掘る（sharpen）
+                    double[] t = new double[1];
+                    double d = Shapes2D.polylineDistance(x, z, s.xs(), s.zs(), t);
+                    double inner = f.num("width", 20) / 2 + f.num("bank", 24);
+                    if (d < inner + RIVER_LEVEE) {
+                        double bankTop = riverLevel(f, t[0]) + 2;
+                        double w = 1 - BakeNoise.smooth((d - inner) / RIVER_LEVEE);
+                        if (h < bankTop && (mask[0] & GORGE) == 0) {
+                            h = h + (bankTop - h) * w;
+                        }
+                        if (w > 0.5) {
+                            mask[0] |= HARD;
+                        }
+                    }
+                }
                 case "lake" -> {
                     double e = Math.hypot((x - f.cx()) / f.num("rx", 100), (z - f.cz()) / f.num("rz", 100)) + 0.2 * noise.fbm(x, z, 120, 3, s.salt());
                     if (e < 1) {
@@ -265,9 +284,15 @@ final class Design {
             sd = f.num("radius", 500) - Math.hypot(x - f.cx(), z - f.cz());
         }
         sd += f.num("edge_noise", edge * 0.5) * noise.fbm(x, z, Math.max(80, edge * 3), 3, s.salt() + 9);
+        // 輪郭の大きなうねり（四角い範囲でも自然な形にする）
+        // （fbm の値はほぼ ±0.4 に収まるので 2.5 倍して、wobble ≒ 最大のずれ にする）
+        sd += f.num("wobble", 0) * 2.5 * noise.fbm(x, z, f.num("wobble_scale", 600), 2, s.salt() + 11);
         double w = BakeNoise.smooth((sd + edge / 2) / edge);
         if (w <= 0) {
             return h;
+        }
+        if (f.num("lakes", 1) == 0 && w > 0.5) {
+            mask[0] |= FILL;
         }
         String style = f.str("style", "plain");
         double target = f.num("height", 72) + f.num("noise", 8) * noise.fbm(x, z, f.num("noise_scale", 500), 4, s.salt());
@@ -370,7 +395,7 @@ final class Design {
             double[] t = new double[1];
             double d = Shapes2D.polylineDistance(x, z, s.xs(), s.zs(), t);
             double half = f.num("width", 20) / 2 + 2 * noise.fbm(x, z, 50, 2, s.salt() + 7);
-            if (d <= half + 0.5) {
+            if (d <= half + 0.5 && !inCanyon(x, z)) {
                 return riverLevel(f, t[0]);
             }
         }
@@ -385,6 +410,21 @@ final class Design {
             }
         }
         return Double.NaN;
+    }
+
+    /** 峡谷（壁を含む）の中か。川が峡谷へ流れ落ちる所では、川の水面を峡谷の中に置かない（滝として壁を落ちる）。 */
+    private boolean inCanyon(double x, double z) {
+        for (Shape s : canyons) {
+            if (!Shapes2D.inBounds(s.bounds(), x, z)) {
+                continue;
+            }
+            Landform f = s.form();
+            double d = Shapes2D.polylineDistance(x, z, s.xs(), s.zs(), null);
+            if (d < f.num("width", 200) / 2 + f.num("wall", 10) + 2) {
+                return true;
+            }
+        }
+        return false;
     }
 
     static double riverLevel(Landform f, double t) {

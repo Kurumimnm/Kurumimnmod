@@ -163,15 +163,28 @@ public final class TerrainBake {
         return weight(x, z) >= 0.5 && rawHeight(x, z) > design.mountainBiomeAbove() + 15 * noise.fbm(x, z, 90, 2, 71);
     }
 
-    /** 橋（設計図の bridge）。from/to＝両端、deck＝橋の面の高さ、width＝幅。 */
-    public record Bridge(double fromX, double fromZ, double toX, double toZ, int deck, int width) {}
+    /**
+     * 橋（設計図の bridge）。from/to＝両端、deckFrom/deckTo＝両端の橋の面の高さ（間はまっすぐな坂）、width＝幅。
+     * 設計図に deck が書いていなければ、両端の地面の高さ＋1 にする（川の両岸の高さが違っても段差ができない）。
+     */
+    public record Bridge(double fromX, double fromZ, double toX, double toZ, int deckFrom, int deckTo, int width) {
+        /** 橋の始まりから along ブロックの所の橋の面の高さ。 */
+        public int deckAt(double along) {
+            double length = Math.hypot(toX - fromX, toZ - fromZ);
+            double t = length < 1 ? 0 : Math.max(0, Math.min(1, along / length));
+            return (int) Math.round(deckFrom + (deckTo - deckFrom) * t);
+        }
+    }
 
     public List<Bridge> bridges() {
         List<Bridge> list = new ArrayList<>();
         for (Design.Shape s : shapes.bridges()) {
             if (s.xs().length >= 2) {
+                TerrainDesign.Landform f = s.form();
+                double from = f.has("deck") ? f.num("deck", 90) : rawHeight(s.xs()[0], s.zs()[0]) + 1;
+                double to = f.has("deck") ? f.num("deck_end", f.num("deck", 90)) : rawHeight(s.xs()[1], s.zs()[1]) + 1;
                 list.add(new Bridge(s.xs()[0], s.zs()[0], s.xs()[1], s.zs()[1],
-                        (int) Math.round(s.form().num("deck", 90)), (int) Math.round(s.form().num("width", 7))));
+                        (int) Math.round(from), (int) Math.round(to), (int) Math.round(f.num("width", 7))));
             }
         }
         return list;
