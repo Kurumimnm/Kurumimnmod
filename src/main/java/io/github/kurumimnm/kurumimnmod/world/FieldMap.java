@@ -26,7 +26,7 @@ import net.minecraft.world.level.biome.Biome;
  * 境界がまっすぐにならないよう、判定の前に座標をノイズで少しずらす（warp）。
  *
  * <h2>危険度</h2>
- * 危険度 = フィールドの tier（出発する街の番号）＋ エリア番号。
+ * 推奨レベル = フィールドの tier（設計書の推奨Lv）。エリアの番号は区別のための番号で、危険度には足さない。
  * 本道（エリア 1）から外れるほど数字が上がり、敵が強くなる想定。
  *
  * <h2>地形</h2>
@@ -90,7 +90,7 @@ public final class FieldMap {
     }
 
     /**
-     * フィールド。biome = このフィールドのバイオーム、tier = 危険度の基準（出発する街の番号）、
+     * フィールド。biome = このフィールドのバイオーム、tier = 推奨レベル、
      * road = このフィールドを通る道の種類と状態（省略すると道なし。{@link RoadSettings} 参照）。
      * unlock = 入るのに必要な進行フラグ（例：gate。空なら誰でも入れる。{@link GateRules}）、
      * circle = [x, z, 半径] の円で範囲を決める（旧都など。基準点より優先）、sea = 海（海岸線の外）、
@@ -145,12 +145,12 @@ public final class FieldMap {
     }
 
     /**
-     * 判定結果。danger = 危険度（tier + エリア番号）。
+     * 判定結果。danger = 推奨レベル（フィールドの tier。HUD の表示と同じ）。
      * inMountains = 山脈の中（バイオームが山脈になる範囲）かどうか。
      */
     public record Location(Field field, int area, boolean inMountains) {
         public int danger() {
-            return field.tier() + area;
+            return field.tier();
         }
     }
 
