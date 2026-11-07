@@ -38,6 +38,11 @@ jobs:
           grep -nE "ERROR|Exception|Caused by|kurumimnmod|Done \(|Preparing spawn|level-type" server_out.txt | grep -v "DEBUG" | head -150
           echo ----; grep -n "level.dat\|Preparing level\|地形v2" server_out.txt | head -20
           find . -path "*kurumimnmod/terrain*" | head; for f in $(find . -name "*_preview.png"); do echo "PNG_bake $(base64 -w0 $f)"; done
+      - name: Upload terrain bake
+        uses: actions/upload-artifact@v4
+        with:
+          name: terrain-bake
+          path: run/world/data/kurumimnmod/terrain/
       - name: Analyze terrain
         if: always()
         run: |

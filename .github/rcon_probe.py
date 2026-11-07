@@ -16,7 +16,7 @@ if mode=="load":
               "execute positioned 0 64 0 run kmod area","execute positioned 900 64 0 run kmod area","execute positioned 0 64 1000 run kmod area",
               # 街：メディアナ・1（村）・2（都市）・5（城下町）・3（港町）
               "forceload add -256 -256 -1 -1","forceload add 0 -256 255 -1","forceload add -256 0 -1 255","forceload add 0 0 255 255",
-              "forceload add -128 -1100 127 -845","forceload add -96 -3096 95 -2905",
+              "forceload add -128 -1100 127 -865","forceload add -96 -3096 95 -2905",
 
               "execute positioned 0 64 -900 run kmod area",
               # 山脈の斜面（安山岩・鉱石・湧き水が出ていないか）
