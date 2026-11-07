@@ -78,7 +78,7 @@ public final class LocationHud {
         Optional<FieldMap.Field> field = map.field(region.field());
         int level = field.map(FieldMap.Field::tier).orElse(1);
         String areaKey = "area." + Kurumimnmod.MOD_ID + "." + field.map(FieldMap.Field::id).orElse("") + "." + region.area();
-        if (net.minecraft.client.resources.language.I18n.exists(areaKey)) {
+        if (net.minecraft.locale.Language.getInstance().has(areaKey)) {
             // 「エリア3 東の丘陵 ・ 推奨Lv 1」
             return Component.translatable(KEY + ".area_named", region.area(), Component.translatable(areaKey), level);
         }
