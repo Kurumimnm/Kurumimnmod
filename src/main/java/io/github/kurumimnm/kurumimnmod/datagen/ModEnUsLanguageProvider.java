@@ -160,6 +160,96 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         add(SCARECROW_SCREEN + ".cancel", "Cancel");
         add(SCARECROW_SCREEN + ".save", "Save");
 
+        // ---- ワールド・ブロック・キー ----
+        add("generator." + MOD_ID + ".field_world", "Kurumimnmod World");
+        add("block." + MOD_ID + ".quest_gate", "Quest Gate");
+        add("key." + MOD_ID + ".open_quest", "Open Quests");
+
+        // ---- バイオーム ----
+        add("biome." + MOD_ID + ".home_plains", "Starting Plains");
+        add("biome." + MOD_ID + ".quest_meadow", "Meadow");
+        add("biome." + MOD_ID + ".quest_forest", "Forest");
+        add("biome." + MOD_ID + ".quest_desert", "Desert");
+        add("biome." + MOD_ID + ".quest_snow", "Snowfield");
+        add("biome." + MOD_ID + ".quest_badlands", "Badlands");
+        add("biome." + MOD_ID + ".quest_arena", "Boss Arena");
+        add("biome." + MOD_ID + ".quest_hub", "Waypoint");
+        add("biome." + MOD_ID + ".quest_void", "Void");
+
+        // ---- クエスト（名前・説明・フィールド名） ----
+        add("quest." + MOD_ID + ".first_trial", "The First Trial");
+        add("quest." + MOD_ID + ".first_trial.description", "Cross the meadow and the forest beyond the town, and defeat the beast lurking deep inside.");
+        add("quest." + MOD_ID + ".first_trial.field.1", "Meadow Path");
+        add("quest." + MOD_ID + ".first_trial.field.2", "Sunlit Woods");
+        add("quest." + MOD_ID + ".first_trial.field.boss", "Arena of the Beast");
+        add("quest." + MOD_ID + ".forked_road", "The Forked Road");
+        add("quest." + MOD_ID + ".forked_road.description", "Past the meadow the road splits into desert and snowfield. Only those who conquer both may challenge the master of the arena.");
+        add("quest." + MOD_ID + ".forked_road.field.1", "Meadow of Departure");
+        add("quest." + MOD_ID + ".forked_road.field.2a", "Scorching Dunes");
+        add("quest." + MOD_ID + ".forked_road.field.2b", "Silver Peaks");
+        add("quest." + MOD_ID + ".forked_road.field.boss", "Arena of the Master");
+
+        // ---- 左上の表示 ----
+        add("hud." + MOD_ID + ".quest.field", "Field %s: %s");
+        add("hud." + MOD_ID + ".quest.hub", "Waypoint");
+        add("hud." + MOD_ID + ".quest.goal", "Goal: %s");
+        add("hud." + MOD_ID + ".quest.goal.kill", "Defeat monsters %s / %s");
+        add("hud." + MOD_ID + ".quest.goal.reach", "Reach the gate");
+        add("hud." + MOD_ID + ".quest.goal.boss", "Defeat the boss");
+        add("hud." + MOD_ID + ".quest.goal.cleared", "Cleared! The gate is open");
+        add("hud." + MOD_ID + ".quest.goal.hub", "Choose the next field at the departure gate");
+        add("hud." + MOD_ID + ".quest.goal.travel", "Travel to the field from the quest screen (J)");
+        add("hud." + MOD_ID + ".quest.goal.done", "Quest complete! Return through the gate");
+
+        // ---- クエスト画面・ゲート画面 ----
+        add("screen." + MOD_ID + ".quest", "Quests");
+        add("screen." + MOD_ID + ".quest.close", "Close");
+        add("screen." + MOD_ID + ".quest.travel", "To the Field");
+        add("screen." + MOD_ID + ".quest.travel.tooltip", "Travel to the quest (the first field, or the waypoint once you have cleared a field)");
+        add("screen." + MOD_ID + ".quest.abandon", "Abandon");
+        add("screen." + MOD_ID + ".quest.abandon.confirm", "Really abandon?");
+        add("screen." + MOD_ID + ".quest.abandon.tooltip", "Give up the quest and return to where you accepted it (press again to confirm)");
+        add("screen." + MOD_ID + ".quest.accept", "Accept");
+        add("screen." + MOD_ID + ".quest.completed_mark", "%s ✔");
+        add("screen." + MOD_ID + ".quest.list", "Quest List");
+        add("screen." + MOD_ID + ".quest.list.empty", "No quests available");
+        add("screen." + MOD_ID + ".quest.current", "Current Quest");
+        add("screen." + MOD_ID + ".quest.fields", "Fields");
+        add("screen." + MOD_ID + ".quest.field.cleared", "✔ %s");
+        add("screen." + MOD_ID + ".quest.field.here", "▶ %s");
+        add("screen." + MOD_ID + ".quest.field.open", "· %s");
+        add("screen." + MOD_ID + ".quest.field.unknown", "? Field %s: ???");
+        add("screen." + MOD_ID + ".gate", "Gate");
+        add("screen." + MOD_ID + ".gate.title", "The gate is open. Choose where to go");
+        add("screen." + MOD_ID + ".gate.title.hub", "Departure Gate: choose where to go");
+        add("screen." + MOD_ID + ".gate.hub", "To the Waypoint");
+        add("screen." + MOD_ID + ".gate.finish", "Complete the quest (return to where you accepted it)");
+        add("screen." + MOD_ID + ".gate.locked", "%s (locked)");
+        add("screen." + MOD_ID + ".gate.locked.tooltip", "Another field must be cleared first");
+        add("screen." + MOD_ID + ".gate.stay", "Not yet");
+        add("screen." + MOD_ID + ".status.money", "Money $%s");
+
+        // ---- メッセージ・コマンド ----
+        add("message." + MOD_ID + ".quest.already", "You already have a quest (you can abandon it from the quest screen)");
+        add("message." + MOD_ID + ".quest.unknown", "Quest %s was not found");
+        add("message." + MOD_ID + ".quest.accepted", "Accepted the quest \"%s\"");
+        add("message." + MOD_ID + ".quest.none", "You have no quest");
+        add("message." + MOD_ID + ".quest.abandoned", "Abandoned the quest \"%s\"");
+        add("message." + MOD_ID + ".quest.completed", "Quest \"%s\" complete! Reward: $%s");
+        add("message." + MOD_ID + ".quest.entered", "Entered %s");
+        add("message." + MOD_ID + ".quest.field_title", "Field %s: %s");
+        add("message." + MOD_ID + ".quest.hub", "Arrived at the waypoint");
+        add("message." + MOD_ID + ".quest.not_your_gate", "You cannot use this gate");
+        add("message." + MOD_ID + ".quest.gate_closed", "The gate is still closed (the clear condition is not met)");
+        add("message." + MOD_ID + ".quest.locked", "You cannot enter that field yet");
+        add("message." + MOD_ID + ".quest.field_cleared", "Field cleared! The gate is open");
+        add("message." + MOD_ID + ".quest.goal_cleared", "Boss defeated! Complete the quest through the gate");
+        add("commands." + MOD_ID + ".quest.entry", "%s: %s");
+        add("commands." + MOD_ID + ".quest.not_in_field", "You are not in a field");
+        add("commands." + MOD_ID + ".quest.no_field", "Quest %s has no field %s");
+        add("commands." + MOD_ID + ".quest.preview", "Created plot %s: center X %s Z %s (size %s), entrance %s %s %s");
+        add("commands." + MOD_ID + ".money.get", "Money: $%s");
+
         // ---- Config 画面 ----
         add(MOD_ID + ".configuration.title", "Kurumimnmod Configs");
         add(MOD_ID + ".configuration.section." + MOD_ID + ".synced.toml", "Kurumimnmod Configs");

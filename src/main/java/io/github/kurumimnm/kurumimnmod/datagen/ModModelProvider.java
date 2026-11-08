@@ -1,6 +1,7 @@
 package io.github.kurumimnm.kurumimnmod.datagen;
 
 import io.github.kurumimnm.kurumimnmod.Kurumimnmod;
+import io.github.kurumimnm.kurumimnmod.registry.ModBlocks;
 import io.github.kurumimnm.kurumimnmod.registry.ModItems;
 import net.minecraft.client.data.models.BlockModelGenerators;
 import net.minecraft.client.data.models.ItemModelGenerators;
@@ -32,6 +33,8 @@ public class ModModelProvider extends ModelProvider {
     @Override
     protected void registerModels(BlockModelGenerators blockModels, ItemModelGenerators itemModels) {
         // ---- ブロック ----
+        // クエストのゲート（全面同じテクスチャ。アイテムはなし）
+        blockModels.createTrivialCube(ModBlocks.QUEST_GATE.get());
 
         // ---- アイテム ----
         // 杖・剣・ステッキなどの「手に持つ」アイテムは HANDHELD（持ったときに斜めに構える）

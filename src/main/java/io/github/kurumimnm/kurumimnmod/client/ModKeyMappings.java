@@ -2,6 +2,7 @@ package io.github.kurumimnm.kurumimnmod.client;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import io.github.kurumimnm.kurumimnmod.Kurumimnmod;
+import io.github.kurumimnm.kurumimnmod.client.quest.QuestScreen;
 import io.github.kurumimnm.kurumimnmod.client.screen.StatusPageScreen;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -37,11 +38,16 @@ public final class ModKeyMappings {
     public static final KeyMapping OPEN_ALLOCATION =
             new KeyMapping("key." + Kurumimnmod.MOD_ID + ".open_allocation", InputConstants.KEY_K, CATEGORY);
 
+    /** クエスト画面を開く（初期値: J）。 */
+    public static final KeyMapping OPEN_QUEST =
+            new KeyMapping("key." + Kurumimnmod.MOD_ID + ".open_quest", InputConstants.KEY_J, CATEGORY);
+
     @SubscribeEvent
     static void onRegisterKeyMappings(RegisterKeyMappingsEvent event) {
         event.registerCategory(CATEGORY);
         event.register(OPEN_STATUS);
         event.register(OPEN_ALLOCATION);
+        event.register(OPEN_QUEST);
     }
 
     /** 毎 tick キー入力を確認して、押されていたら対応する画面を開く。 */
@@ -54,6 +60,11 @@ public final class ModKeyMappings {
         }
         while (OPEN_ALLOCATION.consumeClick()) {
             open(mc, StatusPageScreen.Page.ALLOCATION);
+        }
+        while (OPEN_QUEST.consumeClick()) {
+            if (mc.player != null && mc.gui.screen() == null) {
+                mc.gui.setScreen(new QuestScreen());
+            }
         }
     }
 

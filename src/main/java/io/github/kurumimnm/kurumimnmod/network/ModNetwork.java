@@ -19,7 +19,7 @@ public final class ModNetwork {
     private ModNetwork() {}
 
     /** 通信の互換バージョン（パケットの中身を変えたら上げる）。 */
-    private static final String VERSION = "1";
+    private static final String VERSION = "4";
 
     @SubscribeEvent
     static void onRegisterPayloads(RegisterPayloadHandlersEvent event) {
@@ -41,5 +41,12 @@ public final class ModNetwork {
 
 
         registrar.playToServer(CastWandPayload.TYPE, CastWandPayload.STREAM_CODEC, CastWandPayload::handle);
+
+        // ---- クエスト ----
+        // クライアント → サーバー（クエスト画面の操作・ゲートの行き先）
+        registrar.playToServer(QuestActionPayload.TYPE, QuestActionPayload.STREAM_CODEC, QuestActionPayload::handle);
+        registrar.playToServer(ChooseGatePayload.TYPE, ChooseGatePayload.STREAM_CODEC, ChooseGatePayload::handle);
+        // サーバー → クライアント（受け取ったときの処理は client/quest/ClientQuest で登録）
+        registrar.playToClient(OpenGatePayload.TYPE, OpenGatePayload.STREAM_CODEC);
     }
 }

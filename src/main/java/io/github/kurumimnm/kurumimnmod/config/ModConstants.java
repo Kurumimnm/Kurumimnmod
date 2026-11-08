@@ -272,4 +272,64 @@ public final class ModConstants {
     public static final float ENEMY_BAR_TICK_WIDTH = 0.012f;
     public static final int ENEMY_BAR_COLOR_TICK = 0x90000000;
     // ※ HP 部分の色は HP_COLORS（割合で変化）を使用
+
+    // =====================================================================
+    // 現世（Kurumimnmod ワールド）：始まりの街
+    // =====================================================================
+    /** 平らな地形の地面の一番上の Y（data/kurumimnmod/worldgen/world_preset/field_world.json の層と合わせる）。 */
+    public static final int START_TOWN_GROUND_Y = 64;
+    /** 初めてワールドに入ったときのスポーン地点（広場の噴水の南）。 */
+    public static final int START_TOWN_SPAWN_X = 0;
+    public static final int START_TOWN_SPAWN_Z = 6;
+
+    // =====================================================================
+    // クエスト：区画（フィールド）
+    // =====================================================================
+    /** 区画（フィールド 1 つ）の格子の間隔（ブロック）。フィールドの一辺の最大より十分大きくする。 */
+    public static final int QUEST_PLOT_SPACING = 4096;
+    /** 格子の横 1 列に並べる区画の数（いっぱいになったら次の列へ）。 */
+    public static final int QUEST_PLOTS_PER_ROW = 64;
+    /** フィールドの一辺の最小・最大（ブロック）。クエストの JSON の size はこの範囲。 */
+    public static final int QUEST_FIELD_MIN_SIZE = 48;
+    public static final int QUEST_FIELD_MAX_SIZE = 2048;
+    /** 縁の崖の幅と高さ（ブロック）。外は奈落で、いちばん外側の 1 列に見えない壁を置く。 */
+    public static final int QUEST_RIM_WIDTH = 24;
+    public static final double QUEST_RIM_HEIGHT = 36;
+    /** 入口・ゲートを縁からどれだけ内側に置くか（ブロック）。 */
+    public static final int QUEST_GATE_INSET = 16;
+    /** 入口・ゲートのまわりを平らにする半径と、なめらかにつなぐ幅（ブロック）。 */
+    public static final double QUEST_FLAT_RADIUS = 7;
+    public static final double QUEST_FLAT_BLEND = 14;
+    /** ゲートの画面を使える距離（ブロック）。 */
+    public static final double QUEST_GATE_USE_RANGE = 8;
+    /** ボス部屋：壁から区画の縁までの間と、壁の高さ（ブロック）。 */
+    public static final int QUEST_ARENA_MARGIN = 6;
+    public static final int QUEST_ARENA_WALL_HEIGHT = 8;
+
+    // ---- フィールドのモブ（クエストの JSON の mobs・max_mobs） ----
+    /** モブをわかせる間隔（tick）。1 回に 1 体。 */
+    public static final int QUEST_SPAWN_INTERVAL_TICKS = 40;
+    /** 数を数える範囲（プレイヤーからの横の距離。この中のモンスターが max_mobs 未満ならわかせる）。 */
+    public static final double QUEST_SPAWN_COUNT_RADIUS = 48;
+    /** わかせる場所のプレイヤーからの距離。 */
+    public static final double QUEST_SPAWN_MIN_DISTANCE = 18;
+    public static final double QUEST_SPAWN_MAX_DISTANCE = 36;
+    /** 入口のまわりのこの半径にはわかせない。 */
+    public static final double QUEST_SPAWN_SAFE_RADIUS = 20;
+
+    // ---- 中間拠点（全クエスト共通。クエスト用ディメンションの (0, 0)） ----
+    /** 島の半径・地面の高さ。 */
+    public static final int QUEST_HUB_RADIUS = 56;
+    public static final int QUEST_HUB_GROUND_Y = 80;
+    /** 中間拠点の街の範囲。 */
+    public static final int QUEST_HUB_TOWN_RADIUS = 44;
+
+    // ---- クエストの表示（左上） ----
+    public static final int QUEST_HUD_X = 4;
+    public static final int QUEST_HUD_Y = 4;
+    public static final int QUEST_COLOR_TITLE = 0xFFFFD94A;
+    public static final int QUEST_COLOR_FIELD = 0xFFFFFFFF;
+    public static final int QUEST_COLOR_GOAL = 0xFFC8C8C8;
+    public static final int QUEST_COLOR_CLEARED = 0xFF7CFC7C;
+    public static final int QUEST_COLOR_BACKGROUND = 0x60000000;
 }
