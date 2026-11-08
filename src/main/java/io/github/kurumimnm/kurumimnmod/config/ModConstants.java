@@ -305,6 +305,28 @@ public final class ModConstants {
     /** ボス部屋：壁から区画の縁までの間と、壁の高さ（ブロック）。 */
     public static final int QUEST_ARENA_MARGIN = 6;
     public static final int QUEST_ARENA_WALL_HEIGHT = 8;
+    /** ボス部屋の柱（クエストの JSON の terrain.pillars / pillar_height）。本数・高さの上限と、高さの初期値（ブロック）。 */
+    public static final int QUEST_PILLAR_MAX_COUNT = 16;
+    public static final int QUEST_PILLAR_MAX_HEIGHT = 32;
+    public static final int QUEST_PILLAR_DEFAULT_HEIGHT = 10;
+    /** 柱の太さ（中心からの半分の幅。1 なら 3×3）。 */
+    public static final int QUEST_PILLAR_HALF_WIDTH = 1;
+    /** 柱を立てる円の半径（闘技場の半径に対する割合）と、1 本目の向き（度。0 = 東、45 = 南東）。 */
+    public static final double QUEST_PILLAR_RING_RATIO = 0.55;
+    public static final double QUEST_PILLAR_START_ANGLE = 45;
+
+    // ---- 決まった数を置くモブ（クエストの JSON の placed） ----
+    /** placed の 1 項目の数の上限。 */
+    public static final int QUEST_PLACED_MAX_PER_ENTRY = 200;
+    /** 置く処理の間隔（tick）と、1 回に置く最大の数（読み込まれたチャンクにだけ置き、残りは次の回へ）。 */
+    public static final int QUEST_PLACE_INTERVAL_TICKS = 10;
+    public static final int QUEST_PLACE_PER_TICK = 8;
+    /** 1 体の場所を探す回数（読み込まれていない・入口に近いなどで外れたら次の回へ回す）。 */
+    public static final int QUEST_PLACE_ATTEMPTS = 6;
+    /** 入口のまわりのこの半径には置かない（入った瞬間に囲まれないように）。 */
+    public static final double QUEST_PLACE_SAFE_RADIUS = 16;
+    /** 縁の崖・ボス部屋の壁・柱からこれだけ離して置く（ブロック）。 */
+    public static final int QUEST_PLACE_EDGE_MARGIN = 3;
 
     // ---- フィールドのモブ（クエストの JSON の mobs・max_mobs） ----
     /** モブをわかせる間隔（tick）。1 回に 1 体。 */

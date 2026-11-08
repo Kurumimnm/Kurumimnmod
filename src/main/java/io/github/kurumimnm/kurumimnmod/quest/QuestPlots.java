@@ -4,6 +4,8 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.kurumimnm.kurumimnmod.Kurumimnmod;
 import io.github.kurumimnm.kurumimnmod.config.ModConstants;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.core.BlockPos;
@@ -88,6 +90,47 @@ public final class QuestPlots {
 
         public boolean isArena() {
             return terrain.style().equals(QuestDefinition.Terrain.ARENA);
+        }
+
+        /** ボス部屋の床（円）の半径。 */
+        public int arenaRadius() {
+            return half() - ModConstants.QUEST_ARENA_MARGIN;
+        }
+
+        /**
+         * ボス部屋の柱の位置（柱の中心の、床の 1 つ上のブロック）。ボス部屋でなければ空。
+         * 柱は {@link QuestPlotFeature} が建て、ボスの AI（柱に飛び乗るスキルなど）もここから位置を引く。
+         */
+        public List<BlockPos> pillars() {
+            int n = terrain.pillars();
+            if (!isArena() || n <= 0) {
+                return List.of();
+            }
+            double ring = arenaRadius() * ModConstants.QUEST_PILLAR_RING_RATIO;
+            double start = Math.toRadians(ModConstants.QUEST_PILLAR_START_ANGLE);
+            List<BlockPos> list = new ArrayList<>(n);
+            for (int i = 0; i < n; i++) {
+                double a = start + Math.PI * 2 * i / n;
+                list.add(new BlockPos(centerX() + (int) Math.round(Math.cos(a) * ring), terrain.base() + 1,
+                        centerZ() + (int) Math.round(Math.sin(a) * ring)));
+            }
+            return list;
+        }
+
+        /** 柱のてっぺんの Y（柱の上に立ったときの足もと）。 */
+        public int pillarTopY() {
+            return terrain.base() + 1 + terrain.pillarHeight();
+        }
+
+        /** (x, z) が柱から margin ブロック以内か。 */
+        public boolean nearPillar(double x, double z, double margin) {
+            double reach = ModConstants.QUEST_PILLAR_HALF_WIDTH + margin;
+            for (BlockPos p : pillars()) {
+                if (Math.abs(x - p.getX()) <= reach && Math.abs(z - p.getZ()) <= reach) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 

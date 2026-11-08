@@ -86,6 +86,8 @@ public final class ClientQuest {
         return switch (clear.type()) {
             case QuestDefinition.Clear.KILL -> Component.translatable(KEY + "goal.kill", q.kills(), clear.count());
             case QuestDefinition.Clear.BOSS -> Component.translatable(KEY + "goal.boss");
+            case QuestDefinition.Clear.WIPE -> Component.translatable(KEY + "goal.wipe", q.kills(),
+                    def.field(q.location()).map(QuestDefinition.Field::placedTotal).orElse(0));
             default -> Component.translatable(KEY + "goal.reach");
         };
     }

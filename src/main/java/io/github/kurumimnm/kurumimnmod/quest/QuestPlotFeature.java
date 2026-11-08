@@ -121,8 +121,10 @@ public final class QuestPlotFeature implements Feature {
                 int z = w.minZ + dz;
                 double d = Math.hypot(x - cx, z - cz);
                 if (d <= r) {
-                    // 床：同心円の模様
-                    w.set(x, y, z, ((int) d / 4) % 2 == 0 ? floorA : floorB);
+                    // 床：同心円の模様（arena_floor = false なら草原のまま）
+                    if (plot.terrain().arenaFloor()) {
+                        w.set(x, y, z, ((int) d / 4) % 2 == 0 ? floorA : floorB);
+                    }
                 } else if (d <= r + 2) {
                     for (int h = 1; h <= ModConstants.QUEST_ARENA_WALL_HEIGHT; h++) {
                         w.set(x, y + h, z, wall);
@@ -135,6 +137,37 @@ public final class QuestPlotFeature implements Feature {
         int[][] points = {{r - 3, 0}, {-r + 3, 0}, {0, r - 3}, {0, -r + 3}};
         for (int[] p : points) {
             w.set(cx + p[0], y + 1, cz + p[1], fire);
+        }
+        // 柱（terrain.pillars）
+        for (BlockPos p : plot.pillars()) {
+            pillar(w, p, plot.terrain().pillarHeight());
+        }
+    }
+
+    /** 柱：石レンガ（ところどころ苔むす）の角柱。てっぺんは模様入りの石レンガ。bottom = 床の 1 つ上。 */
+    private static void pillar(Writer w, BlockPos bottom, int height) {
+        int hw = ModConstants.QUEST_PILLAR_HALF_WIDTH;
+        BlockState brick = Blocks.STONE_BRICKS.defaultBlockState();
+        BlockState mossy = Blocks.MOSSY_STONE_BRICKS.defaultBlockState();
+        BlockState cracked = Blocks.CRACKED_STONE_BRICKS.defaultBlockState();
+        BlockState cap = Blocks.CHISELED_STONE_BRICKS.defaultBlockState();
+        for (int dx = -hw; dx <= hw; dx++) {
+            for (int dz = -hw; dz <= hw; dz++) {
+                int x = bottom.getX() + dx;
+                int z = bottom.getZ() + dz;
+                for (int h = 0; h < height; h++) {
+                    int y = bottom.getY() + h;
+                    BlockState state;
+                    if (h == height - 1) {
+                        state = cap;
+                    } else {
+                        // 位置から決まる模様（生成のたびに変わらない）
+                        int k = Math.floorMod(x * 31 + y * 17 + z * 13, 7);
+                        state = k == 0 ? mossy : k == 1 ? cracked : brick;
+                    }
+                    w.set(x, y, z, state);
+                }
+            }
         }
     }
 

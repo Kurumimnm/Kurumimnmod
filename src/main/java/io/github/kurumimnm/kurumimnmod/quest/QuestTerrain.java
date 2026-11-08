@@ -45,8 +45,8 @@ public final class QuestTerrain {
             default -> base + amp * QuestNoise.fbm(nx, nz, 4, seed); // hills
         };
         // 縁の崖（ボス部屋は壁を建てるので盛らない）
-        int rim = ModConstants.QUEST_RIM_WIDTH;
-        if (!plot.isArena() && edge < rim) {
+        int rim = t.rimWidth();
+        if (!plot.isArena() && rim > 0 && edge < rim) {
             double k = 1 - edge / rim;
             h += ModConstants.QUEST_RIM_HEIGHT * k * k;
         }

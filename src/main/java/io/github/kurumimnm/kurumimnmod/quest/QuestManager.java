@@ -48,6 +48,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
  *   <li>中間拠点：全クエスト共通。出発ゲートから、今入れるフィールドへ行ける</li>
  *   <li>辞退：受けた場所へ戻る。達成：お金をもらって受けた場所へ戻る</li>
  *   <li>モブ：フィールドの設定（mobs）のモブだけを、プレイヤーのまわりにわかせる</li>
+ *   <li>決まった数のモブ（placed）：初めて入ったときに区画の中へ置く（わき直さない）。クリア条件 wipe なら全部倒すとクリア</li>
  * </ul>
  */
 @EventBusSubscriber(modid = Kurumimnmod.MOD_ID)
@@ -189,6 +190,11 @@ public final class QuestManager {
         BlockPos in = plot.entrance();
         teleport(player, level.get(), in, 180f);
         player.sendSystemMessage(Component.translatable(MSG + "entered", fieldTitle(questId, field.get(), fieldId)));
+        // 決まった数のモブ：初めてなら置く一覧を作る（実際に置くのはチャンクが読み込まれてから。onServerTick）
+        if (!field.get().placed().isEmpty() && !q.cleared().contains(fieldId)) {
+            startPlacement(player, fieldId, field.get());
+        }
+        syncPlacedKills(player, fieldId, field.get());
         // ボス部屋：まだクリアしていなくて、ボスがいなければ出す
         if (field.get().clear().type().equals(QuestDefinition.Clear.BOSS) && !q.cleared().contains(fieldId)) {
             spawnBoss(player, level.get(), plot, field.get());
@@ -382,6 +388,17 @@ public final class QuestManager {
                 }
             }
         }
+        // 置いたモブ（placed）：置いた本人の数を減らす（だれが・何で倒しても）
+        for (ServerPlayer player : level.getServer().getPlayerList().getPlayers()) {
+            PlayerQuest pq = get(player);
+            for (var entry : pq.placements().entrySet()) {
+                if (entry.getValue().alive().contains(id)) {
+                    set(player, pq.withPlacement(entry.getKey(), entry.getValue().died(id)));
+                    afterPlacementChanged(player, entry.getKey());
+                    break;
+                }
+            }
+        }
         // 倒した数（クリア条件 kill）
         if (!(event.getSource().getEntity() instanceof ServerPlayer killer) || !(victim instanceof Enemy)) {
             return;
@@ -412,11 +429,16 @@ public final class QuestManager {
     @SubscribeEvent
     static void onServerTick(ServerTickEvent.Post event) {
         MinecraftServer server = event.getServer();
-        if (server.getTickCount() % ModConstants.QUEST_SPAWN_INTERVAL_TICKS != 0) {
-            return;
-        }
         Optional<ServerLevel> level = questLevel(server);
         if (level.isEmpty()) {
+            return;
+        }
+        if (server.getTickCount() % ModConstants.QUEST_PLACE_INTERVAL_TICKS == 0) {
+            for (ServerPlayer player : level.get().players()) {
+                tickPlacement(player, level.get());
+            }
+        }
+        if (server.getTickCount() % ModConstants.QUEST_SPAWN_INTERVAL_TICKS != 0) {
             return;
         }
         for (ServerPlayer player : level.get().players()) {
@@ -464,7 +486,7 @@ public final class QuestManager {
                 + player.getRandom().nextDouble() * (ModConstants.QUEST_SPAWN_MAX_DISTANCE - ModConstants.QUEST_SPAWN_MIN_DISTANCE);
         int x = (int) Math.floor(player.getX() + Math.cos(angle) * dist);
         int z = (int) Math.floor(player.getZ() + Math.sin(angle) * dist);
-        int inset = ModConstants.QUEST_RIM_WIDTH;
+        int inset = plot.terrain().rimWidth();
         if (Math.abs(x - plot.centerX()) > plot.half() - inset || Math.abs(z - plot.centerZ()) > plot.half() - inset) {
             return;
         }
@@ -478,6 +500,137 @@ public final class QuestManager {
         }
         int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
         type.get().spawn(level, new BlockPos(x, y, z), EntitySpawnReason.TRIGGERED);
+    }
+
+    // ---- 決まった数のモブ（placed） ----
+
+    /** 置くモブの一覧を作る（そのフィールドで初めてのときだけ）。種類はばらばらの順に混ぜる。 */
+    private static void startPlacement(ServerPlayer player, String fieldId, QuestDefinition.Field field) {
+        PlayerQuest q = get(player);
+        if (q.placement(fieldId).isPresent()) {
+            return;
+        }
+        List<Identifier> list = new ArrayList<>();
+        for (QuestDefinition.Placed p : field.placed()) {
+            if (BuiltInRegistries.ENTITY_TYPE.getOptional(p.type()).isEmpty()) {
+                Kurumimnmod.LOGGER.warn("Quest field '{}': unknown entity type '{}' in placed (skipped)", fieldId, p.type());
+                continue;
+            }
+            for (int i = 0; i < p.count(); i++) {
+                list.add(p.type());
+            }
+        }
+        // 混ぜる（同じ種類がかたまって置かれないように）
+        for (int i = list.size() - 1; i > 0; i--) {
+            int j = player.getRandom().nextInt(i + 1);
+            Identifier t = list.get(i);
+            list.set(i, list.get(j));
+            list.set(j, t);
+        }
+        set(player, q.withPlacement(fieldId, new PlayerQuest.Placement(List.copyOf(list), List.of())));
+        afterPlacementChanged(player, fieldId);
+    }
+
+    /** 置くモブの数が変わったあと：HUD の数を直し、wipe なら全部倒したかを確かめる。 */
+    private static void afterPlacementChanged(ServerPlayer player, String fieldId) {
+        Optional<QuestDefinition.Field> field = current(player).flatMap(d -> d.field(fieldId));
+        if (field.isEmpty()) {
+            return;
+        }
+        syncPlacedKills(player, fieldId, field.get());
+        PlayerQuest q = get(player);
+        boolean done = q.placement(fieldId).map(PlayerQuest.Placement::done).orElse(false);
+        if (done && field.get().clear().type().equals(QuestDefinition.Clear.WIPE)) {
+            clearField(player, fieldId);
+        }
+    }
+
+    /** 今いるフィールドが placed を使うなら、HUD 用の「倒した数」を「合計 − 残り」にする。 */
+    private static void syncPlacedKills(ServerPlayer player, String fieldId, QuestDefinition.Field field) {
+        PlayerQuest q = get(player);
+        if (!fieldId.equals(q.location()) || field.placed().isEmpty()) {
+            return;
+        }
+        int remaining = q.placement(fieldId).map(PlayerQuest.Placement::remaining).orElse(field.placedTotal());
+        int kills = Math.max(0, field.placedTotal() - remaining);
+        if (kills != q.kills()) {
+            set(player, q.withKills(kills));
+        }
+    }
+
+    /** まだ置いていないモブを、読み込まれたチャンクに置く（1 回に {@link ModConstants#QUEST_PLACE_PER_TICK} 体まで）。 */
+    private static void tickPlacement(ServerPlayer player, ServerLevel level) {
+        PlayerQuest q = get(player);
+        if (!q.inField() || player.isSpectator()) {
+            return;
+        }
+        String fieldId = q.location();
+        Optional<PlayerQuest.Placement> placement = q.placement(fieldId);
+        if (placement.isEmpty() || placement.get().pending().isEmpty()) {
+            return;
+        }
+        Optional<QuestPlots.Plot> plot = Optional.ofNullable(q.plots().get(fieldId))
+                .flatMap(QuestPlotData.get(level.getServer())::plot);
+        if (plot.isEmpty()) {
+            return;
+        }
+        PlayerQuest.Placement state = placement.get();
+        int placed = 0;
+        int index = 0;
+        while (index < state.pending().size() && placed < ModConstants.QUEST_PLACE_PER_TICK) {
+            Optional<EntityType<?>> type = BuiltInRegistries.ENTITY_TYPE.getOptional(state.pending().get(index));
+            Optional<BlockPos> pos = type.isPresent() ? placePosition(player, level, plot.get()) : Optional.empty();
+            Entity e = pos.isPresent() ? type.get().spawn(level, pos.get(), EntitySpawnReason.TRIGGERED) : null;
+            if (e == null) {
+                index++; // 今回は置けなかった（次の回にもう一度）
+                continue;
+            }
+            if (e instanceof Mob mob) {
+                mob.setPersistenceRequired(); // 離れても消えない（倒すまで残る）
+            }
+            state = state.placed(index, e.getUUID());
+            placed++;
+        }
+        if (placed > 0) {
+            set(player, get(player).withPlacement(fieldId, state));
+            afterPlacementChanged(player, fieldId);
+        }
+    }
+
+    /**
+     * 置く場所を探す：区画の中（縁の崖・ボス部屋の壁・柱から離れた所）で、入口から離れていて、チャンクが読み込まれている地面の上。
+     * 見つからなければ empty（次の回にもう一度）。
+     */
+    private static Optional<BlockPos> placePosition(ServerPlayer player, ServerLevel level, QuestPlots.Plot plot) {
+        int margin = ModConstants.QUEST_PLACE_EDGE_MARGIN;
+        BlockPos in = plot.entrance();
+        for (int attempt = 0; attempt < ModConstants.QUEST_PLACE_ATTEMPTS; attempt++) {
+            double u;
+            double v;
+            if (plot.isArena()) {
+                double r = Math.max(1, plot.arenaRadius() - margin) * Math.sqrt(player.getRandom().nextDouble());
+                double a = player.getRandom().nextDouble() * Math.PI * 2;
+                u = Math.cos(a) * r;
+                v = Math.sin(a) * r;
+            } else {
+                double reach = Math.max(1, plot.half() - plot.terrain().rimWidth() - margin);
+                u = (player.getRandom().nextDouble() * 2 - 1) * reach;
+                v = (player.getRandom().nextDouble() * 2 - 1) * reach;
+            }
+            int x = (int) Math.floor(plot.centerX() + u);
+            int z = (int) Math.floor(plot.centerZ() + v);
+            if (Math.hypot(x - in.getX(), z - in.getZ()) < ModConstants.QUEST_PLACE_SAFE_RADIUS
+                    || plot.nearPillar(x, z, margin)) {
+                continue;
+            }
+            BlockPos column = new BlockPos(x, 0, z);
+            if (!level.isLoaded(column)) {
+                continue;
+            }
+            int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
+            return Optional.of(new BlockPos(x, y, z));
+        }
+        return Optional.empty();
     }
 
     /** ボス部屋のボスを出す（まだいなければ）。 */
