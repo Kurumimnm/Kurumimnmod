@@ -45,6 +45,7 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         addItem(ModItems.SLIME_SPAWN_EGG, "Slime Spawn Egg");
         addItem(ModItems.GAROU_SPAWN_EGG, "Garou Spawn Egg");
         addItem(ModItems.KOBOLD_SPAWN_EGG, "Kobold Spawn Egg");
+        addItem(ModItems.KOBOLD_LORD_SPAWN_EGG, "Kobold Lord Spawn Egg");
 
         // ---- ブロック ----
 
@@ -55,6 +56,7 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         addEntityType(ModEntities.SLIME, "Slime");
         addEntityType(ModEntities.GAROU, "Garou");
         addEntityType(ModEntities.KOBOLD, "Kobold");
+        addEntityType(ModEntities.KOBOLD_LORD, "Kobold Lord");
 
 
         addEntityType(ModEntities.ICE_ICICLE, "Icicle");
@@ -342,6 +344,11 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         add(MOD_ID + ".configuration.kobold", "Kobold");
         add(MOD_ID + ".configuration.koboldLeapDamage", "Leap Damage");
         add(MOD_ID + ".configuration.koboldLeapCooldown", "Leap Cooldown (seconds)");
+        add(MOD_ID + ".configuration.koboldLord", "Kobold Lord");
+        add(MOD_ID + ".configuration.koboldLordKickDamage", "Wall-Kick Dive Damage");
+        add(MOD_ID + ".configuration.koboldLordKickRadius", "Wall-Kick Dive Radius (blocks)");
+        add(MOD_ID + ".configuration.koboldLordKickCooldown", "Wall-Kick Dive Cooldown (seconds)");
+        add(MOD_ID + ".configuration.koboldLordDualHealthRatio", "Dual-Wield Health Ratio");
         add(MOD_ID + ".configuration.armoredDefense", "Defense (Armored)");
 
         // ---- Config 画面（カカシ・ダメージ数字） ----

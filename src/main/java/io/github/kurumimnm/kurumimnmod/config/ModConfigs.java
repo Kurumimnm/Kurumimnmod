@@ -386,8 +386,31 @@ public final class ModConfigs {
             .comment("Cooldown of the leap attack (seconds).")
             .defineInRange("koboldLeapCooldown", 10.0, 0.0, 600.0);
 
+    // ---- コボルトロード（ボス） ----
     static {
         SYNCED_BUILDER.pop(); // kobold
+        SYNCED_BUILDER.push("koboldLord");
+    }
+
+    /** 壁蹴り突撃のダメージ（着地点の範囲の中にいるプレイヤーに当たる）。 */
+    public static final ModConfigSpec.DoubleValue KOBOLD_LORD_KICK_DAMAGE = SYNCED_BUILDER
+            .comment("Damage of the Kobold Lord's wall-kick dive (hits players inside the marked landing area).")
+            .defineInRange("koboldLordKickDamage", 15.0, 0.0, 1000.0);
+    /** 壁蹴り突撃の着地点の範囲（半径・ブロック）。地面に赤い円で表示する。 */
+    public static final ModConfigSpec.DoubleValue KOBOLD_LORD_KICK_RADIUS = SYNCED_BUILDER
+            .comment("Radius (blocks) of the wall-kick dive's landing area, shown as a red circle on the ground.")
+            .defineInRange("koboldLordKickRadius", 2.5, 0.5, 16.0);
+    /** 壁蹴り突撃のクールダウン（秒）。 */
+    public static final ModConfigSpec.DoubleValue KOBOLD_LORD_KICK_COOLDOWN = SYNCED_BUILDER
+            .comment("Cooldown of the wall-kick dive (seconds).")
+            .defineInRange("koboldLordKickCooldown", 20.0, 0.0, 600.0);
+    /** 二刀流になる HP の割合（最大 HP に対して。0.3 = 3 割以下）。 */
+    public static final ModConfigSpec.DoubleValue KOBOLD_LORD_DUAL_HEALTH_RATIO = SYNCED_BUILDER
+            .comment("The Kobold Lord draws its second machete when its health falls to this ratio of max health.")
+            .defineInRange("koboldLordDualHealthRatio", 0.3, 0.0, 1.0);
+
+    static {
+        SYNCED_BUILDER.pop(); // koboldLord
         SYNCED_BUILDER.pop(); // mobs
     }
 
@@ -497,6 +520,10 @@ public final class ModConfigs {
     public static int garouBiteCooldownTicks() { return (int) Math.round(value(GAROU_BITE_COOLDOWN) * 20); }
     public static double koboldLeapDamage() { return value(KOBOLD_LEAP_DAMAGE); }
     public static int koboldLeapCooldownTicks() { return (int) Math.round(value(KOBOLD_LEAP_COOLDOWN) * 20); }
+    public static double koboldLordKickDamage() { return value(KOBOLD_LORD_KICK_DAMAGE); }
+    public static double koboldLordKickRadius() { return value(KOBOLD_LORD_KICK_RADIUS); }
+    public static int koboldLordKickCooldownTicks() { return (int) Math.round(value(KOBOLD_LORD_KICK_COOLDOWN) * 20); }
+    public static double koboldLordDualHealthRatio() { return value(KOBOLD_LORD_DUAL_HEALTH_RATIO); }
 
     /** Config 値（int / double）を安全に取得する（StatType 等から使う）。 */
     public static <T> T get(ModConfigSpec.ConfigValue<T> config) { return value(config); }

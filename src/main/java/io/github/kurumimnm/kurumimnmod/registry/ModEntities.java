@@ -5,6 +5,7 @@ import io.github.kurumimnm.kurumimnmod.config.ModConstants;
 import io.github.kurumimnm.kurumimnmod.entity.GarouEntity;
 import io.github.kurumimnm.kurumimnmod.entity.GriffinEntity;
 import io.github.kurumimnm.kurumimnmod.entity.KoboldEntity;
+import io.github.kurumimnm.kurumimnmod.entity.KoboldLordEntity;
 import io.github.kurumimnm.kurumimnmod.entity.MinionEntity;
 import io.github.kurumimnm.kurumimnmod.entity.ScarecrowEntity;
 import io.github.kurumimnm.kurumimnmod.entity.IceIcicleEntity;
@@ -124,6 +125,18 @@ public final class ModEntities {
                             .noLootTable());
 
     // =====================================================================
+    // ボス（タグ kurumimnmod:bosses に入れる）
+    // =====================================================================
+
+    /** コボルトロード（チュートリアルのボス。壁蹴り突撃・HP 3 割で二刀流）。ドロップなし。 */
+    public static final DeferredHolder<EntityType<?>, EntityType<KoboldLordEntity>> KOBOLD_LORD =
+            ENTITY_TYPES.registerEntityType("kobold_lord", KoboldLordEntity::new, MobCategory.MONSTER,
+                    builder -> builder.sized(ModConstants.KOBOLD_LORD_WIDTH, ModConstants.KOBOLD_LORD_HEIGHT)
+                            .eyeHeight(ModConstants.KOBOLD_LORD_EYE_HEIGHT)
+                            .clientTrackingRange(ModConstants.KOBOLD_LORD_TRACKING_RANGE)
+                            .noLootTable());
+
+    // =====================================================================
     // 魔法の弾
     // =====================================================================
 
@@ -147,5 +160,6 @@ public final class ModEntities {
         event.put(SLIME.get(), SlimeEntity.createAttributes().build());
         event.put(GAROU.get(), GarouEntity.createAttributes().build());
         event.put(KOBOLD.get(), KoboldEntity.createAttributes().build());
+        event.put(KOBOLD_LORD.get(), KoboldLordEntity.createAttributes().build());
     }
 }

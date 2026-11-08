@@ -232,6 +232,47 @@ public final class ModConstants {
     /** 飛びつきの当たり判定：体の当たり判定を広げる量（ブロック）。 */
     public static final double KOBOLD_LEAP_HIT_REACH = 0.4;
 
+    // ---- コボルトロード（ボス。スキル：壁蹴り突撃、HP 3 割で二刀流。ダメージ・CT は Config [mobs.koboldLord]） ----
+    public static final double KOBOLD_LORD_MAX_HEALTH = 50.0;
+    public static final double KOBOLD_LORD_ATTACK_DAMAGE = 7.0;
+    public static final double KOBOLD_LORD_MOVEMENT_SPEED = 0.27;
+    public static final double KOBOLD_LORD_FOLLOW_RANGE = 40.0;
+    public static final double KOBOLD_LORD_KNOCKBACK_RESISTANCE = 0.6;
+    public static final double KOBOLD_LORD_CHASE_SPEED_MODIFIER = 1.1;
+    public static final double KOBOLD_LORD_WANDER_SPEED_MODIFIER = 0.7;
+    public static final float KOBOLD_LORD_WIDTH = 0.8f;
+    public static final float KOBOLD_LORD_HEIGHT = 2.3f;
+    public static final float KOBOLD_LORD_EYE_HEIGHT = 1.95f;
+    public static final int KOBOLD_LORD_TRACKING_RANGE = 10;
+    public static final float KOBOLD_LORD_SHADOW_RADIUS = 0.7f;
+    public static final float KOBOLD_LORD_HEAD_MAX_YAW = 50f;
+    public static final float KOBOLD_LORD_HEAD_MAX_PITCH = 35f;
+    public static final float KOBOLD_LORD_VOICE_PITCH = 0.8f;
+    /** 壁蹴り突撃を使う、相手との距離（ブロック）。 */
+    public static final double KOBOLD_LORD_KICK_MIN_RANGE = 4.0;
+    public static final double KOBOLD_LORD_KICK_MAX_RANGE = 24.0;
+    /** 柱に飛びつく高さ：柱のてっぺんからこれだけ下（ブロック）。 */
+    public static final double KOBOLD_LORD_CLING_BELOW_TOP = 4.0;
+    /** 柱が近くにないとき（クエストの外など）は、その場で真上にこれだけ跳んでから突撃する（ブロック）。 */
+    public static final double KOBOLD_LORD_FALLBACK_JUMP_HEIGHT = 6.0;
+    /** 各段階の長さ（tick）：柱へ跳ぶ・柱にしがみつく（この間に着地点の範囲が出る）・突撃・着地後のすき。 */
+    public static final int KOBOLD_LORD_JUMP_TICKS = 14;
+    public static final int KOBOLD_LORD_CLING_TICKS = 16;
+    public static final int KOBOLD_LORD_DIVE_TICKS = 8;
+    public static final int KOBOLD_LORD_RECOVER_TICKS = 24;
+    /** 柱へ跳ぶときの弧の高さ（ブロック。まっすぐより少し上を通る）。 */
+    public static final double KOBOLD_LORD_JUMP_ARC = 2.0;
+    /** 突撃の当たり判定：着地点からの縦の幅（ブロック。横は Config の半径）。 */
+    public static final double KOBOLD_LORD_KICK_HIT_HEIGHT = 2.5;
+    /** 二刀流：2 撃目までの間（tick）と、移動速度の上がり方（割合）。 */
+    public static final int KOBOLD_LORD_DUAL_SECOND_HIT_DELAY = 6;
+    public static final double KOBOLD_LORD_DUAL_SPEED_BONUS = 0.2;
+
+    // ---- ボスの着地点の範囲表示（クライアント） ----
+    public static final int BOSS_AOE_COLOR_FILL_CENTER = 0x80FF3020;
+    public static final int BOSS_AOE_COLOR_FILL_EDGE = 0x30FF3020;
+    public static final int BOSS_AOE_COLOR_RING = 0xE0FF4030;
+
     // ---- 氷柱（氷柱の杖の弾）。ダメージ・速さなどの調整値は Config の [magic.iceWand] ----
     /** 当たり判定の大きさ（ブロック）。 */
     public static final float ICE_ICICLE_SIZE = 0.5f;

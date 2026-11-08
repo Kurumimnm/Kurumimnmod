@@ -61,4 +61,6 @@ public final class ModItems {
             ITEMS.registerItem("garou_spawn_egg", SpawnEggItem::new, p -> p.spawnEgg(ModEntities.GAROU.get()));
     public static final DeferredItem<SpawnEggItem> KOBOLD_SPAWN_EGG =
             ITEMS.registerItem("kobold_spawn_egg", SpawnEggItem::new, p -> p.spawnEgg(ModEntities.KOBOLD.get()));
+    public static final DeferredItem<SpawnEggItem> KOBOLD_LORD_SPAWN_EGG =
+            ITEMS.registerItem("kobold_lord_spawn_egg", SpawnEggItem::new, p -> p.spawnEgg(ModEntities.KOBOLD_LORD.get()));
 }
