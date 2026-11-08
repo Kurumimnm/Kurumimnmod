@@ -1,0 +1,33 @@
+{
+  "attributes": {
+    "minecraft:gameplay/creature_world_gen_spawn_probability": 0.07,
+    "minecraft:visual/sky_color": "#7fa1ff"
+  },
+  "carvers": [],
+  "downfall": 0.5,
+  "effects": {
+    "water_color": "#3f76e4"
+  },
+  "features": [
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "minecraft:trees_snowy",
+      "minecraft:flower_default",
+      "minecraft:patch_grass_badlands"
+    ],
+    [
+      "minecraft:freeze_top_layer",
+      "kurumimnmod:quest_plot"
+    ]
+  ],
+  "has_precipitation": true,
+  "temperature": 0.0
+}

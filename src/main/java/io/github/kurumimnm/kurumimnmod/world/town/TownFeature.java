@@ -2,9 +2,7 @@ package io.github.kurumimnm.kurumimnmod.world.town;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import io.github.kurumimnm.kurumimnmod.world.FieldMap;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.WorldGenLevel;
@@ -18,14 +16,15 @@ import net.minecraft.world.level.levelgen.feature.Feature;
  * 街の設計図は {@link TownPlanner} が街ごとに 1 回作る。木や草が生えたあとに片付けてから建てるため、
  * バイオームの「top_layer_modification」の段階の最後に入れている。
  * <pre>{@code
- * data/kurumimnmod/worldgen/feature/field_towns.json:
- * { "type": "kurumimnmod:field_towns", "map": "kurumimnmod:astralia" }
+ * data/kurumimnmod/worldgen/feature/start_town.json:
+ * { "type": "kurumimnmod:town", "town": { "id": "start_town", "x": 0, "z": 0, "radius": 72,
+ *   "type": "start_town", "style": "medieval", "ground_y": 64 } }
  * }</pre>
  */
-public record TownFeature(Holder<FieldMap> map) implements Feature {
+public record TownFeature(TownSpec town) implements Feature {
 
     public static final MapCodec<TownFeature> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-            FieldMap.CODEC.fieldOf("map").forGetter(TownFeature::map)
+            TownSpec.CODEC.fieldOf("town").forGetter(TownFeature::town)
     ).apply(i, TownFeature::new));
 
     /** 片付ける高さ（地面からブロック）。 */
@@ -40,40 +39,41 @@ public record TownFeature(Holder<FieldMap> map) implements Feature {
 
     @Override
     public boolean place(WorldGenLevel level, ChunkGenerator chunkGenerator, RandomSource random, BlockPos origin) {
-        FieldMap fieldMap = map.value();
-        ChunkPos chunk = ChunkPos.containing(origin);
+        return place(level, ChunkPos.containing(origin), town);
+    }
+
+    /** そのチャンクに入る街の部分を置く（中間拠点など、ほかの地物からも使う）。 */
+    public static boolean place(WorldGenLevel level, ChunkPos chunk, TownSpec town) {
         int minX = chunk.getMinBlockX();
         int minZ = chunk.getMinBlockZ();
-        boolean placed = false;
+        int reach = town.radius() + 8;
+        if (minX + 15 < town.x() - reach || minX > town.x() + reach
+                || minZ + 15 < town.z() - reach || minZ > town.z() + reach) {
+            return false;
+        }
+        TownPlan plan = TownPlanner.plan(town);
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
-        for (FieldMap.Town town : fieldMap.towns()) {
-            int reach = town.radius() + 8;
-            if (minX + 15 < town.x() - reach || minX > town.x() + reach
-                    || minZ + 15 < town.z() - reach || minZ > town.z() + reach) {
-                continue;
-            }
-            TownPlan plan = TownPlanner.plan(fieldMap, town);
-            // 片付け（地面より上の木・草・雪など）と、地面の穴埋め（池などで空いた穴）
-            for (TownPlan.Column column : plan.clearColumns(chunk)) {
-                for (int y = plan.groundY() - FILL_DEPTH; y <= plan.groundY(); y++) {
-                    pos.set(column.x(), y, column.z());
-                    var state = level.getBlockState(pos);
-                    if (state.isAir() || !state.getFluidState().isEmpty()) {
-                        level.setBlock(pos, (y == plan.groundY() ? Blocks.GRASS_BLOCK : Blocks.DIRT).defaultBlockState(), 2);
-                    }
-                }
-                for (int y = plan.groundY() + 1; y <= plan.groundY() + CLEAR_HEIGHT; y++) {
-                    pos.set(column.x(), y, column.z());
-                    if (!level.getBlockState(pos).isAir()) {
-                        level.setBlock(pos, Blocks.AIR.defaultBlockState(), 2);
-                    }
+        // 片付け（地面より上の木・草・雪など）と、地面の穴埋め
+        for (TownPlan.Column column : plan.clearColumns(chunk)) {
+            for (int y = plan.groundY() - FILL_DEPTH; y <= plan.groundY(); y++) {
+                pos.set(column.x(), y, column.z());
+                var state = level.getBlockState(pos);
+                if (state.isAir() || !state.getFluidState().isEmpty()) {
+                    level.setBlock(pos, (y == plan.groundY() ? Blocks.GRASS_BLOCK : Blocks.DIRT).defaultBlockState(), 2);
                 }
             }
-            for (TownPlan.Entry entry : plan.entries(chunk)) {
-                pos.set(entry.x(), entry.y(), entry.z());
-                level.setBlock(pos, entry.state(), 2);
-                placed = true;
+            for (int y = plan.groundY() + 1; y <= plan.groundY() + CLEAR_HEIGHT; y++) {
+                pos.set(column.x(), y, column.z());
+                if (!level.getBlockState(pos).isAir()) {
+                    level.setBlock(pos, Blocks.AIR.defaultBlockState(), 2);
+                }
             }
+        }
+        boolean placed = false;
+        for (TownPlan.Entry entry : plan.entries(chunk)) {
+            pos.set(entry.x(), entry.y(), entry.z());
+            level.setBlock(pos, entry.state(), 2);
+            placed = true;
         }
         return placed;
     }

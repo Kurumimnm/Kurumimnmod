@@ -1,0 +1,12 @@
+{
+  "type": "kurumimnmod:quest",
+  "generator": {
+    "type": "minecraft:noise",
+    "biome_source": {
+      "type": "kurumimnmod:quest_plots",
+      "biomes": "#kurumimnmod:quest",
+      "void": "kurumimnmod:quest_void"
+    },
+    "settings": "kurumimnmod:quest"
+  }
+}

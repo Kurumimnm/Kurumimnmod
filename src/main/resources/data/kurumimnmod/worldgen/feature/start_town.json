@@ -1,0 +1,12 @@
+{
+  "type": "kurumimnmod:town",
+  "town": {
+    "id": "start_town",
+    "x": 0,
+    "z": 0,
+    "radius": 72,
+    "type": "start_town",
+    "style": "medieval",
+    "ground_y": 64
+  }
+}

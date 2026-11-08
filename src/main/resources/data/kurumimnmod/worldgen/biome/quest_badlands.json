@@ -1,0 +1,44 @@
+{
+  "attributes": {
+    "minecraft:audio/background_music": {
+      "default": {
+        "max_delay": 24000,
+        "min_delay": 12000,
+        "sound": "minecraft:music.overworld.badlands"
+      }
+    },
+    "minecraft:gameplay/creature_world_gen_spawn_probability": 0.03,
+    "minecraft:gameplay/snow_golem_melts": true,
+    "minecraft:visual/sky_color": "#6eb1ff"
+  },
+  "carvers": [],
+  "downfall": 0.0,
+  "effects": {
+    "foliage_color": "#9e814d",
+    "grass_color": "#90814d",
+    "water_color": "#3f76e4"
+  },
+  "features": [
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "minecraft:patch_grass_badlands",
+      "minecraft:patch_dry_grass_badlands",
+      "minecraft:patch_dead_bush_badlands",
+      "minecraft:patch_cactus_decorated"
+    ],
+    [
+      "minecraft:freeze_top_layer",
+      "kurumimnmod:quest_plot"
+    ]
+  ],
+  "has_precipitation": false,
+  "temperature": 2.0
+}

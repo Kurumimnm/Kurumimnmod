@@ -111,7 +111,7 @@ public final class Buildings {
                     if (edgeX && edgeZ) {
                         p.set(x, y, z, log);
                     } else if (edgeX || edgeZ) {
-                        p.set(x, y, z, planks);
+                        p.set(x, y, z, wall(s, x, y, z, edgeX, planks, log));
                     } else {
                         p.set(x, y, z, y % 4 == 0 ? planks : air); // 2 階以上の床
                     }
@@ -146,6 +146,26 @@ public final class Buildings {
                 p.set(1, y, 1, Blocks.LADDER.defaultBlockState().trySetValue(LadderBlock.FACING, Direction.SOUTH));
             }
         }
+    }
+
+    /**
+     * 壁のブロック。中世の家（{@link TownStyle#lowerWall()}・{@link TownStyle#timbered()}）は
+     * 1 階を石造りにし、2 階より上は漆喰の壁に木の梁（階の境目）と柱（3 ブロックおき）を見せる。
+     */
+    private static BlockState wall(TownStyle s, int x, int y, int z, boolean sideWall, BlockState planks, BlockState log) {
+        if (y <= 4 && s.lowerWall() != null) {
+            return s.lowerWall().defaultBlockState();
+        }
+        if (s.timbered()) {
+            if (y % 4 == 0 || y % 4 == 1) {
+                // 階の境目の梁（横向きの丸太）
+                return s.log().defaultBlockState().trySetValue(RotatedPillarBlock.AXIS, sideWall ? Direction.Axis.Z : Direction.Axis.X);
+            }
+            if ((sideWall ? z : x) % 3 == 0) {
+                return log; // 柱
+            }
+        }
+        return planks;
     }
 
     /** 切妻屋根。棟は lx 方向。y0 = 屋根の一番下の高さ。 */
