@@ -143,6 +143,41 @@ public final class ModConstants {
     /** 鳴き声の高さ（オウムの声を低くして使う）。 */
     public static final float GRIFFIN_VOICE_PITCH = 0.55f;
 
+    // ---- ミニオン（小鬼。敵対・近接。チュートリアルの雑魚） ----
+    public static final double MINION_MAX_HEALTH = 15.0;
+    public static final double MINION_ATTACK_DAMAGE = 3.0;
+    public static final double MINION_MOVEMENT_SPEED = 0.25;     // ゾンビ 0.23
+    public static final double MINION_FOLLOW_RANGE = 24.0;
+    /** 追いかけるときの速さの倍率（MeleeAttackGoal）。 */
+    public static final double MINION_CHASE_SPEED_MODIFIER = 1.1;
+    public static final double MINION_WANDER_SPEED_MODIFIER = 0.8;
+    /** 当たり判定（ブロック）。子どもくらいの背丈。 */
+    public static final float MINION_WIDTH = 0.6f;
+    public static final float MINION_HEIGHT = 1.25f;
+    public static final float MINION_EYE_HEIGHT = 1.05f;
+    public static final int MINION_TRACKING_RANGE = 8;
+    public static final float MINION_SHADOW_RADIUS = 0.4f;
+    public static final float MINION_HEAD_MAX_YAW = 60f;
+    public static final float MINION_HEAD_MAX_PITCH = 40f;
+    /** 鳴き声の高さ（仮：ピグリンの声を高くして使う）。 */
+    public static final float MINION_VOICE_PITCH = 1.5f;
+
+    // ---- スライム（MOD 独自。分裂しない。跳ねて近づき体当たり） ----
+    public static final double SLIME_MAX_HEALTH = 10.0;
+    public static final double SLIME_ATTACK_DAMAGE = 2.0;
+    public static final double SLIME_MOVEMENT_SPEED = 0.3;      // 跳んでいる間だけ前へ進む
+    public static final double SLIME_FOLLOW_RANGE = 16.0;
+    public static final double SLIME_CHASE_SPEED_MODIFIER = 1.0;
+    public static final double SLIME_WANDER_SPEED_MODIFIER = 0.8;
+    /** 次に跳ぶまでの間（tick）。追いかけている間はこれの 1/3。 */
+    public static final int SLIME_JUMP_DELAY_MIN = 10;
+    public static final int SLIME_JUMP_DELAY_MAX = 30;
+    public static final float SLIME_WIDTH = 0.75f;
+    public static final float SLIME_HEIGHT = 0.625f;
+    public static final float SLIME_EYE_HEIGHT = 0.4f;
+    public static final int SLIME_TRACKING_RANGE = 8;
+    public static final float SLIME_SHADOW_RADIUS = 0.4f;
+
     // ---- 氷柱（氷柱の杖の弾）。ダメージ・速さなどの調整値は Config の [magic.iceWand] ----
     /** 当たり判定の大きさ（ブロック）。 */
     public static final float ICE_ICICLE_SIZE = 0.5f;

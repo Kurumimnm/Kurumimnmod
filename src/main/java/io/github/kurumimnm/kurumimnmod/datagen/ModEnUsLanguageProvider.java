@@ -41,12 +41,16 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         add("item." + MOD_ID + ".scarecrow_config_stick.desc", "Aim at a scarecrow and left-click to open its settings.");
         addItem(ModItems.ICE_WAND, "Icicle Wand");
         addItem(ModItems.GRIFFIN_SPAWN_EGG, "Griffin Spawn Egg");
+        addItem(ModItems.MINION_SPAWN_EGG, "Minion Spawn Egg");
+        addItem(ModItems.SLIME_SPAWN_EGG, "Slime Spawn Egg");
 
         // ---- ブロック ----
 
         // ---- エンティティ ----
         addEntityType(ModEntities.SCARECROW, "Scarecrow");
         addEntityType(ModEntities.GRIFFIN, "Griffin");
+        addEntityType(ModEntities.MINION, "Minion");
+        addEntityType(ModEntities.SLIME, "Slime");
 
 
         addEntityType(ModEntities.ICE_ICICLE, "Icicle");

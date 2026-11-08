@@ -155,6 +155,10 @@
 
   "entity.kurumimnmod.griffin": "グリフォン",
   "item.kurumimnmod.griffin_spawn_egg": "グリフォンのスポーンエッグ",
+  "entity.kurumimnmod.minion": "ミニオン",
+  "item.kurumimnmod.minion_spawn_egg": "ミニオンのスポーンエッグ",
+  "entity.kurumimnmod.slime": "スライム",
+  "item.kurumimnmod.slime_spawn_egg": "スライムのスポーンエッグ",
 
   "message.kurumimnmod.scarecrow.op_only": "OP権限が必要です",
   "message.kurumimnmod.scarecrow.no_space": "ここにはカカシを召喚できません（スペースが足りません）",

@@ -3,8 +3,10 @@ package io.github.kurumimnm.kurumimnmod.registry;
 import io.github.kurumimnm.kurumimnmod.Kurumimnmod;
 import io.github.kurumimnm.kurumimnmod.config.ModConstants;
 import io.github.kurumimnm.kurumimnmod.entity.GriffinEntity;
+import io.github.kurumimnm.kurumimnmod.entity.MinionEntity;
 import io.github.kurumimnm.kurumimnmod.entity.ScarecrowEntity;
 import io.github.kurumimnm.kurumimnmod.entity.IceIcicleEntity;
+import io.github.kurumimnm.kurumimnmod.entity.SlimeEntity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -87,6 +89,22 @@ public final class ModEntities {
                             .clientTrackingRange(ModConstants.GRIFFIN_TRACKING_RANGE)
                             .noLootTable());
 
+    /** ミニオン（小鬼。敵対・近接）。クエストのフィールド・スポーンエッグ・/summon で出る。ドロップなし。 */
+    public static final DeferredHolder<EntityType<?>, EntityType<MinionEntity>> MINION =
+            ENTITY_TYPES.registerEntityType("minion", MinionEntity::new, MobCategory.MONSTER,
+                    builder -> builder.sized(ModConstants.MINION_WIDTH, ModConstants.MINION_HEIGHT)
+                            .eyeHeight(ModConstants.MINION_EYE_HEIGHT)
+                            .clientTrackingRange(ModConstants.MINION_TRACKING_RANGE)
+                            .noLootTable());
+
+    /** スライム（MOD 独自。分裂しない・跳ねて体当たり）。クエストのフィールド・スポーンエッグ・/summon で出る。ドロップなし。 */
+    public static final DeferredHolder<EntityType<?>, EntityType<SlimeEntity>> SLIME =
+            ENTITY_TYPES.registerEntityType("slime", SlimeEntity::new, MobCategory.MONSTER,
+                    builder -> builder.sized(ModConstants.SLIME_WIDTH, ModConstants.SLIME_HEIGHT)
+                            .eyeHeight(ModConstants.SLIME_EYE_HEIGHT)
+                            .clientTrackingRange(ModConstants.SLIME_TRACKING_RANGE)
+                            .noLootTable());
+
     // =====================================================================
     // 魔法の弾
     // =====================================================================
@@ -107,5 +125,7 @@ public final class ModEntities {
         // 例) event.put(WALNUT_MOB.get(), WalnutMob.createAttributes().build());
         event.put(SCARECROW.get(), ScarecrowEntity.createAttributes().build());
         event.put(GRIFFIN.get(), GriffinEntity.createAttributes().build());
+        event.put(MINION.get(), MinionEntity.createAttributes().build());
+        event.put(SLIME.get(), SlimeEntity.createAttributes().build());
     }
 }

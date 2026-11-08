@@ -53,4 +53,8 @@ public final class ModItems {
     /** グリフォンのスポーンエッグ（テクスチャは textures/item/griffin_spawn_egg.png）。 */
     public static final DeferredItem<SpawnEggItem> GRIFFIN_SPAWN_EGG =
             ITEMS.registerItem("griffin_spawn_egg", SpawnEggItem::new, p -> p.spawnEgg(ModEntities.GRIFFIN.get()));
+    public static final DeferredItem<SpawnEggItem> MINION_SPAWN_EGG =
+            ITEMS.registerItem("minion_spawn_egg", SpawnEggItem::new, p -> p.spawnEgg(ModEntities.MINION.get()));
+    public static final DeferredItem<SpawnEggItem> SLIME_SPAWN_EGG =
+            ITEMS.registerItem("slime_spawn_egg", SpawnEggItem::new, p -> p.spawnEgg(ModEntities.SLIME.get()));
 }
