@@ -309,6 +309,19 @@ public final class ModConstants {
     public static final int QUEST_PILLAR_MAX_COUNT = 16;
     public static final int QUEST_PILLAR_MAX_HEIGHT = 32;
     public static final int QUEST_PILLAR_DEFAULT_HEIGHT = 10;
+    /** 神殿（terrain.style = temple）の広間の大きさの初期値（内側。幅 = 東西、奥行き = 南北）。 */
+    public static final int QUEST_TEMPLE_DEFAULT_WIDTH = 40;
+    public static final int QUEST_TEMPLE_DEFAULT_LENGTH = 64;
+    /** 神殿の壁の厚さ（ブロック）。 */
+    public static final int QUEST_TEMPLE_WALL_THICKNESS = 2;
+    /** 神殿の柱の列を壁からどれだけ内側に立てるか（柱の中心まで、ブロック）。 */
+    public static final int QUEST_TEMPLE_PILLAR_INSET = 7;
+    /** 神殿の入口・ゲートを南北の壁からどれだけ内側に置くか（ブロック）。 */
+    public static final int QUEST_TEMPLE_ENTRANCE_INSET = 6;
+    public static final int QUEST_TEMPLE_GATE_INSET = 8;
+    /** 神殿の明かり（見えない光源ブロック）を置く間隔と、床からの高さ（ブロック）。 */
+    public static final int QUEST_TEMPLE_LIGHT_SPACING = 7;
+    public static final int QUEST_TEMPLE_LIGHT_HEIGHT = 3;
     /** 柱の太さ（中心からの半分の幅。1 なら 3×3）。 */
     public static final int QUEST_PILLAR_HALF_WIDTH = 1;
     /** 柱を立てる円の半径（闘技場の半径に対する割合）と、1 本目の向き（度。0 = 東、45 = 南東）。 */

@@ -19,7 +19,8 @@ import net.minecraft.world.level.levelgen.feature.Feature;
  * クエスト用ディメンションの建物を置く地物（クエストのバイオームの top_layer_modification の最後）。
  * <ul>
  *   <li>フィールド：縁の見えない壁（バリアブロック）、入口の足場、出口のゲート（{@link QuestGateBlock}）</li>
- *   <li>ボス部屋：石の床と円形の壁、かがり火</li>
+ *   <li>ボス部屋（arena）：石の床と円形の壁、かがり火、柱</li>
+ *   <li>ボス部屋（temple）：天井のある長方形の神殿。左右 2 列の柱が天井を支える。中は見えない光源で明るくする</li>
  *   <li>中間拠点：街（{@link io.github.kurumimnm.kurumimnmod.world.town.TownPlanner} の hub）、出発ゲート、島の縁の見えない壁</li>
  * </ul>
  * <pre>{@code data/kurumimnmod/worldgen/feature/quest_plot.json: { "type": "kurumimnmod:quest_plot" } }</pre>
@@ -96,7 +97,9 @@ public final class QuestPlotFeature implements Feature {
             }
         }
         // ボス部屋
-        if (plot.isArena()) {
+        if (plot.isTemple()) {
+            temple(w, plot);
+        } else if (plot.isArena()) {
             arena(w, plot);
         }
         // 入口の足場
@@ -139,6 +142,72 @@ public final class QuestPlotFeature implements Feature {
             w.set(cx + p[0], y + 1, cz + p[1], fire);
         }
         // 柱（terrain.pillars）
+        for (BlockPos p : plot.pillars()) {
+            pillar(w, p, plot.terrain().pillarHeight());
+        }
+    }
+
+    /**
+     * 神殿：広間（hall_width × hall_length）の床・壁・天井、左右 2 列の柱、真ん中の赤いじゅうたん、明かり。
+     * 広間の外（区画の残り）は地面のまま。壁と天井で囲まれているので外へは出られない。
+     */
+    private static void temple(Writer w, QuestPlots.Plot plot) {
+        int cx = plot.centerX();
+        int cz = plot.centerZ();
+        int floorY = plot.terrain().base();
+        int ceilY = plot.ceilingY();
+        int hw = plot.terrain().hallWidth() / 2;   // 中心から内側の端まで（東西）
+        int hl = plot.terrain().hallLength() / 2;  // 中心から内側の端まで（南北）
+        int t = ModConstants.QUEST_TEMPLE_WALL_THICKNESS;
+        BlockState floorA = Blocks.POLISHED_DEEPSLATE.defaultBlockState();
+        BlockState floorB = Blocks.DEEPSLATE_TILES.defaultBlockState();
+        BlockState wall = Blocks.STONE_BRICKS.defaultBlockState();
+        BlockState band = Blocks.CHISELED_STONE_BRICKS.defaultBlockState();
+        BlockState ceiling = Blocks.DEEPSLATE_BRICKS.defaultBlockState();
+        BlockState carpet = Blocks.RED_CARPET.defaultBlockState();
+        BlockState air = Blocks.AIR.defaultBlockState();
+        BlockState light = Blocks.LIGHT.defaultBlockState(); // 見えない光源（明るさ 15）
+        int spacing = ModConstants.QUEST_TEMPLE_LIGHT_SPACING;
+        for (int dx = 0; dx < 16; dx++) {
+            for (int dz = 0; dz < 16; dz++) {
+                int x = w.minX + dx;
+                int z = w.minZ + dz;
+                int u = x - cx;
+                int v = z - cz;
+                boolean inside = Math.abs(u) <= hw && Math.abs(v) <= hl;
+                boolean inWall = !inside && Math.abs(u) <= hw + t && Math.abs(v) <= hl + t;
+                if (!inside && !inWall) {
+                    continue;
+                }
+                // 床（市松模様）
+                w.set(x, floorY, z, ((Math.floorDiv(u, 2) + Math.floorDiv(v, 2)) & 1) == 0 ? floorA : floorB);
+                // 天井（2 段）
+                w.set(x, ceilY, z, ceiling);
+                w.set(x, ceilY + 1, z, ceiling);
+                if (inWall) {
+                    for (int y = floorY + 1; y < ceilY; y++) {
+                        int h = y - floorY;
+                        w.set(x, y, z, h == 1 || h % 6 == 0 ? band : wall);
+                    }
+                    continue;
+                }
+                // 広間の中：草などを消して空気に
+                for (int y = floorY + 1; y < ceilY; y++) {
+                    w.set(x, y, z, air);
+                }
+                // 真ん中のじゅうたん（入口からゲートまで、幅 3）
+                if (Math.abs(u) <= 1) {
+                    w.set(x, floorY + 1, z, carpet);
+                }
+                // 明かり（床の近くと、天井の近く。柱の位置は避ける）
+                if (Math.floorMod(u, spacing) == 0 && Math.floorMod(v, spacing) == 0 && !plot.nearPillar(x, z, 0)
+                        && Math.abs(u) > 1) {
+                    w.set(x, floorY + ModConstants.QUEST_TEMPLE_LIGHT_HEIGHT, z, light);
+                    w.set(x, ceilY - 2, z, light);
+                }
+            }
+        }
+        // 柱（天井まで）
         for (BlockPos p : plot.pillars()) {
             pillar(w, p, plot.terrain().pillarHeight());
         }

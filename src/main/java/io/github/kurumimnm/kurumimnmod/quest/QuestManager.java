@@ -607,7 +607,12 @@ public final class QuestManager {
         for (int attempt = 0; attempt < ModConstants.QUEST_PLACE_ATTEMPTS; attempt++) {
             double u;
             double v;
-            if (plot.isArena()) {
+            if (plot.isTemple()) {
+                double rx = Math.max(1, plot.terrain().hallWidth() / 2.0 - margin);
+                double rz = Math.max(1, plot.terrain().hallLength() / 2.0 - margin);
+                u = (player.getRandom().nextDouble() * 2 - 1) * rx;
+                v = (player.getRandom().nextDouble() * 2 - 1) * rz;
+            } else if (plot.isArena()) {
                 double r = Math.max(1, plot.arenaRadius() - margin) * Math.sqrt(player.getRandom().nextDouble());
                 double a = player.getRandom().nextDouble() * Math.PI * 2;
                 u = Math.cos(a) * r;
@@ -627,7 +632,8 @@ public final class QuestManager {
             if (!level.isLoaded(column)) {
                 continue;
             }
-            int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
+            // 神殿は天井があるので、高さの地図ではなく床の上に置く
+            int y = plot.isArena() ? plot.terrain().base() + 1 : level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
             return Optional.of(new BlockPos(x, y, z));
         }
         return Optional.empty();

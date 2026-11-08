@@ -104,14 +104,15 @@
     },
     "boss": {
       "number": 4,
-      "size": 100,
-      "biome": "kurumimnmod:quest_meadow",
+      "size": 80,
+      "biome": "kurumimnmod:quest_arena",
       "terrain": {
-        "style": "arena",
+        "style": "temple",
         "base": 70,
-        "pillars": 4,
-        "pillar_height": 10,
-        "arena_floor": false
+        "pillars": 10,
+        "pillar_height": 20,
+        "hall_width": 40,
+        "hall_length": 64
       },
       "clear": {
         "type": "boss"

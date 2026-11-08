@@ -77,22 +77,47 @@ public final class QuestPlots {
             return Math.abs(x - centerX()) < half() && Math.abs(z - centerZ()) < half();
         }
 
-        /** 入口（南の端の真ん中。転移して来る場所）の地面の上。 */
+        /** 入口（南の端の真ん中。転移して来る場所）の地面の上。神殿は広間の南の壁ぎわ。 */
         public BlockPos entrance() {
+            if (isTemple()) {
+                return new BlockPos(centerX(), terrain.base() + 1,
+                        centerZ() + terrain.hallLength() / 2 - ModConstants.QUEST_TEMPLE_ENTRANCE_INSET);
+            }
             return new BlockPos(centerX(), terrain.base() + 1, centerZ() + half() - ModConstants.QUEST_GATE_INSET);
         }
 
-        /** 次へ進むゲート（北の端の真ん中）の地面の上。ボス部屋は真ん中の北寄り。 */
+        /** 次へ進むゲート（北の端の真ん中）の地面の上。闘技場は真ん中の北寄り、神殿は広間の北の壁ぎわ。 */
         public BlockPos exit() {
+            if (isTemple()) {
+                return new BlockPos(centerX(), terrain.base() + 1,
+                        centerZ() - terrain.hallLength() / 2 + ModConstants.QUEST_TEMPLE_GATE_INSET);
+            }
             int inset = isArena() ? half() / 2 : ModConstants.QUEST_GATE_INSET;
             return new BlockPos(centerX(), terrain.base() + 1, centerZ() - half() + inset);
         }
 
+        /** ボス部屋（闘技場・神殿）か。 */
         public boolean isArena() {
-            return terrain.style().equals(QuestDefinition.Terrain.ARENA);
+            return terrain.isBossRoom();
         }
 
-        /** ボス部屋の床（円）の半径。 */
+        /** 神殿（天井のある長方形のボス部屋）か。 */
+        public boolean isTemple() {
+            return terrain.style().equals(QuestDefinition.Terrain.TEMPLE);
+        }
+
+        /** 神殿の広間の内側（壁から margin ブロック以上内側）か。 */
+        public boolean inHall(double x, double z, double margin) {
+            return Math.abs(x - centerX()) <= terrain.hallWidth() / 2.0 - margin
+                    && Math.abs(z - centerZ()) <= terrain.hallLength() / 2.0 - margin;
+        }
+
+        /** 神殿の天井（いちばん下の段）の Y。 */
+        public int ceilingY() {
+            return terrain.base() + 1 + terrain.pillarHeight();
+        }
+
+        /** 闘技場の床（円）の半径。 */
         public int arenaRadius() {
             return half() - ModConstants.QUEST_ARENA_MARGIN;
         }
@@ -106,6 +131,16 @@ public final class QuestPlots {
             if (!isArena() || n <= 0) {
                 return List.of();
             }
+            if (isTemple()) {
+                // 左右 2 列（西・東の壁から QUEST_TEMPLE_PILLAR_INSET の所）に半分ずつ、南北に等間隔
+                List<BlockPos> list = new ArrayList<>(n);
+                int west = n - n / 2;
+                int east = n / 2;
+                int xOff = terrain.hallWidth() / 2 - ModConstants.QUEST_TEMPLE_PILLAR_INSET;
+                addRow(list, centerX() - xOff, west);
+                addRow(list, centerX() + xOff, east);
+                return list;
+            }
             double ring = arenaRadius() * ModConstants.QUEST_PILLAR_RING_RATIO;
             double start = Math.toRadians(ModConstants.QUEST_PILLAR_START_ANGLE);
             List<BlockPos> list = new ArrayList<>(n);
@@ -117,7 +152,16 @@ public final class QuestPlots {
             return list;
         }
 
-        /** 柱のてっぺんの Y（柱の上に立ったときの足もと）。 */
+        /** 神殿の柱の 1 列（南北に等間隔。両端の壁との間も柱どうしの間と同じにする）。 */
+        private void addRow(List<BlockPos> list, int x, int count) {
+            int length = terrain.hallLength();
+            for (int i = 0; i < count; i++) {
+                int z = centerZ() - length / 2 + (int) Math.round(length * (i + 1) / (double) (count + 1));
+                list.add(new BlockPos(x, terrain.base() + 1, z));
+            }
+        }
+
+        /** 柱のてっぺんの Y（柱の上に立ったときの足もと。神殿では天井の下面と同じ高さ）。 */
         public int pillarTopY() {
             return terrain.base() + 1 + terrain.pillarHeight();
         }

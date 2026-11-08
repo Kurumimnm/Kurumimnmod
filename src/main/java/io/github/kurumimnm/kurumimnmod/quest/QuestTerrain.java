@@ -5,7 +5,7 @@ import io.github.kurumimnm.kurumimnmod.config.ModConstants;
 /**
  * フィールド（区画）の地面の高さを計算する。区画の seed が違えば形も変わる。
  * <ul>
- *   <li>style ごとの起伏：plains（なだらか）／hills（丘）／mountains（尾根のある山）／dunes（砂丘）／arena（平ら）</li>
+ *   <li>style ごとの起伏：plains（なだらか）／hills（丘）／mountains（尾根のある山）／dunes（砂丘）／arena・temple（平ら）</li>
  *   <li>正方形の縁は崖のように盛り上げる（外は奈落。見えない壁は {@link QuestPlotFeature} が置く）</li>
  *   <li>入口とゲートのまわりは基準の高さ（terrain.base）で平らにする</li>
  * </ul>
@@ -41,7 +41,7 @@ public final class QuestTerrain {
                 double warp = QuestNoise.fbm(nx * 0.7, nz * 0.7, 2, seed + 9) * 3;
                 yield base + amp * (0.5 * Math.sin(along * Math.PI * 2 + warp) + 0.5 * QuestNoise.fbm(nx, nz, 3, seed));
             }
-            case QuestDefinition.Terrain.ARENA -> base;
+            case QuestDefinition.Terrain.ARENA, QuestDefinition.Terrain.TEMPLE -> base;
             default -> base + amp * QuestNoise.fbm(nx, nz, 4, seed); // hills
         };
         // 縁の崖（ボス部屋は壁を建てるので盛らない）
@@ -52,7 +52,7 @@ public final class QuestTerrain {
         }
         // 入口・ゲートのまわりは平らに
         h = flatten(h, base, u, v, 0, half - ModConstants.QUEST_GATE_INSET);
-        h = flatten(h, base, u, v, 0, plot.isArena() ? -half / 2.0 : -half + ModConstants.QUEST_GATE_INSET);
+        h = flatten(h, base, u, v, 0, plot.isArena() ? plot.exit().getZ() - plot.centerZ() : -half + ModConstants.QUEST_GATE_INSET);
         return h;
     }
 
