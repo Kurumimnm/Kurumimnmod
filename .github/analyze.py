@@ -2,7 +2,7 @@ import os, glob, zlib, io, struct, math, base64
 import nbtlib, numpy as np
 import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
 # 現世（平らな地形）とクエスト用ディメンションのリージョン
-DIRS = {"ow": "run/world/region", "quest": "run/world/dimensions/kurumimnmod/quest/region"}
+DIRS = {"ow": "run/world/dimensions/minecraft/overworld/region", "quest": "run/world/dimensions/kurumimnmod/quest/region"}
 def chunk_nbt(path, lx, lz):
     with open(path, "rb") as f:
         f.seek(4 * (lx + lz * 32)); off = f.read(4)
@@ -12,9 +12,9 @@ def chunk_nbt(path, lx, lz):
         return nbtlib.File.parse(io.BytesIO(zlib.decompress(f.read(ln - 1))))
 def pname(p):
     if not hasattr(p, "get"): return str(p)
-    for k in ("Name", "name", "id"):
+    for k in ("id", "Name", "name", "block", ""):
         if k in p: return str(p[k])
-    return "?"
+    return "?" + repr(p)[:60]
 top = {}
 DEBUG = {("ow", 0, 6), ("quest", 0, 4096 + 96 - 16), ("quest", 0, 4096 - 96 + 16), ("quest", 8192, 4096), ("quest", 0, -14), ("quest", 4096, 4096)}
 AIRS = ("minecraft:air", "minecraft:cave_air", "minecraft:void_air", "minecraft:barrier", "")

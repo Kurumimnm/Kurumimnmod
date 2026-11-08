@@ -31,7 +31,7 @@ jobs:
           sleep 60
           python3 .github/rcon_probe.py push || true
           # 強制読み込みしたチャンクの生成を待つ
-          for i in $(seq 1 30); do sleep 10; tail -c 300 server_out.txt | tr -d '\r' | tail -1; done
+          for i in $(seq 1 24); do sleep 10; tail -c 300 server_out.txt | tr -d '\r' | tail -1; done
           python3 .github/rcon_probe.py save || true
           sleep 10
           pkill -f runServer || true; pkill -f java || true
