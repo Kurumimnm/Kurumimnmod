@@ -1,9 +1,9 @@
 package io.github.kurumimnm.kurumimnmod.scarecrow;
 
 import io.github.kurumimnm.kurumimnmod.Kurumimnmod;
-import io.github.kurumimnm.kurumimnmod.config.ModConfigs;
 import io.github.kurumimnm.kurumimnmod.entity.ScarecrowEntity;
 import io.github.kurumimnm.kurumimnmod.registry.ModTags;
+import io.github.kurumimnm.kurumimnmod.status.StatManager;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -70,12 +70,8 @@ public final class ScarecrowEvents {
         boolean magic = isMagic(source);
 
         // ---- 防御力（攻撃者のいるダメージだけ。プレイヤーの防御力と同じ式） ----
-        if (source.getEntity() != null && damage > 0) {
-            float reduction = (float) (Math.max(0, settings.defense() - 1) * ModConfigs.defenseReductionPerPoint());
-            if (reduction > 0) {
-                float minDamage = (float) Math.min(ModConfigs.defenseMinDamage(), damage);
-                damage = Math.max(minDamage, damage - reduction);
-            }
+        if (source.getEntity() != null) {
+            damage = StatManager.applyDefense(damage, StatManager.defenseReduction(settings.defense()));
         }
         // ---- 魔法耐性 ----
         if (magic && settings.magicResistance() > 0) {

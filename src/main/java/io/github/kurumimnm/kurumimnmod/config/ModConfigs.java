@@ -322,6 +322,32 @@ public final class ModConfigs {
         SYNCED_BUILDER.pop();
     }
 
+    // ---- mobs セクション（MOD の Mob） ----
+    static {
+        SYNCED_BUILDER.push("mobs");
+        SYNCED_BUILDER.push("griffin");
+    }
+
+    // ---- グリフォン ----
+    /** 出現時に鎧（古い鉄の鎧）を着ている確率（0.0〜1.0）。スポーンエッグ・/summon でも判定する。 */
+    public static final ModConfigSpec.DoubleValue GRIFFIN_ARMORED_CHANCE = SYNCED_BUILDER
+            .comment("Chance (0.0 - 1.0) that a griffin spawns wearing old iron armor.",
+                    "Armored griffins have the same stats except for a higher Defense.")
+            .defineInRange("armoredChance", 0.2, 0.0, 1.0);
+    /** 鎧なしの個体の防御力（プレイヤーの防御力ステータスと同じ式の固定値軽減。1 = 軽減なし）。 */
+    public static final ModConfigSpec.IntValue GRIFFIN_DEFENSE = SYNCED_BUILDER
+            .comment("Defense of a normal griffin. Works the same as the player's Defense stat (1 = no reduction).")
+            .defineInRange("normalDefense", 1, 1, 1_000_000);
+    /** 鎧付きの個体の防御力。 */
+    public static final ModConfigSpec.IntValue GRIFFIN_ARMORED_DEFENSE = SYNCED_BUILDER
+            .comment("Defense of an armored griffin. Works the same as the player's Defense stat (1 = no reduction).")
+            .defineInRange("armoredDefense", 5, 1, 1_000_000);
+
+    static {
+        SYNCED_BUILDER.pop(); // griffin
+        SYNCED_BUILDER.pop(); // mobs
+    }
+
     // ---- magic セクション（魔法の杖） ----
     static {
         SYNCED_BUILDER.push("magic");
@@ -418,6 +444,9 @@ public final class ModConfigs {
     public static int iceWandCooldown() { return value(ICE_WAND_COOLDOWN); }
     public static int iceWandSlownessDuration() { return value(ICE_WAND_SLOWNESS_DURATION); }
     public static int iceWandSlownessAmplifier() { return value(ICE_WAND_SLOWNESS_AMPLIFIER); }
+    public static double griffinArmoredChance() { return value(GRIFFIN_ARMORED_CHANCE); }
+    public static int griffinDefense() { return value(GRIFFIN_DEFENSE); }
+    public static int griffinArmoredDefense() { return value(GRIFFIN_ARMORED_DEFENSE); }
 
     /** Config 値（int / double）を安全に取得する（StatType 等から使う）。 */
     public static <T> T get(ModConfigSpec.ConfigValue<T> config) { return value(config); }

@@ -2,6 +2,7 @@ package io.github.kurumimnm.kurumimnmod.registry;
 
 import io.github.kurumimnm.kurumimnmod.Kurumimnmod;
 import io.github.kurumimnm.kurumimnmod.config.ModConstants;
+import io.github.kurumimnm.kurumimnmod.entity.GriffinEntity;
 import io.github.kurumimnm.kurumimnmod.entity.ScarecrowEntity;
 import io.github.kurumimnm.kurumimnmod.entity.IceIcicleEntity;
 import net.minecraft.world.entity.EntityType;
@@ -71,6 +72,22 @@ public final class ModEntities {
                             .noLootTable());
 
     // =====================================================================
+    // モブ
+    // =====================================================================
+
+    /**
+     * グリフォン（中立モブ。地上 / 飛行を切り替える）。今はスポーンエッグ・/summon のみで自然スポーンなし。
+     * ドロップなし（noLootTable）。ドロップを追加するときは noLootTable を外して
+     * data/kurumimnmod/loot_table/entities/griffin.json を用意する。
+     */
+    public static final DeferredHolder<EntityType<?>, EntityType<GriffinEntity>> GRIFFIN =
+            ENTITY_TYPES.registerEntityType("griffin", GriffinEntity::new, MobCategory.CREATURE,
+                    builder -> builder.sized(ModConstants.GRIFFIN_WIDTH, ModConstants.GRIFFIN_HEIGHT)
+                            .eyeHeight(ModConstants.GRIFFIN_EYE_HEIGHT)
+                            .clientTrackingRange(ModConstants.GRIFFIN_TRACKING_RANGE)
+                            .noLootTable());
+
+    // =====================================================================
     // 魔法の弾
     // =====================================================================
 
@@ -89,5 +106,6 @@ public final class ModEntities {
     static void onAttributeCreation(EntityAttributeCreationEvent event) {
         // 例) event.put(WALNUT_MOB.get(), WalnutMob.createAttributes().build());
         event.put(SCARECROW.get(), ScarecrowEntity.createAttributes().build());
+        event.put(GRIFFIN.get(), GriffinEntity.createAttributes().build());
     }
 }
