@@ -11,15 +11,11 @@ def run(c):
     pkt(s,2,2,c);r=rd(s);print(">",c);print(r);sys.stdout.flush();return r
 mode=sys.argv[1]
 if mode=="load":
-    # アストラリア：始まりの村・紅河大橋・霧沼大橋（峡谷）・裂溝大橋・南の海岸を読み込む
-    for c in ['kmod towns', 'execute positioned 0 100 5600 run kmod area', 'execute positioned 0 100 4400 run kmod area', 'execute positioned 0 100 3000 run kmod area', 'execute positioned -2800 100 2080 run kmod area', 'execute positioned -2800 100 2300 run kmod area', 'execute positioned -3350 100 -3120 run kmod area', 'execute positioned -3000 100 6750 run kmod area', 'execute positioned 0 100 0 run kmod area', 'execute positioned -300 100 -400 run kmod area', 'execute positioned 6400 100 400 run kmod area', 'execute positioned -2000 100 -7400 run kmod area', 'forceload add -128 5472 127 5727', 'forceload add -128 2880 127 3119', 'forceload add -3104 1952 -2849 2207', 'forceload add -2848 1952 -2593 2207', 'forceload add -2592 1952 -2465 2207', 'forceload add -3504 -3312 -3249 -3057', 'forceload add -3504 -3056 -3249 -2929', 'forceload add -3248 -3312 -3169 -3057', 'forceload add -3248 -3056 -3169 -2929', 'forceload add -3120 6640 -2865 6879']:
+    # クエスト型：現世の始まりの街・中間拠点・フィールドの区画（確認用に作る）を読み込む
+    for c in ['kmod quest list', 'kmod quest preview kurumimnmod:first_trial 1', 'kmod quest preview kurumimnmod:forked_road 2b', 'kmod quest preview kurumimnmod:first_trial boss', 'kmod quest preview kurumimnmod:forked_road 2a', 'kmod quest preview kurumimnmod:first_trial 1', 'execute in minecraft:overworld run forceload add -96 -96 95 95', 'execute in kurumimnmod:quest run forceload add -64 -64 63 63', 'execute in kurumimnmod:quest run forceload add -112 3984 111 4207', 'execute in kurumimnmod:quest run forceload add 3920 3920 4175 4175', 'execute in kurumimnmod:quest run forceload add 3920 4176 4175 4271', 'execute in kurumimnmod:quest run forceload add 4176 3920 4271 4175', 'execute in kurumimnmod:quest run forceload add 4176 4176 4271 4271', 'execute in kurumimnmod:quest run forceload add 8128 4032 8255 4159', 'execute in kurumimnmod:quest run forceload add 12112 3920 12367 4175', 'execute in kurumimnmod:quest run forceload add 12112 4176 12367 4271', 'execute in kurumimnmod:quest run forceload add 12368 3920 12463 4175', 'execute in kurumimnmod:quest run forceload add 12368 4176 12463 4271', 'execute in kurumimnmod:quest run forceload add 16272 3984 16495 4207']:
         run(c)
 elif mode=="push":
     pass
 elif mode=="save":
-    run("data get entity @e[tag=probe,type=zombie,limit=1,sort=nearest] Pos")
-    run("execute as @e[tag=probe] run data get entity @s Pos")
-    run("execute at @e[tag=probe,type=zombie] run kmod area")
-    run("execute if entity @e[type=!minecraft:player,tag=!probe]")
-    run("execute if entity @e[type=!minecraft:item,type=!minecraft:player,tag=!probe]")
+    run("execute if entity @e[type=!minecraft:player]")
     run("save-all flush")
