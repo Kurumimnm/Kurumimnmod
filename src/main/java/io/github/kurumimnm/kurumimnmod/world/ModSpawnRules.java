@@ -50,7 +50,7 @@ public final class ModSpawnRules {
 
     @SubscribeEvent
     static void onFinalizeSpawn(FinalizeSpawnEvent event) {
-        if (!BLOCKED.contains(event.getSpawnType()) || event.getEntity().getType().is(ALLOWED)
+        if (!BLOCKED.contains(event.getSpawnType()) || event.getEntity().typeHolder().is(ALLOWED)
                 || !(event.getLevel().getLevel() instanceof ServerLevel level)) {
             return;
         }

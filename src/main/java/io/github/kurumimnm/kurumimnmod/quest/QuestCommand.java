@@ -2,6 +2,7 @@ package io.github.kurumimnm.kurumimnmod.quest;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.LongArgumentType;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import io.github.kurumimnm.kurumimnmod.Kurumimnmod;
@@ -25,6 +26,8 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
  *   <li>{@code /kmod quest abandon} … 辞退（受けた場所へ戻る）</li>
  *   <li>{@code /kmod quest clear} … 今いるフィールドをクリアにする（ゲートが開く）</li>
  *   <li>{@code /kmod quest hub} … 中間拠点へ移動</li>
+ *   <li>{@code /kmod quest preview <クエスト> <フィールド>} … そのフィールドの区画を新しく 1 つ作って座標を表示する
+ *       （地形の確認用。プレイヤーの進行には関係しない。{@code /execute in kurumimnmod:quest run tp ...} で見に行ける）</li>
  *   <li>{@code /kmod money get|add|set <金額>} … 所持金</li>
  * </ul>
  */
@@ -59,6 +62,10 @@ public final class QuestCommand {
                             return 1;
                         }))
                         .then(Commands.literal("clear").executes(QuestCommand::clear))
+                        .then(Commands.literal("preview")
+                                .then(Commands.argument("quest", IdentifierArgument.id())
+                                        .then(Commands.argument("field", StringArgumentType.word())
+                                                .executes(QuestCommand::preview))))
                         .then(Commands.literal("hub").executes(ctx -> {
                             QuestManager.goHub(ctx.getSource().getPlayerOrException());
                             return 1;
@@ -85,6 +92,22 @@ public final class QuestCommand {
             n++;
         }
         return n;
+    }
+
+    private static int preview(CommandContext<CommandSourceStack> ctx) {
+        Identifier id = IdentifierArgument.getId(ctx, "quest");
+        String fieldId = StringArgumentType.getString(ctx, "field");
+        var field = QuestManager.definition(ctx.getSource().getServer(), id).flatMap(d -> d.field(fieldId));
+        if (field.isEmpty()) {
+            ctx.getSource().sendFailure(Component.translatable(KEY + ".quest.no_field", id.toString(), fieldId));
+            return 0;
+        }
+        QuestPlots.Plot plot = QuestPlotData.get(ctx.getSource().getServer())
+                .allocate(id, fieldId, field.get(), ctx.getSource().getLevel().getRandom().nextLong());
+        var in = plot.entrance();
+        ctx.getSource().sendSuccess(() -> Component.translatable(KEY + ".quest.preview", plot.index(), plot.centerX(), plot.centerZ(),
+                plot.size(), in.getX(), in.getY(), in.getZ()), true);
+        return plot.index();
     }
 
     private static int clear(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {

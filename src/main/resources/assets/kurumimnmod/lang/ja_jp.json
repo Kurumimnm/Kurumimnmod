@@ -286,5 +286,7 @@
   "message.kurumimnmod.quest.goal_cleared": "ボスを倒した！ ゲートからクエストを達成できる",
   "commands.kurumimnmod.quest.entry": "%s：%s",
   "commands.kurumimnmod.quest.not_in_field": "フィールドの中にいない",
+  "commands.kurumimnmod.quest.no_field": "クエスト %s にフィールド %s はない",
+  "commands.kurumimnmod.quest.preview": "区画 %s を作った：中心 X %s Z %s（一辺 %s）、入口 %s %s %s",
   "commands.kurumimnmod.money.get": "所持金：$%s"
 }

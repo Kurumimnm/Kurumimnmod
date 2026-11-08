@@ -244,6 +244,8 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         add("message." + MOD_ID + ".quest.goal_cleared", "Boss defeated! Complete the quest through the gate");
         add("commands." + MOD_ID + ".quest.entry", "%s: %s");
         add("commands." + MOD_ID + ".quest.not_in_field", "You are not in a field");
+        add("commands." + MOD_ID + ".quest.no_field", "Quest %s has no field %s");
+        add("commands." + MOD_ID + ".quest.preview", "Created plot %s: center X %s Z %s (size %s), entrance %s %s %s");
         add("commands." + MOD_ID + ".money.get", "Money: $%s");
 
         // ---- Config 画面 ----
