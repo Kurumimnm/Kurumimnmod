@@ -3,6 +3,7 @@
     "kurumimnmod:minion": { "experience": 4 },
     "kurumimnmod:slime": { "experience": 3 },
     "kurumimnmod:garou": { "experience": 15 },
-    "kurumimnmod:kobold": { "experience": 8 }
+    "kurumimnmod:kobold": { "experience": 8 },
+    "kurumimnmod:kobold_lord": { "experience": 60 }
   }
 }

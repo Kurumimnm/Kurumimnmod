@@ -151,6 +151,11 @@
   "kurumimnmod.configuration.kobold": "コボルト",
   "kurumimnmod.configuration.koboldLeapDamage": "飛びつきのダメージ",
   "kurumimnmod.configuration.koboldLeapCooldown": "飛びつきのクールダウン（秒）",
+  "kurumimnmod.configuration.koboldLord": "コボルトロード",
+  "kurumimnmod.configuration.koboldLordKickDamage": "壁蹴り突撃のダメージ",
+  "kurumimnmod.configuration.koboldLordKickRadius": "壁蹴り突撃の範囲（半径・ブロック）",
+  "kurumimnmod.configuration.koboldLordKickCooldown": "壁蹴り突撃のクールダウン（秒）",
+  "kurumimnmod.configuration.koboldLordDualHealthRatio": "二刀流になるHPの割合",
   "kurumimnmod.configuration.armoredDefense": "防御力（鎧付き）",
 
   "item.kurumimnmod.scarecrow_summon_stick": "カカシ召喚用ステッキ",
@@ -171,6 +176,8 @@
   "item.kurumimnmod.garou_spawn_egg": "ガロウのスポーンエッグ",
   "entity.kurumimnmod.kobold": "コボルト",
   "item.kurumimnmod.kobold_spawn_egg": "コボルトのスポーンエッグ",
+  "entity.kurumimnmod.kobold_lord": "コボルトロード",
+  "item.kurumimnmod.kobold_lord_spawn_egg": "コボルトロードのスポーンエッグ",
 
   "message.kurumimnmod.scarecrow.op_only": "OP権限が必要です",
   "message.kurumimnmod.scarecrow.no_space": "ここにはカカシを召喚できません（スペースが足りません）",
