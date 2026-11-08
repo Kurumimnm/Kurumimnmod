@@ -78,7 +78,7 @@ public final class ModConfigs {
     public static final ModConfigSpec.DoubleValue LEVEL_BASE_EXP = SYNCED_BUILDER
             .comment("Exp required to go from level 1 to 2.",
                     "Required exp to level up = baseExp + growth * (level - 1) ^ exponent.")
-            .defineInRange("baseExp", 12.0, 1.0, 1_000_000.0);
+            .defineInRange("baseExp", 10.0, 1.0, 1_000_000.0);
 
     /** 1 レベルごとの必要経験値の増え方の大きさ。 */
     public static final ModConfigSpec.DoubleValue LEVEL_GROWTH = SYNCED_BUILDER
