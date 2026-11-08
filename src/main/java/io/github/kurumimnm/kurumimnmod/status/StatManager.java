@@ -147,7 +147,26 @@ public final class StatManager {
 
     /** 防御力による被ダメージ軽減量（固定値）。 */
     public static float defenseReduction(Player player) {
-        return (float) Math.max(0, (value(player, StatType.DEFENSE) - 1) * ModConfigs.defenseReductionPerPoint());
+        return defenseReduction(value(player, StatType.DEFENSE));
+    }
+
+    /**
+     * 防御力の値から被ダメージ軽減量（固定値）を求める。プレイヤー・Mob・カカシで共通の式。
+     * 防御力 1 で軽減なし、以降 1 ごとに Config の defenseReduction ずつ増える。
+     */
+    public static float defenseReduction(double defense) {
+        return (float) Math.max(0, (defense - 1) * ModConfigs.defenseReductionPerPoint());
+    }
+
+    /**
+     * 軽減量を引いたダメージ（最低ダメージ保証つき）。軽減量が 0 以下なら元のダメージをそのまま返す。
+     */
+    public static float applyDefense(float damage, float reduction) {
+        if (reduction <= 0 || damage <= 0) {
+            return damage;
+        }
+        float minDamage = (float) Math.min(ModConfigs.defenseMinDamage(), damage);
+        return Math.max(minDamage, damage - reduction);
     }
 
     /** 技量によるクリティカル率（0.0〜1.0）。 */

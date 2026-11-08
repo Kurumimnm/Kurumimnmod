@@ -40,11 +40,13 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         addItem(ModItems.SCARECROW_CONFIG_STICK, "Scarecrow Settings Stick");
         add("item." + MOD_ID + ".scarecrow_config_stick.desc", "Aim at a scarecrow and left-click to open its settings.");
         addItem(ModItems.ICE_WAND, "Icicle Wand");
+        addItem(ModItems.GRIFFIN_SPAWN_EGG, "Griffin Spawn Egg");
 
         // ---- ブロック ----
 
         // ---- エンティティ ----
         addEntityType(ModEntities.SCARECROW, "Scarecrow");
+        addEntityType(ModEntities.GRIFFIN, "Griffin");
 
 
         addEntityType(ModEntities.ICE_ICICLE, "Icicle");
@@ -313,6 +315,11 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         add(MOD_ID + ".configuration.enabled", "Enabled");
         add(MOD_ID + ".configuration.range", "Display Range");
         add(MOD_ID + ".configuration.hostileOnly", "Hostile Mobs Only");
+        add(MOD_ID + ".configuration.mobs", "Mobs");
+        add(MOD_ID + ".configuration.griffin", "Griffin");
+        add(MOD_ID + ".configuration.armoredChance", "Armored Spawn Chance");
+        add(MOD_ID + ".configuration.normalDefense", "Defense (No Armor)");
+        add(MOD_ID + ".configuration.armoredDefense", "Defense (Armored)");
 
         // ---- Config 画面（カカシ・ダメージ数字） ----
         add(MOD_ID + ".configuration.scarecrow", "Scarecrow");

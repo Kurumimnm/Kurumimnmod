@@ -4,6 +4,7 @@ import io.github.kurumimnm.kurumimnmod.Kurumimnmod;
 import io.github.kurumimnm.kurumimnmod.item.ScarecrowConfigStickItem;
 import io.github.kurumimnm.kurumimnmod.item.ScarecrowSummonStickItem;
 import io.github.kurumimnm.kurumimnmod.item.IceWandItem;
+import net.minecraft.world.item.SpawnEggItem;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
@@ -44,4 +45,12 @@ public final class ModItems {
     /** 氷柱の杖（右クリック長押しで照準、左クリックで頭上から氷柱を発射）。 */
     public static final DeferredItem<IceWandItem> ICE_WAND =
             ITEMS.registerItem("ice_wand", IceWandItem::new, p -> p.stacksTo(1));
+
+    // =====================================================================
+    // スポーンエッグ
+    // =====================================================================
+
+    /** グリフォンのスポーンエッグ（テクスチャは textures/item/griffin_spawn_egg.png）。 */
+    public static final DeferredItem<SpawnEggItem> GRIFFIN_SPAWN_EGG =
+            ITEMS.registerItem("griffin_spawn_egg", SpawnEggItem::new, p -> p.spawnEgg(ModEntities.GRIFFIN.get()));
 }
