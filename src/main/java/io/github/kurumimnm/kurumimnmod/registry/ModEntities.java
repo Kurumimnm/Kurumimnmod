@@ -2,7 +2,9 @@ package io.github.kurumimnm.kurumimnmod.registry;
 
 import io.github.kurumimnm.kurumimnmod.Kurumimnmod;
 import io.github.kurumimnm.kurumimnmod.config.ModConstants;
+import io.github.kurumimnm.kurumimnmod.entity.GarouEntity;
 import io.github.kurumimnm.kurumimnmod.entity.GriffinEntity;
+import io.github.kurumimnm.kurumimnmod.entity.KoboldEntity;
 import io.github.kurumimnm.kurumimnmod.entity.MinionEntity;
 import io.github.kurumimnm.kurumimnmod.entity.ScarecrowEntity;
 import io.github.kurumimnm.kurumimnmod.entity.IceIcicleEntity;
@@ -105,6 +107,22 @@ public final class ModEntities {
                             .clientTrackingRange(ModConstants.SLIME_TRACKING_RANGE)
                             .noLootTable());
 
+    /** ガロウ（4 つ足の狼。敵対。スキル：2 回突進して噛みつく）。ドロップなし。 */
+    public static final DeferredHolder<EntityType<?>, EntityType<GarouEntity>> GAROU =
+            ENTITY_TYPES.registerEntityType("garou", GarouEntity::new, MobCategory.MONSTER,
+                    builder -> builder.sized(ModConstants.GAROU_WIDTH, ModConstants.GAROU_HEIGHT)
+                            .eyeHeight(ModConstants.GAROU_EYE_HEIGHT)
+                            .clientTrackingRange(ModConstants.GAROU_TRACKING_RANGE)
+                            .noLootTable());
+
+    /** コボルト（犬頭の小柄な人型。敵対。スキル：飛びつき）。ドロップなし。 */
+    public static final DeferredHolder<EntityType<?>, EntityType<KoboldEntity>> KOBOLD =
+            ENTITY_TYPES.registerEntityType("kobold", KoboldEntity::new, MobCategory.MONSTER,
+                    builder -> builder.sized(ModConstants.KOBOLD_WIDTH, ModConstants.KOBOLD_HEIGHT)
+                            .eyeHeight(ModConstants.KOBOLD_EYE_HEIGHT)
+                            .clientTrackingRange(ModConstants.KOBOLD_TRACKING_RANGE)
+                            .noLootTable());
+
     // =====================================================================
     // 魔法の弾
     // =====================================================================
@@ -127,5 +145,7 @@ public final class ModEntities {
         event.put(GRIFFIN.get(), GriffinEntity.createAttributes().build());
         event.put(MINION.get(), MinionEntity.createAttributes().build());
         event.put(SLIME.get(), SlimeEntity.createAttributes().build());
+        event.put(GAROU.get(), GarouEntity.createAttributes().build());
+        event.put(KOBOLD.get(), KoboldEntity.createAttributes().build());
     }
 }

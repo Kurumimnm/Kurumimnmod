@@ -43,6 +43,8 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         addItem(ModItems.GRIFFIN_SPAWN_EGG, "Griffin Spawn Egg");
         addItem(ModItems.MINION_SPAWN_EGG, "Minion Spawn Egg");
         addItem(ModItems.SLIME_SPAWN_EGG, "Slime Spawn Egg");
+        addItem(ModItems.GAROU_SPAWN_EGG, "Garou Spawn Egg");
+        addItem(ModItems.KOBOLD_SPAWN_EGG, "Kobold Spawn Egg");
 
         // ---- ブロック ----
 
@@ -51,6 +53,8 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         addEntityType(ModEntities.GRIFFIN, "Griffin");
         addEntityType(ModEntities.MINION, "Minion");
         addEntityType(ModEntities.SLIME, "Slime");
+        addEntityType(ModEntities.GAROU, "Garou");
+        addEntityType(ModEntities.KOBOLD, "Kobold");
 
 
         addEntityType(ModEntities.ICE_ICICLE, "Icicle");
@@ -323,6 +327,14 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         add(MOD_ID + ".configuration.griffin", "Griffin");
         add(MOD_ID + ".configuration.armoredChance", "Armored Spawn Chance");
         add(MOD_ID + ".configuration.normalDefense", "Defense (No Armor)");
+        add(MOD_ID + ".configuration.skillTelegraphSeconds", "Skill Warning Time (seconds)");
+        add(MOD_ID + ".configuration.garou", "Garou");
+        add(MOD_ID + ".configuration.garouBiteDamage", "Lunging Bite Damage (per bite)");
+        add(MOD_ID + ".configuration.garouBiteDistance", "Lunging Bite Distance (blocks per bite)");
+        add(MOD_ID + ".configuration.garouBiteCooldown", "Lunging Bite Cooldown (seconds)");
+        add(MOD_ID + ".configuration.kobold", "Kobold");
+        add(MOD_ID + ".configuration.koboldLeapDamage", "Leap Damage");
+        add(MOD_ID + ".configuration.koboldLeapCooldown", "Leap Cooldown (seconds)");
         add(MOD_ID + ".configuration.armoredDefense", "Defense (Armored)");
 
         // ---- Config 画面（カカシ・ダメージ数字） ----

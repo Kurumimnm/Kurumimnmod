@@ -2,7 +2,9 @@ package io.github.kurumimnm.kurumimnmod.client;
 
 import io.github.kurumimnm.kurumimnmod.Kurumimnmod;
 import io.github.kurumimnm.kurumimnmod.client.scarecrow.ScarecrowRenderer;
+import io.github.kurumimnm.kurumimnmod.client.renderer.GarouRenderer;
 import io.github.kurumimnm.kurumimnmod.client.renderer.GriffinRenderer;
+import io.github.kurumimnm.kurumimnmod.client.renderer.KoboldRenderer;
 import io.github.kurumimnm.kurumimnmod.client.renderer.MinionRenderer;
 import io.github.kurumimnm.kurumimnmod.client.renderer.SlimeRenderer;
 import io.github.kurumimnm.kurumimnmod.client.renderer.IceIcicleRenderer;
@@ -41,6 +43,8 @@ public final class ModEntityRenderers {
         event.registerEntityRenderer(ModEntities.GRIFFIN.get(), context -> new GriffinRenderer<>(context));
         event.registerEntityRenderer(ModEntities.MINION.get(), context -> new MinionRenderer<>(context));
         event.registerEntityRenderer(ModEntities.SLIME.get(), context -> new SlimeRenderer<>(context));
+        event.registerEntityRenderer(ModEntities.GAROU.get(), context -> new GarouRenderer<>(context));
+        event.registerEntityRenderer(ModEntities.KOBOLD.get(), context -> new KoboldRenderer<>(context));
 
 
         // 氷柱の杖の氷柱（飛ぶ方向に向けて回転させる専用レンダラー）
