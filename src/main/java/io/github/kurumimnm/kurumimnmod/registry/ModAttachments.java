@@ -6,7 +6,7 @@ import io.github.kurumimnm.kurumimnmod.status.PlayerStats;
 import net.minecraft.network.codec.ByteBufCodecs;
 import io.github.kurumimnm.kurumimnmod.level.KillContribution;
 import io.github.kurumimnm.kurumimnmod.level.PlayerLevel;
-import io.github.kurumimnm.kurumimnmod.world.PlayerExploration;
+import io.github.kurumimnm.kurumimnmod.quest.PlayerQuest;
 import java.util.function.Supplier;
 import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -59,14 +59,24 @@ public final class ModAttachments {
                     .build());
 
     /**
-     * 探索の記録（行ったことのある街・フィールド・エリア、倒したフィールドボス）。
-     * 保存・死亡後も維持・本人にだけ同期（ゲートの壁・地図・場所の表示に使う）。
+     * クエストの状態（受けているクエスト・いる場所・クリアしたフィールドなど）。
+     * 保存・死亡後も維持・本人にだけ同期（HUD・クエスト画面に使う）。
      */
-    public static final Supplier<AttachmentType<PlayerExploration>> EXPLORATION = ATTACHMENT_TYPES.register("exploration",
-            () -> AttachmentType.builder(() -> PlayerExploration.EMPTY)
-                    .serialize(PlayerExploration.CODEC.fieldOf("exploration"))
+    public static final Supplier<AttachmentType<PlayerQuest>> QUEST = ATTACHMENT_TYPES.register("quest",
+            () -> AttachmentType.builder(() -> PlayerQuest.EMPTY)
+                    .serialize(PlayerQuest.CODEC.fieldOf("quest"))
                     .copyOnDeath()
-                    .sync((holder, to) -> holder == to, PlayerExploration.STREAM_CODEC)
+                    .sync((holder, to) -> holder == to, PlayerQuest.STREAM_CODEC)
+                    .build());
+
+    /**
+     * 所持金（$）。保存・死亡後も維持・本人にだけ同期（ステータス画面に表示）。
+     */
+    public static final Supplier<AttachmentType<Long>> MONEY = ATTACHMENT_TYPES.register("money",
+            () -> AttachmentType.builder(() -> 0L)
+                    .serialize(Codec.LONG.fieldOf("money"))
+                    .copyOnDeath()
+                    .sync((holder, to) -> holder == to, ByteBufCodecs.VAR_LONG)
                     .build());
 
     /**

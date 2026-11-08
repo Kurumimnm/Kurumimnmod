@@ -1,6 +1,5 @@
 package io.github.kurumimnm.kurumimnmod.world.town;
 
-import io.github.kurumimnm.kurumimnmod.world.FieldMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +20,8 @@ import net.minecraft.world.level.block.state.BlockState;
  *   <tr><td>post_town</td><td>宿場町</td><td>大きな宿屋・家・井戸</td></tr>
  *   <tr><td>mining_town</td><td>鉱山町</td><td>柵・家・坑道の入口</td></tr>
  *   <tr><td>town</td><td>中位の街</td><td>城壁・家・噴水</td></tr>
- *   <tr><td>port_town</td><td>港町</td><td>城壁・港（水と桟橋）・倉庫・灯台</td></tr>
+ *   <tr><td>start_town</td><td>始まりの街</td><td>城壁と見張り塔・広場の噴水・ギルド（クエスト受付）・ショップと市場・宿屋・自分の家</td></tr>
+ *   <tr><td>hub</td><td>中間拠点</td><td>壁なし・広場・市場・宿屋（出発ゲートは {@code QuestPlotFeature} が置く）</td></tr>
  *   <tr><td>castle_town</td><td>城下町</td><td>城壁・真ん中に城・家</td></tr>
  *   <tr><td>temple_city</td><td>神殿都市</td><td>城壁・神殿・記念碑</td></tr>
  *   <tr><td>city</td><td>大きな街</td><td>城壁・家がぎっしり・市場・噴水</td></tr>
@@ -36,8 +36,8 @@ public final class TownPlanner {
     /** 作った設計図（街ごと）。 */
     private static final Map<String, TownPlan> CACHE = new ConcurrentHashMap<>();
 
-    public static TownPlan plan(FieldMap map, FieldMap.Town town) {
-        return CACHE.computeIfAbsent(System.identityHashCode(map) + ":" + town.id(), k -> build(map, town));
+    public static TownPlan plan(TownSpec town) {
+        return CACHE.computeIfAbsent(town.toString(), k -> build(town));
     }
 
     // 種類ごとの設定
@@ -49,7 +49,8 @@ public final class TownPlanner {
             case "village" -> new Kind(false, 0, 3, 6, 0.4, 1);
             case "post_town" -> new Kind(false, 0, 3, 7, 0.5, 2);
             case "mining_town" -> new Kind(false, 0, 3, 7, 0.55, 2);
-            case "port_town" -> new Kind(true, 6, 4, 8, 0.6, 2);
+            case "start_town" -> new Kind(true, 9, 5, 11, 0.75, 2);
+            case "hub" -> new Kind(false, 0, 4, 9, 0.3, 1);
             case "castle_town" -> new Kind(true, 8, 5, 0, 0.7, 2);
             case "temple_city" -> new Kind(true, 7, 5, 9, 0.55, 2);
             case "city" -> new Kind(true, 8, 5, 10, 0.95, 3);
@@ -58,10 +59,10 @@ public final class TownPlanner {
         };
     }
 
-    private static TownPlan build(FieldMap map, FieldMap.Town town) {
-        int groundY = map.townGroundY(town);
+    private static TownPlan build(TownSpec town) {
+        int groundY = town.groundY();
         TownPlan.Builder b = new TownPlan.Builder(groundY);
-        RandomSource random = RandomSource.create(town.id().hashCode() * 31L + town.number());
+        RandomSource random = RandomSource.create(town.id().hashCode() * 31L);
         Kind kind = kind(town.type());
         TownStyle style = TownStyle.of(town.style());
         int cx = town.x();
@@ -78,18 +79,13 @@ public final class TownPlanner {
             }
         }
 
-        // 2. 港（港町：街の東側を水にする。地形は FieldMap が下げている）
-        if (town.type().equals("port_town")) {
-            harbor(b, map, town, style, occupancy);
-        }
-
-        // 3. 道（ほかの街の方向へ。最低でも十字）
-        List<Double> angles = streetAngles(map, town);
+        // 2. 道（東西南北の十字）
+        List<Double> angles = town.streetAngles();
         BlockState street = style.street().defaultBlockState();
         for (double a : angles) {
             int x1 = (int) Math.round(cx + Math.cos(a) * (r + 2));
             int z1 = (int) Math.round(cz + Math.sin(a) * (r + 2));
-            line(b, cx, cz, x1, z1, kind.streetWidth(), street, map, town);
+            line(b, cx, cz, x1, z1, kind.streetWidth(), street);
             occupancy.addLine(cx, cz, x1, z1, kind.streetWidth() / 2 + 1);
         }
 
@@ -110,7 +106,7 @@ public final class TownPlanner {
 
         // 5. 城壁（道が出入りするところは門）
         if (kind.walls()) {
-            walls(b, town, kind, angles, town.type().equals("frontline_city"), occupancy);
+            walls(b, town, kind, angles, town.type().equals("frontline_city") || town.type().equals("start_town"), occupancy);
         } else if (town.type().equals("mining_town")) {
             fenceRing(b, town, style, angles);
         }
@@ -128,6 +124,8 @@ public final class TownPlanner {
                 }
             }
             case "city" -> market(b, cx, cz, kind.plazaRadius(), style, random);
+            case "start_town" -> startTown(b, town, style, occupancy, random);
+            case "hub" -> hub(b, town, kind, style, occupancy, random);
             default -> { }
         }
 
@@ -156,55 +154,13 @@ public final class TownPlanner {
     // 道・広場
     // =====================================================================
 
-    /** 道の向き（ほかの街へのルートの方向）。足りなければ十字にする。 */
-    private static List<Double> streetAngles(FieldMap map, FieldMap.Town town) {
-        List<Double> angles = new ArrayList<>();
-        map.roads().ifPresent(roads -> {
-            for (var route : roads.routes()) {
-                String other = route.from().equals(town.id()) ? route.to() : route.to().equals(town.id()) ? route.from() : null;
-                if (other == null) {
-                    continue;
-                }
-                // 最初に向かう点（途中の点があればそこ）
-                double tx;
-                double tz;
-                if (!route.via().isEmpty()) {
-                    var via = route.from().equals(town.id()) ? route.via().get(0) : route.via().get(route.via().size() - 1);
-                    tx = via.x();
-                    tz = via.z();
-                } else {
-                    var t = map.town(other).orElse(null);
-                    if (t == null) {
-                        continue;
-                    }
-                    tx = t.x();
-                    tz = t.z();
-                }
-                angles.add(Math.atan2(tz - town.z(), tx - town.x()));
-            }
-        });
-        if (angles.isEmpty()) {
-            angles.add(0.0);
-        }
-        // 十字になるように足す（近い向きの道は足さない）
-        for (int i = 0; i < 4; i++) {
-            double a = angles.get(0) + i * Math.PI / 2;
-            boolean near = angles.stream().anyMatch(o -> angleDistance(o, a) < Math.PI / 5);
-            if (!near) {
-                angles.add(a);
-            }
-        }
-        return angles;
-    }
-
     private static double angleDistance(double a, double b) {
         double d = Math.abs(a - b) % (Math.PI * 2);
         return d > Math.PI ? Math.PI * 2 - d : d;
     }
 
     /** 太さ width の道（地面のブロックを置き換える）。港の水の上は橋（板）。 */
-    private static void line(TownPlan.Builder b, int x0, int z0, int x1, int z1, int width, BlockState state,
-                             FieldMap map, FieldMap.Town town) {
+    private static void line(TownPlan.Builder b, int x0, int z0, int x1, int z1, int width, BlockState state) {
         int steps = Math.max(Math.abs(x1 - x0), Math.abs(z1 - z0));
         double half = width / 2.0;
         for (int i = 0; i <= steps; i++) {
@@ -216,11 +172,7 @@ public final class TownPlanner {
                     if (dx * dx + dz * dz <= half * half + 0.25) {
                         int x = (int) Math.round(px + dx);
                         int z = (int) Math.round(pz + dz);
-                        if (map.inHarbor(town, x, z)) {
-                            b.set(x, b.groundY(), z, Blocks.SPRUCE_PLANKS.defaultBlockState());
-                        } else {
-                            b.set(x, b.groundY(), z, state);
-                        }
+                        b.set(x, b.groundY(), z, state);
                     }
                 }
             }
@@ -237,7 +189,7 @@ public final class TownPlanner {
         }
     }
 
-    private static void lamps(TownPlan.Builder b, FieldMap.Town town, Kind kind, TownStyle style, List<Double> angles) {
+    private static void lamps(TownPlan.Builder b, TownSpec town, Kind kind, TownStyle style, List<Double> angles) {
         int y = b.groundY();
         for (double a : angles) {
             double side = kind.streetWidth() / 2.0 + 1;
@@ -254,7 +206,7 @@ public final class TownPlanner {
     // 城壁
     // =====================================================================
 
-    private static void walls(TownPlan.Builder b, FieldMap.Town town, Kind kind, List<Double> angles, boolean towers,
+    private static void walls(TownPlan.Builder b, TownSpec town, Kind kind, List<Double> angles, boolean towers,
                               Occupancy occupancy) {
         int y = b.groundY();
         int r = town.radius() - 3;
@@ -302,7 +254,7 @@ public final class TownPlanner {
         }
     }
 
-    private static void fenceRing(TownPlan.Builder b, FieldMap.Town town, TownStyle style, List<Double> angles) {
+    private static void fenceRing(TownPlan.Builder b, TownSpec town, TownStyle style, List<Double> angles) {
         int y = b.groundY();
         int r = town.radius() - 2;
         int steps = (int) Math.ceil(Math.PI * 2 * r * 2);
@@ -320,7 +272,7 @@ public final class TownPlanner {
     // 家
     // =====================================================================
 
-    private static void houses(TownPlan.Builder b, FieldMap.Town town, Kind kind, TownStyle style, List<Double> angles,
+    private static void houses(TownPlan.Builder b, TownSpec town, Kind kind, TownStyle style, List<Double> angles,
                                Occupancy occupancy, RandomSource random) {
         int start = Math.max(kind.plazaRadius(), 6) + 3;
         int end = town.radius() - (kind.walls() ? 7 : 4);
@@ -385,7 +337,7 @@ public final class TownPlanner {
         return s > 0 ? Direction.SOUTH : Direction.NORTH;
     }
 
-    private static boolean insideTown(FieldMap.Town town, int ox, int oz, int w, int d, int margin) {
+    private static boolean insideTown(TownSpec town, int ox, int oz, int w, int d, int margin) {
         double limit = town.radius() - margin;
         int[][] corners = {{ox, oz}, {ox + w, oz}, {ox, oz + d}, {ox + w, oz + d}};
         for (int[] c : corners) {
@@ -527,6 +479,51 @@ public final class TownPlanner {
         occupancy.addBox(x - 1, z - 1, x + 5, z + 5);
     }
 
+    /**
+     * 始まりの街の主な建物（広場のまわり）。
+     * <pre>
+     *            北の門
+     *   ショップ │ ギルド（クエスト受付）
+     *  ──────広場（噴水・市場）──────
+     *   宿屋     │ 自分の家
+     *            南の門
+     * </pre>
+     * ※ NPC・クエスト受付・ショップの中身は後で作る。今は建物だけ。
+     */
+    private static void startTown(TownPlan.Builder b, TownSpec town, TownStyle style, Occupancy occupancy, RandomSource random) {
+        int cx = town.x();
+        int cz = town.z();
+        int street = 5;   // 道の中心から建物までの間（道の幅 5 ＋ すき間）
+        int plaza = 14;   // 広場の中心から建物までの間
+        // ギルド（北東、正面は西の北通り）：幅 15・奥行き 11・2 階 → 地図上は 11 × 15
+        placeBuilding(b, occupancy, cx + street, cz - plaza - 15, 15, 11, Direction.WEST,
+                p -> Buildings.hall(p, style, 15, 11, 2, random));
+        // ショップ（北西、正面は東の北通り）：13 × 9 → 地図上は 9 × 13
+        placeBuilding(b, occupancy, cx - street - 9, cz - plaza - 13, 13, 9, Direction.EAST,
+                p -> Buildings.hall(p, style, 13, 9, 2, random));
+        // 宿屋（南西）
+        placeBuilding(b, occupancy, cx - street - 9, cz + plaza, 13, 9, Direction.EAST,
+                p -> Buildings.hall(p, style, 13, 9, 2, random));
+        // 自分の家（南東）：9 × 7 → 地図上は 7 × 9
+        placeBuilding(b, occupancy, cx + street, cz + plaza, 9, 7, Direction.WEST,
+                p -> Buildings.house(p, style, 9, 7, 2, random));
+        // 広場の市場（屋台）
+        market(b, cx, cz, 11, style, random);
+    }
+
+    /** 中間拠点の建物。北の出発ゲートのまわりは空けておく。 */
+    private static void hub(TownPlan.Builder b, TownSpec town, Kind kind, TownStyle style, Occupancy occupancy, RandomSource random) {
+        int cx = town.x();
+        int cz = town.z();
+        occupancy.addBox(cx - 5, cz - 20, cx + 5, cz - kind.plazaRadius());
+        market(b, cx, cz, kind.plazaRadius(), style, random);
+        // 宿屋（南西）とショップ（南東）
+        placeBuilding(b, occupancy, cx - 5 - 9, cz + kind.plazaRadius() + 3, 13, 9, Direction.EAST,
+                p -> Buildings.hall(p, style, 13, 9, 1, random));
+        placeBuilding(b, occupancy, cx + 5, cz + kind.plazaRadius() + 3, 13, 9, Direction.WEST,
+                p -> Buildings.hall(p, style, 13, 9, 1, random));
+    }
+
     /** 市場（大きな街の広場の周り）。 */
     private static void market(TownPlan.Builder b, int cx, int cz, int plaza, TownStyle style, RandomSource random) {
         String[] colors = {"red", "blue", "yellow", "white", "green", "orange"};
@@ -535,45 +532,6 @@ public final class TownPlanner {
             int x = (int) Math.round(cx + Math.cos(a) * (plaza - 3)) - 2;
             int z = (int) Math.round(cz + Math.sin(a) * (plaza - 3)) - 1;
             Buildings.stall(new Buildings.Placer(b, x, z, 5, 3, Direction.NORTH), style, colors[i % colors.length]);
-        }
-    }
-
-    /** 港（港町の東側）。水・桟橋・倉庫・灯台。 */
-    private static void harbor(TownPlan.Builder b, FieldMap map, FieldMap.Town town, TownStyle style, Occupancy occupancy) {
-        int y = b.groundY();
-        int r = town.radius();
-        for (int x = town.x() - r; x <= town.x() + r; x++) {
-            for (int z = town.z() - r; z <= town.z() + r; z++) {
-                if (map.inHarbor(town, x, z)) {
-                    for (int yy = y - FieldMap.HARBOR_DEPTH + 1; yy <= y; yy++) {
-                        b.set(x, yy, z, Blocks.WATER.defaultBlockState());
-                    }
-                }
-            }
-        }
-        // 桟橋（東へ 3 本）
-        int hx = town.x() + (int) (r * FieldMap.HARBOR_OFFSET);
-        for (int i = -1; i <= 1; i++) {
-            int pz = town.z() + i * 10;
-            for (int x = hx - (int) (r * FieldMap.HARBOR_RADIUS); x <= hx + 4; x++) {
-                if (map.inHarbor(town, x, pz)) {
-                    b.fill(x, y, pz - 1, x, y, pz + 1, Blocks.SPRUCE_PLANKS.defaultBlockState());
-                    if ((x & 3) == 0) {
-                        b.set(x, y + 1, pz + 1, Blocks.SPRUCE_FENCE.defaultBlockState());
-                    }
-                }
-            }
-        }
-        // 灯台（港の一番外側）
-        int lx = hx + (int) (r * FieldMap.HARBOR_RADIUS * 0.6);
-        int lz = town.z() - (int) (r * FieldMap.HARBOR_RADIUS * 0.7);
-        b.fill(lx - 1, y - FieldMap.HARBOR_DEPTH, lz - 1, lx + 5, y, lz + 5, Blocks.STONE_BRICKS.defaultBlockState());
-        Buildings.lighthouse(new Buildings.Placer(b, lx, lz, 5, 5, Direction.NORTH), 18);
-        occupancy.addCircle(hx, town.z(), (int) (r * FieldMap.HARBOR_RADIUS) + 2);
-        // 倉庫（港の西側）
-        for (int i = -1; i <= 1; i += 2) {
-            placeBuilding(b, occupancy, hx - (int) (r * FieldMap.HARBOR_RADIUS) - 12, town.z() + i * 9 - 4, 9, 7,
-                    Direction.EAST, p -> Buildings.hall(p, style, 9, 7, 1, RandomSource.create(town.number())));
         }
     }
 

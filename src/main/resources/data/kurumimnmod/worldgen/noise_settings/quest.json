@@ -1,0 +1,43 @@
+{
+  "default_block": "minecraft:stone",
+  "default_fluid": "minecraft:water",
+  "disable_mob_generation": true,
+  "legacy_random_source": false,
+  "material_rule": "kurumimnmod:quest/overworld",
+  "noise": {
+    "height": 384,
+    "min_y": -64
+  },
+  "noise_router": {
+    "chunk_surface_level": {
+      "type": "kurumimnmod:quest_height"
+    },
+    "continents": 0.0,
+    "depth": 0.0,
+    "erosion": 0.0,
+    "ridges": 0.0,
+    "temperature": 0.0,
+    "vegetation": 0.0,
+    "final_density": {
+      "type": "minecraft:mul",
+      "left": {
+        "type": "minecraft:sub",
+        "left": {
+          "type": "kurumimnmod:quest_height"
+        },
+        "right": {
+          "type": "minecraft:gradient",
+          "axis": "y",
+          "from_coordinate": -64,
+          "from_value": -64.0,
+          "to_coordinate": 320,
+          "to_value": 320.0
+        }
+      },
+      "right": 0.1
+    }
+  },
+  "sea_level": -64,
+  "spawn_target": [],
+  "ore_veins_enabled": false
+}

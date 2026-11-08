@@ -214,98 +214,62 @@ public final class ModConstants {
     // ※ HP 部分の色は HP_COLORS（割合で変化）を使用
 
     // =====================================================================
-    // ワールド：ゲート（赤い壁）
+    // 現世（Kurumimnmod ワールド）：始まりの街
     // =====================================================================
-    /** 1 tick でこれ以上（ブロック）動いたら「テレポート」とみなす（OP のテレポートは壁を通す）。 */
-    public static final double GATE_TELEPORT_DISTANCE = 8.0;
-    /** 壁を描く範囲（プレイヤーからの水平距離、ブロック）。この距離から見え始める。 */
-    public static final int GATE_RENDER_RADIUS = 64;
-    /** この割合の距離（0〜1）より遠いと、だんだん薄くなる。手前ではくっきり見える。 */
-    public static final float GATE_FADE_START = 0.6f;
-    /** プレイヤーがこのブロック数だけ動いたら、描く壁を計算し直す（裏で計算する）。 */
-    public static final int GATE_RECOMPUTE_STEP = 4;
-    /** 壁の高さ：地面（または目線の低いほう）から下へ・上へ（ブロック）。上の端はぼかす。 */
-    public static final float GATE_RENDER_BELOW = 8f;
-    public static final float GATE_RENDER_ABOVE = 56f;
-    /** 壁の色（ARGB）。 */
-    public static final int GATE_COLOR = 0xFFFF2A2A;
-    /** 膜のいちばん濃いところの不透明度（0〜1）。 */
-    public static final float GATE_MAX_ALPHA = 0.45f;
-    /** 横の光る線：間隔（ブロック）・太さ（ブロック）・上へ流れる速さ（1 秒あたりブロック）・不透明度。 */
-    public static final float GATE_LINE_SPACING = 4f;
-    public static final float GATE_LINE_WIDTH = 0.18f;
-    public static final float GATE_LINE_SPEED = 1.2f;
-    public static final float GATE_LINE_ALPHA = 0.8f;
-    /** モブ・アイテムの壁は、狙っているプレイヤー（いなければこの距離以内のいちばん近いプレイヤー）から見た壁で決める。 */
-    public static final double GATE_MOB_PLAYER_RANGE = 128.0;
-    /** モブの狙いが壁の向こうのプレイヤーになっていないか調べる間隔（tick）。 */
-    public static final int GATE_TARGET_CHECK_TICKS = 10;
-    // =====================================================================
-    // ワールド：地形 v2（ワールド作成時に計算する地形）
-    // =====================================================================
-
-    /** 計算のたびに、確認用の上空図（world/data/kurumimnmod/terrain/*_preview.png）を書き出す。 */
-    public static final boolean TERRAIN_WRITE_PREVIEW = true;
-    /** 地図画面用にクライアントへ送る地形の粗さ（計算のマス何個を 1 つにまとめるか）。 */
-    public static final int TERRAIN_NETWORK_FACTOR = 2;
-    /** 範囲の外へ出る道を、今までの地形の道とつなぐとき探す範囲（ブロック）。 */
-    public static final int TERRAIN_ROAD_JOIN_SEARCH = 160;
-    /** 湖・川の底のブロック（id）。浅い所は砂、深い所は砂利。 */
-    public static final String TERRAIN_WATER_BED_SHALLOW = "sand";
-    public static final String TERRAIN_WATER_BED_DEEP = "gravel";
-    /** この深さ（ブロック）以上を「深い」とする。 */
-    public static final int TERRAIN_WATER_DEEP = 3;
-
-    /** 壁の内部キャッシュ：覚えておく最大チャンク数（溢れたら作り直す）。 */
-    public static final int REGION_CACHE_MAX_CHUNKS = 16384;
+    /** 平らな地形の地面の一番上の Y（data/kurumimnmod/worldgen/world_preset/field_world.json の層と合わせる）。 */
+    public static final int START_TOWN_GROUND_Y = 64;
+    /** 初めてワールドに入ったときのスポーン地点（広場の噴水の南）。 */
+    public static final int START_TOWN_SPAWN_X = 0;
+    public static final int START_TOWN_SPAWN_Z = 6;
 
     // =====================================================================
-    // ワールド：場所の名前の表示
+    // クエスト：区画（フィールド）
     // =====================================================================
-    /** 場所が変わったときの大きな表示：フェードイン・表示・フェードアウトの時間（ミリ秒）。 */
-    public static final int LOCATION_TITLE_FADE_IN_MS = 400;
-    public static final int LOCATION_TITLE_STAY_MS = 2200;
-    public static final int LOCATION_TITLE_FADE_OUT_MS = 800;
-    /** 大きな表示の文字の倍率（初めて来た場所は NEW_SCALE）。 */
-    public static final float LOCATION_TITLE_SCALE = 2.0f;
-    public static final float LOCATION_TITLE_NEW_SCALE = 2.6f;
-    /** 大きな表示の上端の位置（画面の高さに対する割合）。 */
-    public static final float LOCATION_TITLE_Y = 0.22f;
-    /** 同じ境目を行き来したときに表示が連続しないよう、エリアの表示を出さない間隔（ミリ秒）。 */
-    public static final int LOCATION_TITLE_COOLDOWN_MS = 3000;
-    /** 左上の常時表示の位置（ピクセル）。 */
-    public static final int LOCATION_HUD_X = 4;
-    public static final int LOCATION_HUD_Y = 4;
-    public static final int LOCATION_COLOR_NAME = 0xFFFFFFFF;
-    public static final int LOCATION_COLOR_SUB = 0xFFC8C8C8;
-    public static final int LOCATION_COLOR_NEW = 0xFFFFD94A;
-    public static final int LOCATION_COLOR_BACKGROUND = 0x60000000;
+    /** 区画（フィールド 1 つ）の格子の間隔（ブロック）。フィールドの一辺の最大より十分大きくする。 */
+    public static final int QUEST_PLOT_SPACING = 4096;
+    /** 格子の横 1 列に並べる区画の数（いっぱいになったら次の列へ）。 */
+    public static final int QUEST_PLOTS_PER_ROW = 64;
+    /** フィールドの一辺の最小・最大（ブロック）。クエストの JSON の size はこの範囲。 */
+    public static final int QUEST_FIELD_MIN_SIZE = 48;
+    public static final int QUEST_FIELD_MAX_SIZE = 2048;
+    /** 縁の崖の幅と高さ（ブロック）。外は奈落で、いちばん外側の 1 列に見えない壁を置く。 */
+    public static final int QUEST_RIM_WIDTH = 24;
+    public static final double QUEST_RIM_HEIGHT = 36;
+    /** 入口・ゲートを縁からどれだけ内側に置くか（ブロック）。 */
+    public static final int QUEST_GATE_INSET = 16;
+    /** 入口・ゲートのまわりを平らにする半径と、なめらかにつなぐ幅（ブロック）。 */
+    public static final double QUEST_FLAT_RADIUS = 7;
+    public static final double QUEST_FLAT_BLEND = 14;
+    /** ゲートの画面を使える距離（ブロック）。 */
+    public static final double QUEST_GATE_USE_RANGE = 8;
+    /** ボス部屋：壁から区画の縁までの間と、壁の高さ（ブロック）。 */
+    public static final int QUEST_ARENA_MARGIN = 6;
+    public static final int QUEST_ARENA_WALL_HEIGHT = 8;
 
-    // =====================================================================
-    // ワールド：地図画面（M キー）
-    // =====================================================================
-    /** 地図の画像の 1 ピクセルが何ブロックか（小さいほど細かいが、作るのに時間がかかる）。 */
-    public static final int MAP_BLOCKS_PER_PIXEL = 16;
-    /** 地図の外側の余白（ブロック）。 */
-    public static final int MAP_MARGIN = 1200;
-    /** 拡大率の範囲（画面の 1 ピクセルあたり地図の何ピクセルか）と、ホイール 1 回あたりの倍率。 */
-    public static final float MAP_MIN_ZOOM = 0.25f;
-    public static final float MAP_MAX_ZOOM = 8f;
-    public static final float MAP_ZOOM_STEP = 1.25f;
-    /** まだ行っていないエリアの色。 */
-    public static final int MAP_COLOR_UNEXPLORED = 0xFF1B1B20;
-    /** エリアの境目の線の色。 */
-    public static final int MAP_COLOR_AREA_LINE = 0xFFFFFFFF;
-    /** 山脈の色（低いところ → 高いところ）。 */
-    /** 地図：海・湖と川の色、岩肌になり始める高さ・岩肌が一番濃くなる高さ（地形 v2）。 */
-    public static final int MAP_COLOR_SEA = 0xFF3A6EA5;
-    public static final int MAP_COLOR_WATER = 0xFF4F8FD0;
-    public static final double MAP_ROCK_FROM = 170;
-    public static final double MAP_ROCK_TO = 250;
-    public static final int MAP_COLOR_MOUNTAIN_LOW = 0xFF7A766E;
-    public static final int MAP_COLOR_MOUNTAIN_HIGH = 0xFFF2F2F2;
-    /** 街の印の色。 */
-    public static final int MAP_COLOR_TOWN = 0xFF1D9E75;
-    /** プレイヤーの印の色。 */
-    public static final int MAP_COLOR_PLAYER = 0xFFFF4040;
+    // ---- フィールドのモブ（クエストの JSON の mobs・max_mobs） ----
+    /** モブをわかせる間隔（tick）。1 回に 1 体。 */
+    public static final int QUEST_SPAWN_INTERVAL_TICKS = 40;
+    /** 数を数える範囲（プレイヤーからの横の距離。この中のモンスターが max_mobs 未満ならわかせる）。 */
+    public static final double QUEST_SPAWN_COUNT_RADIUS = 48;
+    /** わかせる場所のプレイヤーからの距離。 */
+    public static final double QUEST_SPAWN_MIN_DISTANCE = 18;
+    public static final double QUEST_SPAWN_MAX_DISTANCE = 36;
+    /** 入口のまわりのこの半径にはわかせない。 */
+    public static final double QUEST_SPAWN_SAFE_RADIUS = 20;
+
+    // ---- 中間拠点（全クエスト共通。クエスト用ディメンションの (0, 0)） ----
+    /** 島の半径・地面の高さ。 */
+    public static final int QUEST_HUB_RADIUS = 56;
+    public static final int QUEST_HUB_GROUND_Y = 80;
+    /** 中間拠点の街の範囲。 */
+    public static final int QUEST_HUB_TOWN_RADIUS = 44;
+
+    // ---- クエストの表示（左上） ----
+    public static final int QUEST_HUD_X = 4;
+    public static final int QUEST_HUD_Y = 4;
+    public static final int QUEST_COLOR_TITLE = 0xFFFFD94A;
+    public static final int QUEST_COLOR_FIELD = 0xFFFFFFFF;
+    public static final int QUEST_COLOR_GOAL = 0xFFC8C8C8;
+    public static final int QUEST_COLOR_CLEARED = 0xFF7CFC7C;
+    public static final int QUEST_COLOR_BACKGROUND = 0x60000000;
 }

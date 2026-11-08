@@ -2,6 +2,7 @@ package io.github.kurumimnm.kurumimnmod.client.screen;
 
 import io.github.kurumimnm.kurumimnmod.Kurumimnmod;
 import io.github.kurumimnm.kurumimnmod.client.status.ClientStatus;
+import io.github.kurumimnm.kurumimnmod.quest.Money;
 import io.github.kurumimnm.kurumimnmod.status.StatType;
 import java.util.EnumMap;
 import java.util.Locale;
@@ -19,7 +20,7 @@ import net.minecraft.util.Mth;
  * <pre>
  * ┌[ステータス][ステータス付与]┐
  * │ レベル 3     EXP 45 / 100  │
- * │ 次のレベルまで 55           │
+ * │ 次のレベルまで 55   $ 120   │ ← 所持金
  * │ HP 40 / 40   MP 20 / 20    │
  * ├────────────────────────────┤
  * │ 攻撃力              3      │ ← 名前にカーソルを合わせると説明文
@@ -101,6 +102,10 @@ public class StatusScreen extends StatusPageScreen {
         y += 12;
         long toNext = Math.max(0, ClientStatus.requiredExp() - ClientStatus.exp());
         g.text(this.font, Component.translatable(KEY + ".next", toNext), x, y, COLOR_LABEL, true);
+        // 所持金（右側）
+        long money = this.minecraft == null || this.minecraft.player == null ? 0 : Money.get(this.minecraft.player);
+        Component moneyText = Component.translatable(KEY + ".money", money);
+        g.text(this.font, moneyText, right - this.font.width(moneyText), y, COLOR_POINTS, true);
 
         // ---- HP・MP ----
         y += 12;

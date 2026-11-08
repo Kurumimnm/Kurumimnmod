@@ -1,14 +1,33 @@
 {
   "dimensions": {
     "minecraft:overworld": {
-      "type": "kurumimnmod:field_world",
+      "type": "minecraft:overworld",
       "generator": {
-        "type": "minecraft:noise",
-        "biome_source": {
-          "type": "kurumimnmod:field_map",
-          "map": "kurumimnmod:astralia"
-        },
-        "settings": "kurumimnmod:field_world"
+        "type": "minecraft:flat",
+        "settings": {
+          "biome": "kurumimnmod:home_plains",
+          "features": true,
+          "lakes": false,
+          "layers": [
+            {
+              "block": "minecraft:bedrock",
+              "height": 1
+            },
+            {
+              "block": "minecraft:stone",
+              "height": 124
+            },
+            {
+              "block": "minecraft:dirt",
+              "height": 3
+            },
+            {
+              "block": "minecraft:grass_block",
+              "height": 1
+            }
+          ],
+          "structure_overrides": []
+        }
       }
     },
     "minecraft:the_end": {

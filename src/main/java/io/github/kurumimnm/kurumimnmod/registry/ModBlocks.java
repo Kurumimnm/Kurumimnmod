@@ -1,6 +1,9 @@
 package io.github.kurumimnm.kurumimnmod.registry;
 
 import io.github.kurumimnm.kurumimnmod.Kurumimnmod;
+import io.github.kurumimnm.kurumimnmod.quest.QuestGateBlock;
+import net.minecraft.world.level.material.MapColor;
+import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 /**
@@ -21,4 +24,10 @@ public final class ModBlocks {
     private ModBlocks() {}
 
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(Kurumimnmod.MOD_ID);
+
+    /**
+     * クエストのゲート（フィールドの出口・中間拠点の出発ゲート）。地形の生成で置く。壊せない・光る・アイテムなし。
+     */
+    public static final DeferredBlock<QuestGateBlock> QUEST_GATE = BLOCKS.registerBlock("quest_gate", QuestGateBlock::new,
+            p -> p.mapColor(MapColor.COLOR_PURPLE).strength(-1.0F, 3600000.0F).lightLevel(state -> 12).noLootTable());
 }
