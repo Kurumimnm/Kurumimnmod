@@ -26,8 +26,13 @@ import net.minecraft.resources.Identifier;
  *               "terrain": { "style": "hills", "base": 70, "amplitude": 10, "scale": 90 },
  *               "clear": { "type": "kill", "count": 8 }, "next": ["boss"],
  *               "mobs": [{ "type": "minecraft:zombie", "weight": 3 }], "max_mobs": 8 },
- *     "boss": { "number": 2, "size": 96, "biome": "kurumimnmod:quest_arena", "terrain": { "style": "arena" },
- *               "clear": { "type": "boss" }, "boss": "minecraft:ravager", "requires": ["1"] }
+ *     "2":    { "number": 2, "size": 100, "biome": "kurumimnmod:quest_meadow",
+ *               "terrain": { "style": "plains", "rim": 8 },
+ *               "clear": { "type": "wipe" }, "next": ["boss"],
+ *               "placed": [{ "type": "minecraft:zombie", "count": 10 }] },   … 入ったときに決まった数を置く
+ *     "boss": { "number": 3, "size": 96, "biome": "kurumimnmod:quest_arena",
+ *               "terrain": { "style": "arena", "pillars": 4, "pillar_height": 10 },
+ *               "clear": { "type": "boss" }, "boss": "minecraft:ravager", "requires": ["2"] }
  *   }
  * }
  * </pre>
@@ -116,9 +121,12 @@ public record QuestDefinition(List<String> start, String goal, Map<String, Field
      * @param mobs    わくモブ（重み付き）
      * @param maxMobs フィールドにいるモブの上限（プレイヤー 1 人のまわり）
      * @param boss    ボス（ボス部屋に入ったときに 1 体出す）
+     * @param placed  決まった数だけ置くモブ（初めて入ったときに区画の中へばらまく。わき直さない）。
+     *                クリア条件 wipe と組み合わせると「全部倒したらクリア」になる。ボス部屋の取り巻きにも使える
      */
     public record Field(int number, int size, Identifier biome, Terrain terrain, Clear clear, List<String> next,
-                        List<String> requires, List<Mob> mobs, int maxMobs, Optional<Identifier> boss) {
+                        List<String> requires, List<Mob> mobs, int maxMobs, Optional<Identifier> boss,
+                        List<Placed> placed) {
 
         public static final Codec<Field> CODEC = RecordCodecBuilder.create(i -> i.group(
                 Codec.INT.fieldOf("number").forGetter(Field::number),
@@ -130,44 +138,82 @@ public record QuestDefinition(List<String> start, String goal, Map<String, Field
                 Codec.STRING.listOf().optionalFieldOf("requires", List.of()).forGetter(Field::requires),
                 Mob.CODEC.listOf().optionalFieldOf("mobs", List.of()).forGetter(Field::mobs),
                 Codec.INT.optionalFieldOf("max_mobs", 8).forGetter(Field::maxMobs),
-                Identifier.CODEC.optionalFieldOf("boss").forGetter(Field::boss)
+                Identifier.CODEC.optionalFieldOf("boss").forGetter(Field::boss),
+                Placed.CODEC.listOf().optionalFieldOf("placed", List.of()).forGetter(Field::placed)
         ).apply(i, Field::new));
 
         public boolean isArena() {
-            return terrain.style().equals(Terrain.ARENA);
+            return terrain.isBossRoom();
+        }
+
+        /** placed の合計の数（HUD の「全滅させる n / 合計」）。 */
+        public int placedTotal() {
+            return placed.stream().mapToInt(p -> Math.max(0, p.count())).sum();
         }
     }
 
     /**
      * 地形の作り方。
      *
-     * @param style     plains（なだらか）／hills（丘）／mountains（険しい山）／dunes（砂丘）／arena（ボス部屋：平らな円形の闘技場）
+     * @param style     plains（なだらか）／hills（丘）／mountains（険しい山）／dunes（砂丘）／arena（ボス部屋：平らな円形の闘技場）／
+     *                  temple（ボス部屋：天井のある長方形の神殿。柱は左右 2 列）
      * @param base      地面の基準の高さ（Y）。入口とゲートのまわりはこの高さで平らになる
      * @param amplitude 起伏の大きさ（ブロック）
      * @param scale     起伏の横の大きさ（ブロック。大きいほどゆったり）
+     * @param rim          縁の崖の幅（ブロック）。省略（-1）なら {@link ModConstants#QUEST_RIM_WIDTH}。小さいフィールドは小さめにすると広く使える
+     * @param pillars      ボス部屋の柱の本数（0 = なし）。arena は中心のまわりに等間隔、temple は左右 2 列に半分ずつ
+     * @param pillarHeight 柱の高さ（床からのブロック数）。temple では天井までの高さ（＝柱の高さ）
+     * @param arenaFloor   arena に石の床を張るか（false = 草原のまま）
+     * @param hallWidth    temple の広間の幅（東西、内側のブロック数）
+     * @param hallLength   temple の広間の奥行き（南北、内側のブロック数。南が入口、北がゲート）
      */
-    public record Terrain(String style, int base, double amplitude, double scale) {
+    public record Terrain(String style, int base, double amplitude, double scale, int rim, int pillars,
+                          int pillarHeight, boolean arenaFloor, int hallWidth, int hallLength) {
         public static final String ARENA = "arena";
-        public static final Terrain DEFAULT = new Terrain("hills", 70, 10, 90);
+        public static final String TEMPLE = "temple";
+        public static final Terrain DEFAULT = new Terrain("hills", 70, 10, 90, -1, 0,
+                ModConstants.QUEST_PILLAR_DEFAULT_HEIGHT, true,
+                ModConstants.QUEST_TEMPLE_DEFAULT_WIDTH, ModConstants.QUEST_TEMPLE_DEFAULT_LENGTH);
 
         public static final Codec<Terrain> CODEC = RecordCodecBuilder.create(i -> i.group(
                 Codec.STRING.optionalFieldOf("style", "hills").forGetter(Terrain::style),
                 Codec.INT.optionalFieldOf("base", 70).forGetter(Terrain::base),
                 Codec.DOUBLE.optionalFieldOf("amplitude", 10.0).forGetter(Terrain::amplitude),
-                Codec.DOUBLE.optionalFieldOf("scale", 90.0).forGetter(Terrain::scale)
+                Codec.DOUBLE.optionalFieldOf("scale", 90.0).forGetter(Terrain::scale),
+                Codec.INT.optionalFieldOf("rim", -1).forGetter(Terrain::rim),
+                Codec.intRange(0, ModConstants.QUEST_PILLAR_MAX_COUNT).optionalFieldOf("pillars", 0).forGetter(Terrain::pillars),
+                Codec.intRange(1, ModConstants.QUEST_PILLAR_MAX_HEIGHT).optionalFieldOf("pillar_height",
+                        ModConstants.QUEST_PILLAR_DEFAULT_HEIGHT).forGetter(Terrain::pillarHeight),
+                Codec.BOOL.optionalFieldOf("arena_floor", true).forGetter(Terrain::arenaFloor),
+                Codec.intRange(8, ModConstants.QUEST_FIELD_MAX_SIZE).optionalFieldOf("hall_width",
+                        ModConstants.QUEST_TEMPLE_DEFAULT_WIDTH).forGetter(Terrain::hallWidth),
+                Codec.intRange(8, ModConstants.QUEST_FIELD_MAX_SIZE).optionalFieldOf("hall_length",
+                        ModConstants.QUEST_TEMPLE_DEFAULT_LENGTH).forGetter(Terrain::hallLength)
         ).apply(i, Terrain::new));
+
+        /** ボス部屋（平らで、縁の崖がなく、ゲートが部屋の中にある）か。 */
+        public boolean isBossRoom() {
+            return style.equals(ARENA) || style.equals(TEMPLE);
+        }
+
+        /** 縁の崖の幅（省略なら共通の値）。 */
+        public int rimWidth() {
+            return rim < 0 ? ModConstants.QUEST_RIM_WIDTH : rim;
+        }
     }
 
     /**
      * クリア条件（仮。種類は今後増やす）。
      *
-     * @param type  reach（ゲートにたどり着く）／kill（このフィールドでモンスターを count 体倒す）／boss（ボスを倒す）
+     * @param type  reach（ゲートにたどり着く）／kill（このフィールドでモンスターを count 体倒す）／boss（ボスを倒す）／
+     *              wipe（placed で置いたモブを全部倒す）
      * @param count 倒す数（kill のとき）
      */
     public record Clear(String type, int count) {
         public static final String REACH = "reach";
         public static final String KILL = "kill";
         public static final String BOSS = "boss";
+        public static final String WIPE = "wipe";
         public static final Clear REACH_GATE = new Clear(REACH, 0);
 
         public static final Codec<Clear> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -182,6 +228,14 @@ public record QuestDefinition(List<String> start, String goal, Map<String, Field
                 Identifier.CODEC.fieldOf("type").forGetter(Mob::type),
                 Codec.INT.optionalFieldOf("weight", 1).forGetter(Mob::weight)
         ).apply(i, Mob::new));
+    }
+
+    /** 決まった数だけ置くモブ。 */
+    public record Placed(Identifier type, int count) {
+        public static final Codec<Placed> CODEC = RecordCodecBuilder.create(i -> i.group(
+                Identifier.CODEC.fieldOf("type").forGetter(Placed::type),
+                Codec.intRange(0, ModConstants.QUEST_PLACED_MAX_PER_ENTRY).optionalFieldOf("count", 1).forGetter(Placed::count)
+        ).apply(i, Placed::new));
     }
 
     /** レジストリの名前（{@code kurumimnmod:quest}）で使う ID。 */

@@ -177,6 +177,12 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         add("biome." + MOD_ID + ".quest_void", "Void");
 
         // ---- クエスト（名前・説明・フィールド名） ----
+        add("quest." + MOD_ID + ".tutorial", "Tutorial: The Kobold Meadows");
+        add("quest." + MOD_ID + ".tutorial.description", "Learn the basics of combat on the meadows outside town. Clear out every monster in each field, then defeat the Kobold Lord waiting at the end.");
+        add("quest." + MOD_ID + ".tutorial.field.1", "Meadow of Beginnings");
+        add("quest." + MOD_ID + ".tutorial.field.2", "Howling Meadow");
+        add("quest." + MOD_ID + ".tutorial.field.3", "Kobold Territory");
+        add("quest." + MOD_ID + ".tutorial.field.boss", "Arena of the Kobold Lord");
         add("quest." + MOD_ID + ".first_trial", "The First Trial");
         add("quest." + MOD_ID + ".first_trial.description", "Cross the meadow and the forest beyond the town, and defeat the beast lurking deep inside.");
         add("quest." + MOD_ID + ".first_trial.field.1", "Meadow Path");
@@ -196,6 +202,7 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         add("hud." + MOD_ID + ".quest.goal.kill", "Defeat monsters %s / %s");
         add("hud." + MOD_ID + ".quest.goal.reach", "Reach the gate");
         add("hud." + MOD_ID + ".quest.goal.boss", "Defeat the boss");
+        add("hud." + MOD_ID + ".quest.goal.wipe", "Defeat all monsters %s / %s");
         add("hud." + MOD_ID + ".quest.goal.cleared", "Cleared! The gate is open");
         add("hud." + MOD_ID + ".quest.goal.hub", "Choose the next field at the departure gate");
         add("hud." + MOD_ID + ".quest.goal.travel", "Travel to the field from the quest screen (J)");
