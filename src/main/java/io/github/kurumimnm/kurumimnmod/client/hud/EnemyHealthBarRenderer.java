@@ -6,19 +6,23 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import io.github.kurumimnm.kurumimnmod.Kurumimnmod;
 import io.github.kurumimnm.kurumimnmod.config.ModClientConfigs;
 import io.github.kurumimnm.kurumimnmod.config.ModConstants;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.util.context.ContextKey;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderLivingEvent;
+import net.neoforged.neoforge.client.event.SubmitCustomGeometryEvent;
 import net.neoforged.neoforge.client.renderstate.RegisterRenderStateModifiersEvent;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -32,6 +36,12 @@ import org.joml.Vector3f;
  *   <li>{@link RenderLivingEvent.Post} でその値を読み出してバーを描く</li>
  * </ol>
  * という流れにしている。表示距離・対象は {@link ModClientConfigs} で変更可能。
+ * <p>
+ * <b>GeckoLib のモブ</b>（グリフォン・ミニオン・コボルトロードなど）は {@code GeoEntityRenderer} で描かれ、
+ * これはバニラの {@link LivingEntityRenderer} ではないので、上の 2 つが呼ばれない。
+ * そのため {@link SubmitCustomGeometryEvent}（ワールドの描画の最後）で、
+ * 「LivingEntityRenderer 以外で描かれる生き物」だけを別に描く（{@link #onSubmitCustomGeometry}）。
+ * バーの形・向き・色は両方で共通（{@link #faceCamera} / {@link #bar}）。
  */
 @EventBusSubscriber(modid = Kurumimnmod.MOD_ID, value = Dist.CLIENT)
 public final class EnemyHealthBarRenderer {
@@ -80,7 +90,7 @@ public final class EnemyHealthBarRenderer {
         return !ModClientConfigs.ENEMY_BAR_HOSTILE_ONLY.get() || entity instanceof Enemy;
     }
 
-    // ---- 2. 描画 ----
+    // ---- 2. 描画（バニラのレンダラーで描かれる生き物） ----
     @SubscribeEvent
     static void onRenderLivingPost(RenderLivingEvent.Post<?, ?, ?> event) {
         LivingEntityRenderState state = event.getRenderState();
@@ -93,14 +103,61 @@ public final class EnemyHealthBarRenderer {
         PoseStack poseStack = event.getPoseStack();
         poseStack.pushPose();
         poseStack.translate(0f, barY, 0f);
+        if (faceCamera(poseStack)) {
+            event.getSubmitNodeCollector().submitCustomGeometry(poseStack, RenderTypes.text(WHITE_TEXTURE),
+                    (pose, consumer) -> bar(consumer, pose, ratio));
+        }
+        poseStack.popPose();
+    }
 
-        // この時点の PoseStack は「カメラからエンティティへの相対位置」だけを持っているので、
-        // 平行移動成分 = エンティティ − カメラ。これを使ってバーをカメラの方へ向ける（ビルボード）
+    // ---- 3. 描画（GeckoLib など、LivingEntityRenderer 以外で描かれる生き物） ----
+    @SubscribeEvent
+    static void onSubmitCustomGeometry(SubmitCustomGeometryEvent event) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level == null || !ModClientConfigs.ENEMY_BAR_ENABLED.get()) {
+            return;
+        }
+        Vec3 camera = event.getLevelRenderState().cameraRenderState.pos;
+        double range = ModClientConfigs.ENEMY_BAR_RANGE.get();
+        float partialTick = mc.getDeltaTracker().getGameTimeDeltaPartialTick(false);
+        PoseStack poseStack = event.getPoseStack();
+        for (Entity e : mc.level.entitiesForRendering()) {
+            if (!(e instanceof LivingEntity entity) || !shouldShowBar(entity)) {
+                continue;
+            }
+            // バニラのレンダラーの生き物は onRenderLivingPost で描くので、ここでは描かない（二重に出さない）
+            if (mc.getEntityRenderDispatcher().getRenderer(entity) instanceof LivingEntityRenderer<?, ?, ?>) {
+                continue;
+            }
+            Vec3 pos = entity.getPosition(partialTick);
+            if (pos.distanceToSqr(camera) > (range + 4) * (range + 4)) {
+                continue;
+            }
+            float ratio = Math.clamp(entity.getHealth() / Math.max(1f, entity.getMaxHealth()), 0f, 1f);
+            float y = entity.getBbHeight() + ModConstants.ENEMY_BAR_Y_OFFSET;
+            if (entity.shouldShowName()) {
+                y += ModConstants.ENEMY_BAR_NAMETAG_OFFSET;
+            }
+            poseStack.pushPose();
+            poseStack.translate(pos.x - camera.x, pos.y - camera.y + y, pos.z - camera.z);
+            if (faceCamera(poseStack)) {
+                event.getSubmitNodeCollector().submitCustomGeometry(poseStack, RenderTypes.text(WHITE_TEXTURE),
+                        (pose, consumer) -> bar(consumer, pose, ratio));
+            }
+            poseStack.popPose();
+        }
+    }
+
+    /**
+     * バーをカメラの方へ向ける（ビルボード）。表示距離より遠ければ false（描かない）。
+     * PoseStack は「カメラからバーの位置への相対位置」に平行移動してある前提。
+     */
+    private static boolean faceCamera(PoseStack poseStack) {
+        // 平行移動成分 = バーの位置 − カメラ
         Vector3f rel = poseStack.last().pose().getTranslation(new Vector3f());
         double range = ModClientConfigs.ENEMY_BAR_RANGE.get();
         if (rel.lengthSquared() > range * range) {
-            poseStack.popPose();
-            return;
+            return false;
         }
         float dx = -rel.x;
         float dy = -rel.y;
@@ -108,30 +165,30 @@ public final class EnemyHealthBarRenderer {
         float yaw = (float) Math.atan2(dx, dz);
         float pitch = (float) -Math.atan2(dy, Math.sqrt(dx * dx + dz * dz));
         poseStack.mulPose(new Matrix4f().rotateY(yaw).rotateX(pitch));
+        return true;
+    }
 
+    /** バー本体（枠・背景・HP・目盛り）の頂点を出す。 */
+    private static void bar(VertexConsumer consumer, PoseStack.Pose pose, float ratio) {
         float w = ModConstants.ENEMY_BAR_WIDTH;
         float h = ModConstants.ENEMY_BAR_HEIGHT;
         float b = ModConstants.ENEMY_BAR_BORDER;
         float left = -w / 2f;
         float fillRight = left + w * ratio;
-
-        event.getSubmitNodeCollector().submitCustomGeometry(poseStack, RenderTypes.text(WHITE_TEXTURE), (pose, consumer) -> {
-            // 奥から順に：枠 → 背景 → HP（z を少しずつ手前にして重なりのちらつきを防ぐ）
-            quad(consumer, pose, left - b, -b, left + w + b, h + b, 0.000f, ModConstants.ENEMY_BAR_COLOR_BORDER);
-            quad(consumer, pose, left, 0f, left + w, h, 0.002f, ModConstants.ENEMY_BAR_COLOR_BACKGROUND);
-            if (ratio > 0f) {
-                // HP の色は割合で 緑 → 黄 → オレンジ → 赤 に変化（プレイヤーの HP バーと共通）
-                quad(consumer, pose, left, 0f, fillRight, h, 0.004f, HealthColor.forRatio(ratio));
-            }
-            // 目盛り（HP 10% ごと）。残り HP の割合がひと目でわかるようにする
-            float step = ModConstants.ENEMY_BAR_TICK_STEP;
-            float tw = ModConstants.ENEMY_BAR_TICK_WIDTH / 2f;
-            for (float t = step; t < 1f - step / 2f; t += step) {
-                float tx = left + w * t;
-                quad(consumer, pose, tx - tw, 0f, tx + tw, h, 0.006f, ModConstants.ENEMY_BAR_COLOR_TICK);
-            }
-        });
-        poseStack.popPose();
+        // 奥から順に：枠 → 背景 → HP（z を少しずつ手前にして重なりのちらつきを防ぐ）
+        quad(consumer, pose, left - b, -b, left + w + b, h + b, 0.000f, ModConstants.ENEMY_BAR_COLOR_BORDER);
+        quad(consumer, pose, left, 0f, left + w, h, 0.002f, ModConstants.ENEMY_BAR_COLOR_BACKGROUND);
+        if (ratio > 0f) {
+            // HP の色は割合で 緑 → 黄 → オレンジ → 赤 に変化（プレイヤーの HP バーと共通）
+            quad(consumer, pose, left, 0f, fillRight, h, 0.004f, HealthColor.forRatio(ratio));
+        }
+        // 目盛り（HP 10% ごと）。残り HP の割合がひと目でわかるようにする
+        float step = ModConstants.ENEMY_BAR_TICK_STEP;
+        float tw = ModConstants.ENEMY_BAR_TICK_WIDTH / 2f;
+        for (float t = step; t < 1f - step / 2f; t += step) {
+            float tx = left + w * t;
+            quad(consumer, pose, tx - tw, 0f, tx + tw, h, 0.006f, ModConstants.ENEMY_BAR_COLOR_TICK);
+        }
     }
 
     private static final float U = 0.5f;
