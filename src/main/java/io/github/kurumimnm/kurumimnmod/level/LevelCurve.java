@@ -12,11 +12,11 @@ import io.github.kurumimnm.kurumimnmod.config.ModConstants;
  *   growth   … 1 レベルごとの増え方の大きさ
  *   exponent … 増え方のカーブ（1.0 = 一定ペース、大きいほど高レベルで重くなる）
  *
- *   デフォルト（baseExp = 12, growth = 4, exponent = 1.5）の目安:
- *     Lv1 → 2 :  12     Lv5  → 6  :    44
- *     Lv2 → 3 :  16     Lv10 → 11 :   120
- *     Lv3 → 4 :  23     Lv20 → 21 :   343
- *     Lv4 → 5 :  33     Lv50 → 51 : 1,384
+ *   デフォルト（baseExp = 10, growth = 4, exponent = 1.5）の目安:
+ *     Lv1 → 2 :  10     Lv5  → 6  :    42
+ *     Lv2 → 3 :  14     Lv10 → 11 :   118
+ *     Lv3 → 4 :  21     Lv20 → 21 :   341
+ *     Lv4 → 5 :  31     Lv50 → 51 : 1,382
  * </pre>
  * 係数は Config（kurumimnmod-synced.toml の [level]）で調整できる。
  * クライアントにも同期されるので、HUD の進捗表示もサーバーと同じ計算になる。
