@@ -43,6 +43,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
+import org.joml.Vector3fc;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -70,7 +71,7 @@ public class KoboldLordEntity extends SkillMonster {
     /** 着地点の範囲を表示中か・その中心（クライアントの範囲表示用に同期）。 */
     private static final EntityDataAccessor<Boolean> DATA_AOE =
             SynchedEntityData.defineId(KoboldLordEntity.class, EntityDataSerializers.BOOLEAN);
-    private static final EntityDataAccessor<Vector3f> DATA_AOE_CENTER =
+    private static final EntityDataAccessor<Vector3fc> DATA_AOE_CENTER =
             SynchedEntityData.defineId(KoboldLordEntity.class, EntityDataSerializers.VECTOR3);
 
     private static final Identifier DUAL_SPEED_ID = Identifier.fromNamespaceAndPath(Kurumimnmod.MOD_ID, "kobold_lord_dual_speed");
@@ -187,8 +188,8 @@ public class KoboldLordEntity extends SkillMonster {
         if (!this.entityData.get(DATA_AOE)) {
             return null;
         }
-        Vector3f v = this.entityData.get(DATA_AOE_CENTER);
-        return new Vec3(v.x, v.y, v.z);
+        Vector3fc v = this.entityData.get(DATA_AOE_CENTER);
+        return new Vec3(v.x(), v.y(), v.z());
     }
 
     private void showAoe(@Nullable Vec3 center) {
