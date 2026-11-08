@@ -345,6 +345,49 @@ public final class ModConfigs {
 
     static {
         SYNCED_BUILDER.pop(); // griffin
+    }
+
+    // ---- スキルを使うモブ共通 ----
+    /** スキルの前に頭の上に「！」を出す時間（秒）。この間は動かず、終わるとスキルを出す。 */
+    public static final ModConfigSpec.DoubleValue SKILL_TELEGRAPH_SECONDS = SYNCED_BUILDER
+            .comment("Seconds a mob shows the \"!\" warning above its head before using a skill.")
+            .defineInRange("skillTelegraphSeconds", 0.5, 0.0, 5.0);
+
+    // ---- ガロウ（4 つ足の狼。スキル：噛みつき） ----
+    static {
+        SYNCED_BUILDER.push("garou");
+    }
+
+    /** 噛みつき 1 回のダメージ（2 回噛む）。 */
+    public static final ModConfigSpec.DoubleValue GAROU_BITE_DAMAGE = SYNCED_BUILDER
+            .comment("Damage of each bite of the Garou's lunging bite skill (it bites twice).")
+            .defineInRange("garouBiteDamage", 10.0, 0.0, 1000.0);
+    /** 噛みつき 1 回で前へ進む距離（ブロック）。 */
+    public static final ModConfigSpec.DoubleValue GAROU_BITE_DISTANCE = SYNCED_BUILDER
+            .comment("Blocks the Garou lunges forward with each bite.")
+            .defineInRange("garouBiteDistance", 3.0, 0.0, 16.0);
+    /** 噛みつきのクールダウン（秒）。 */
+    public static final ModConfigSpec.DoubleValue GAROU_BITE_COOLDOWN = SYNCED_BUILDER
+            .comment("Cooldown of the lunging bite skill (seconds).")
+            .defineInRange("garouBiteCooldown", 10.0, 0.0, 600.0);
+
+    // ---- コボルト（犬頭の小柄な人型。スキル：飛びつき） ----
+    static {
+        SYNCED_BUILDER.pop(); // garou
+        SYNCED_BUILDER.push("kobold");
+    }
+
+    /** 飛びつきのダメージ（ふつうの攻撃より弱い。距離を詰めるためのスキル）。 */
+    public static final ModConfigSpec.DoubleValue KOBOLD_LEAP_DAMAGE = SYNCED_BUILDER
+            .comment("Damage of the Kobold's leap attack (meant to close the distance).")
+            .defineInRange("koboldLeapDamage", 2.0, 0.0, 1000.0);
+    /** 飛びつきのクールダウン（秒）。 */
+    public static final ModConfigSpec.DoubleValue KOBOLD_LEAP_COOLDOWN = SYNCED_BUILDER
+            .comment("Cooldown of the leap attack (seconds).")
+            .defineInRange("koboldLeapCooldown", 10.0, 0.0, 600.0);
+
+    static {
+        SYNCED_BUILDER.pop(); // kobold
         SYNCED_BUILDER.pop(); // mobs
     }
 
@@ -447,6 +490,13 @@ public final class ModConfigs {
     public static double griffinArmoredChance() { return value(GRIFFIN_ARMORED_CHANCE); }
     public static int griffinDefense() { return value(GRIFFIN_DEFENSE); }
     public static int griffinArmoredDefense() { return value(GRIFFIN_ARMORED_DEFENSE); }
+    /** 予兆の時間（tick）。 */
+    public static int skillTelegraphTicks() { return (int) Math.round(value(SKILL_TELEGRAPH_SECONDS) * 20); }
+    public static double garouBiteDamage() { return value(GAROU_BITE_DAMAGE); }
+    public static double garouBiteDistance() { return value(GAROU_BITE_DISTANCE); }
+    public static int garouBiteCooldownTicks() { return (int) Math.round(value(GAROU_BITE_COOLDOWN) * 20); }
+    public static double koboldLeapDamage() { return value(KOBOLD_LEAP_DAMAGE); }
+    public static int koboldLeapCooldownTicks() { return (int) Math.round(value(KOBOLD_LEAP_COOLDOWN) * 20); }
 
     /** Config 値（int / double）を安全に取得する（StatType 等から使う）。 */
     public static <T> T get(ModConfigSpec.ConfigValue<T> config) { return value(config); }

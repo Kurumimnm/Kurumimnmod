@@ -143,6 +143,95 @@ public final class ModConstants {
     /** 鳴き声の高さ（オウムの声を低くして使う）。 */
     public static final float GRIFFIN_VOICE_PITCH = 0.55f;
 
+    // ---- ミニオン（小鬼。敵対・近接。チュートリアルの雑魚） ----
+    public static final double MINION_MAX_HEALTH = 15.0;
+    public static final double MINION_ATTACK_DAMAGE = 3.0;
+    public static final double MINION_MOVEMENT_SPEED = 0.25;     // ゾンビ 0.23
+    public static final double MINION_FOLLOW_RANGE = 24.0;
+    /** 追いかけるときの速さの倍率（MeleeAttackGoal）。 */
+    public static final double MINION_CHASE_SPEED_MODIFIER = 1.1;
+    public static final double MINION_WANDER_SPEED_MODIFIER = 0.8;
+    /** 当たり判定（ブロック）。子どもくらいの背丈。 */
+    public static final float MINION_WIDTH = 0.6f;
+    public static final float MINION_HEIGHT = 1.25f;
+    public static final float MINION_EYE_HEIGHT = 1.05f;
+    public static final int MINION_TRACKING_RANGE = 8;
+    public static final float MINION_SHADOW_RADIUS = 0.4f;
+    public static final float MINION_HEAD_MAX_YAW = 60f;
+    public static final float MINION_HEAD_MAX_PITCH = 40f;
+    /** 鳴き声の高さ（仮：ピグリンの声を高くして使う）。 */
+    public static final float MINION_VOICE_PITCH = 1.5f;
+
+    // ---- スライム（MOD 独自。分裂しない。跳ねて近づき体当たり） ----
+    public static final double SLIME_MAX_HEALTH = 10.0;
+    public static final double SLIME_ATTACK_DAMAGE = 2.0;
+    public static final double SLIME_MOVEMENT_SPEED = 0.3;      // 跳んでいる間だけ前へ進む
+    public static final double SLIME_FOLLOW_RANGE = 16.0;
+    public static final double SLIME_CHASE_SPEED_MODIFIER = 1.0;
+    public static final double SLIME_WANDER_SPEED_MODIFIER = 0.8;
+    /** 次に跳ぶまでの間（tick）。追いかけている間はこれの 1/3。 */
+    public static final int SLIME_JUMP_DELAY_MIN = 10;
+    public static final int SLIME_JUMP_DELAY_MAX = 30;
+    public static final float SLIME_WIDTH = 0.75f;
+    public static final float SLIME_HEIGHT = 0.625f;
+    public static final float SLIME_EYE_HEIGHT = 0.4f;
+    public static final int SLIME_TRACKING_RANGE = 8;
+    public static final float SLIME_SHADOW_RADIUS = 0.4f;
+
+    // ---- ガロウ（4 つ足の狼。敵対。スキル：噛みつき。ダメージ・距離・CT は Config [mobs.garou]） ----
+    public static final double GAROU_MAX_HEALTH = 20.0;
+    public static final double GAROU_ATTACK_DAMAGE = 10.0;
+    public static final double GAROU_MOVEMENT_SPEED = 0.3;      // オオカミ 0.3
+    public static final double GAROU_FOLLOW_RANGE = 32.0;
+    public static final double GAROU_CHASE_SPEED_MODIFIER = 1.2;
+    public static final double GAROU_WANDER_SPEED_MODIFIER = 0.8;
+    public static final float GAROU_WIDTH = 0.9f;
+    public static final float GAROU_HEIGHT = 1.25f;
+    public static final float GAROU_EYE_HEIGHT = 1.0f;
+    public static final int GAROU_TRACKING_RANGE = 10;
+    public static final float GAROU_SHADOW_RADIUS = 0.6f;
+    public static final float GAROU_HEAD_MAX_YAW = 45f;
+    public static final float GAROU_HEAD_MAX_PITCH = 30f;
+    public static final float GAROU_VOICE_PITCH = 0.6f;
+    /** 噛みつきを使う、相手との距離（ブロック）。近すぎず遠すぎない所で使う。 */
+    public static final double GAROU_BITE_MIN_RANGE = 2.5;
+    public static final double GAROU_BITE_MAX_RANGE = 8.0;
+    /** 噛みつき 1 回の突進の長さ（tick）と、1 回目と 2 回目の間・終わったあとのすき（tick）。 */
+    public static final int GAROU_BITE_LUNGE_TICKS = 6;
+    public static final int GAROU_BITE_PAUSE_TICKS = 5;
+    public static final int GAROU_BITE_RECOVER_TICKS = 12;
+    /** 噛みつきの当たり判定：体の当たり判定を前へ・横へ広げる量（ブロック）。 */
+    public static final double GAROU_BITE_HIT_REACH = 0.8;
+
+    // ---- コボルト（犬頭の小柄な人型。敵対。スキル：飛びつき。ダメージ・CT は Config [mobs.kobold]） ----
+    public static final double KOBOLD_MAX_HEALTH = 20.0;
+    public static final double KOBOLD_ATTACK_DAMAGE = 5.0;
+    public static final double KOBOLD_MOVEMENT_SPEED = 0.26;
+    public static final double KOBOLD_FOLLOW_RANGE = 28.0;
+    public static final double KOBOLD_CHASE_SPEED_MODIFIER = 1.1;
+    public static final double KOBOLD_WANDER_SPEED_MODIFIER = 0.8;
+    public static final float KOBOLD_WIDTH = 0.6f;
+    public static final float KOBOLD_HEIGHT = 1.65f;
+    public static final float KOBOLD_EYE_HEIGHT = 1.4f;
+    public static final int KOBOLD_TRACKING_RANGE = 8;
+    public static final float KOBOLD_SHADOW_RADIUS = 0.45f;
+    public static final float KOBOLD_HEAD_MAX_YAW = 60f;
+    public static final float KOBOLD_HEAD_MAX_PITCH = 40f;
+    public static final float KOBOLD_VOICE_PITCH = 1.25f;
+    /** 飛びつきを使う、相手との距離（ブロック）。離れた相手との距離を詰めるスキル。 */
+    public static final double KOBOLD_LEAP_MIN_RANGE = 4.0;
+    public static final double KOBOLD_LEAP_MAX_RANGE = 10.0;
+    /** 飛びつきの上向きの速さと、空中にいる時間の見込み（tick。横の速さの計算に使う）。 */
+    public static final double KOBOLD_LEAP_UP_SPEED = 0.55;
+    public static final int KOBOLD_LEAP_FLIGHT_TICKS = 14;
+    /** 相手の手前で着地するように、距離からこれだけ引く（ブロック）。 */
+    public static final double KOBOLD_LEAP_STOP_SHORT = 1.0;
+    /** 飛びついてから地面に着くまでの最大の時間（tick。安全装置）と、着地後のすき（tick）。 */
+    public static final int KOBOLD_LEAP_MAX_TICKS = 40;
+    public static final int KOBOLD_LEAP_RECOVER_TICKS = 8;
+    /** 飛びつきの当たり判定：体の当たり判定を広げる量（ブロック）。 */
+    public static final double KOBOLD_LEAP_HIT_REACH = 0.4;
+
     // ---- 氷柱（氷柱の杖の弾）。ダメージ・速さなどの調整値は Config の [magic.iceWand] ----
     /** 当たり判定の大きさ（ブロック）。 */
     public static final float ICE_ICICLE_SIZE = 0.5f;
