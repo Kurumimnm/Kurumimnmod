@@ -148,7 +148,7 @@ public final class QuestPlotFeature implements Feature {
     }
 
     /**
-     * 神殿：広間（hall_width × hall_length）の床・壁・天井、左右 2 列の柱、真ん中の赤いじゅうたん、明かり。
+     * 神殿：広間（hall_width × hall_length）の床・壁・天井、左右 2 列の柱、真ん中の赤い道、明かり。
      * 広間の外（区画の残り）は地面のまま。壁と天井で囲まれているので外へは出られない。
      */
     private static void temple(Writer w, QuestPlots.Plot plot) {
@@ -164,7 +164,7 @@ public final class QuestPlotFeature implements Feature {
         BlockState wall = Blocks.STONE_BRICKS.defaultBlockState();
         BlockState band = Blocks.CHISELED_STONE_BRICKS.defaultBlockState();
         BlockState ceiling = Blocks.DEEPSLATE_BRICKS.defaultBlockState();
-        BlockState carpet = Blocks.RED_CARPET.defaultBlockState();
+        BlockState runner = Blocks.RED_NETHER_BRICKS.defaultBlockState(); // 入口からゲートへの赤い道（床にはめこむ）
         BlockState air = Blocks.AIR.defaultBlockState();
         BlockState light = Blocks.LIGHT.defaultBlockState(); // 見えない光源（明るさ 15）
         int spacing = ModConstants.QUEST_TEMPLE_LIGHT_SPACING;
@@ -195,9 +195,9 @@ public final class QuestPlotFeature implements Feature {
                 for (int y = floorY + 1; y < ceilY; y++) {
                     w.set(x, y, z, air);
                 }
-                // 真ん中のじゅうたん（入口からゲートまで、幅 3）
+                // 真ん中の赤い道（入口からゲートまで、幅 3）
                 if (Math.abs(u) <= 1) {
-                    w.set(x, floorY + 1, z, carpet);
+                    w.set(x, floorY, z, runner);
                 }
                 // 明かり（床の近くと、天井の近く。柱の位置は避ける）
                 if (Math.floorMod(u, spacing) == 0 && Math.floorMod(v, spacing) == 0 && !plot.nearPillar(x, z, 0)
