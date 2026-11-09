@@ -9,6 +9,7 @@ import com.geckolib.animation.object.PlayState;
 import com.geckolib.util.GeckoLibUtil;
 import io.github.kurumimnm.kurumimnmod.config.ModConfigs;
 import io.github.kurumimnm.kurumimnmod.config.ModConstants;
+import io.github.kurumimnm.kurumimnmod.enemy.EnemyMeleeAttackGoal;
 import io.github.kurumimnm.kurumimnmod.registry.ModItems;
 import io.github.kurumimnm.kurumimnmod.status.DefenseHolder;
 import java.util.EnumSet;
@@ -39,7 +40,6 @@ import net.minecraft.world.entity.ai.control.MoveControl;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
-import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
@@ -164,7 +164,7 @@ public class GriffinEntity extends PathfinderMob implements NeutralMob, GeoEntit
     @Override
     protected void registerGoals() {
         this.goalSelector.addGoal(0, new FloatGoal(this));
-        this.goalSelector.addGoal(1, new MeleeAttackGoal(this, ModConstants.GRIFFIN_ATTACK_SPEED_MODIFIER, true));
+        this.goalSelector.addGoal(1, new EnemyMeleeAttackGoal(this, ModConstants.GRIFFIN_ATTACK_SPEED_MODIFIER, true));
         this.goalSelector.addGoal(3, new GroundWanderGoal());
         this.goalSelector.addGoal(3, new AirWanderGoal());
         this.goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 8.0f));

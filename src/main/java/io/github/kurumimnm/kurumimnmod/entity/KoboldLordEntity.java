@@ -7,6 +7,7 @@ import com.geckolib.animation.object.PlayState;
 import io.github.kurumimnm.kurumimnmod.Kurumimnmod;
 import io.github.kurumimnm.kurumimnmod.config.ModConfigs;
 import io.github.kurumimnm.kurumimnmod.config.ModConstants;
+import io.github.kurumimnm.kurumimnmod.enemy.EnemyMeleeAttackGoal;
 import io.github.kurumimnm.kurumimnmod.quest.QuestPlots;
 import io.github.kurumimnm.kurumimnmod.registry.ModItems;
 import java.util.EnumSet;
@@ -30,7 +31,6 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
-import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
@@ -115,7 +115,7 @@ public class KoboldLordEntity extends SkillMonster {
     protected void registerGoals() {
         this.goalSelector.addGoal(0, new FloatGoal(this));
         this.goalSelector.addGoal(1, new WallKickGoal());
-        this.goalSelector.addGoal(2, new MeleeAttackGoal(this, ModConstants.KOBOLD_LORD_CHASE_SPEED_MODIFIER, true));
+        this.goalSelector.addGoal(2, new EnemyMeleeAttackGoal(this, ModConstants.KOBOLD_LORD_CHASE_SPEED_MODIFIER, true));
         this.goalSelector.addGoal(5, new WaterAvoidingRandomStrollGoal(this, ModConstants.KOBOLD_LORD_WANDER_SPEED_MODIFIER));
         this.goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 12.0f));
         this.goalSelector.addGoal(7, new RandomLookAroundGoal(this));
@@ -253,7 +253,7 @@ public class KoboldLordEntity extends SkillMonster {
             setNoGravity(false);
             resetFallDistance();
             phase = Phase.DONE;
-            startSkillCooldown(ModConfigs.koboldLordKickCooldownTicks());
+            startSkillCooldown("kick", ModConfigs.koboldLordKickCooldownTicks());
         }
 
         @Override
@@ -335,7 +335,7 @@ public class KoboldLordEntity extends SkillMonster {
                     double dx = p.getX() - landing.x;
                     double dz = p.getZ() - landing.z;
                     if (dx * dx + dz * dz <= r * r && Math.abs(p.getY() - landing.y) <= ModConstants.KOBOLD_LORD_KICK_HIT_HEIGHT) {
-                        p.hurtServer(level, damageSources().mobAttack(KoboldLordEntity.this), (float) ModConfigs.koboldLordKickDamage());
+                        p.hurtServer(level, damageSources().mobAttack(KoboldLordEntity.this), skillDamage("kick", ModConfigs.koboldLordKickDamage()));
                     }
                 }
             }
