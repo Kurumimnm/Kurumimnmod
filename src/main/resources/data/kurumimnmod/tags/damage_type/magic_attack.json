@@ -1,6 +1,7 @@
 {
   "values": [
     "minecraft:magic",
-    "minecraft:indirect_magic"
+    "minecraft:indirect_magic",
+    "kurumimnmod:ice_magic"
   ]
 }
