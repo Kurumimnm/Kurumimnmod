@@ -13,11 +13,13 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -112,7 +114,7 @@ public class KoboldLordEntity extends SkillMonster {
 
     /** ボスバー（赤・10 区切り）。近くのプレイヤーにだけ見せる（{@link #updateBossBarPlayers}）。 */
     private final ServerBossEvent bossEvent =
-            new ServerBossEvent(getDisplayName(), BossEvent.BossBarColor.RED, BossEvent.BossBarOverlay.NOTCHED_10);
+            new ServerBossEvent(UUID.randomUUID(), getDisplayName(), BossEvent.BossBarColor.RED, BossEvent.BossBarOverlay.NOTCHED_10);
 
     public KoboldLordEntity(EntityType<? extends KoboldLordEntity> type, Level level) {
         super(type, level);
@@ -307,11 +309,14 @@ public class KoboldLordEntity extends SkillMonster {
         return state.isAir() ? Blocks.STONE.defaultBlockState() : state;
     }
 
-    /** プレイヤーを中心から外へ吹き飛ばす（少し浮かせる）。 */
-    private static void launch(Player player, Vec3 from, double strength) {
-        player.knockback(strength, from.x - player.getX(), from.z - player.getZ());
+    /** プレイヤーを中心から外へ吹き飛ばす（少し浮かせる）。ノックバック耐性が効く。 */
+    private void launch(Player player, Vec3 from, double strength) {
+        player.knockback(strength, from.x - player.getX(), from.z - player.getZ(), damageSources().mobAttack(this), 0f);
         player.setDeltaMovement(player.getDeltaMovement().add(0, ModConstants.KOBOLD_LORD_KNOCKBACK_LIFT, 0));
-        player.hurtMarked = true; // 速度をクライアントへ送る
+        // プレイヤーの動きはクライアント側で計算されるので、新しい速度を本人へ送る
+        if (player instanceof ServerPlayer serverPlayer) {
+            serverPlayer.connection.send(new ClientboundSetEntityMotionPacket(serverPlayer));
+        }
     }
 
     // =====================================================================
