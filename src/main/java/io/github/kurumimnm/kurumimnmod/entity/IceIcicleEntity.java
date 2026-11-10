@@ -9,6 +9,7 @@ import com.geckolib.util.GeckoLibUtil;
 import io.github.kurumimnm.kurumimnmod.config.ModConfigs;
 import io.github.kurumimnm.kurumimnmod.config.ModConstants;
 import io.github.kurumimnm.kurumimnmod.magic.MagicTargeting;
+import io.github.kurumimnm.kurumimnmod.registry.ModDamageTypes;
 import io.github.kurumimnm.kurumimnmod.registry.ModEntities;
 import java.util.HashSet;
 import java.util.List;
@@ -249,9 +250,12 @@ public class IceIcicleEntity extends Projectile implements GeoEntity {
                 && !owner.isAlliedTo(target);
     }
 
-    /** 間接魔法ダメージ（直接の原因 = 氷柱、攻撃者 = 撃った人）。 */
+    /**
+     * 氷の魔法ダメージ（直接の原因 = 氷柱、攻撃者 = 撃った人）。
+     * バニラの間接魔法と同じ扱いで、さらに氷属性（敵ステータスの elements.ice）の対象になる。
+     */
     private DamageSource damageSource() {
-        return level().damageSources().indirectMagic(this, getOwner());
+        return ModDamageTypes.source(level(), ModDamageTypes.ICE_MAGIC, this, getOwner());
     }
 
     // =====================================================================

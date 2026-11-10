@@ -71,7 +71,7 @@ public final class ScarecrowEvents {
 
         // ---- 防御力（攻撃者のいるダメージだけ。プレイヤーの防御力と同じ式） ----
         if (source.getEntity() != null) {
-            damage = StatManager.applyDefense(damage, StatManager.defenseReduction(settings.defense()));
+            damage = StatManager.applyDefenseStat(damage, settings.defense());
         }
         // ---- 魔法耐性 ----
         if (magic && settings.magicResistance() > 0) {

@@ -262,7 +262,36 @@ public final class ModConfigs {
             .defineInRange("intelligenceMagicBonus", 0.1, 0.0, 100.0);
 
     static {
-        SYNCED_BUILDER.pop();
+        SYNCED_BUILDER.pop(); // effects
+    }
+
+    // ---- 敵のステータス（VIT・MDF の軽減式など。敵ごとの値はデータマップ enemy_stats） ----
+    static {
+        SYNCED_BUILDER.push("enemy");
+    }
+
+    /**
+     * 敵の防御力（VIT・MDF）の軽減率。D が VIT を超えたとき、被ダメ = D − VIT × この値。
+     * （D ≦ VIT のときは blockedDamage）
+     */
+    public static final ModConfigSpec.DoubleValue ENEMY_DEFENSE_RATIO = SYNCED_BUILDER
+            .comment("Enemy VIT/MDF: when damage D is above VIT, damage taken = D - VIT * this.",
+                    "When D <= VIT, damage taken = blockedDamage.")
+            .defineInRange("enemyDefenseRatio", 0.5, 0.0, 1.0);
+
+    /**
+     * 防御が攻撃を上回ったときの被ダメージ（既定 1）。
+     * 敵：D ≦ VIT（魔法は MDF）のとき。プレイヤー・グリフォン・カカシ：防御力 ＞ 受けるダメージのとき。
+     * 元のダメージがこれより小さい場合は元のダメージのまま。
+     */
+    public static final ModConfigSpec.DoubleValue BLOCKED_DAMAGE = SYNCED_BUILDER
+            .comment("Damage taken when the defense is higher than the attack (default 1).",
+                    "Enemies: D <= VIT (MDF for magic). Players/griffins/scarecrows: Defense > incoming damage.",
+                    "If the original damage is smaller, the original damage is used.")
+            .defineInRange("blockedDamage", 1.0, 0.0, 1000.0);
+
+    static {
+        SYNCED_BUILDER.pop(); // enemy
         SYNCED_BUILDER.pop(); // status
     }
 
@@ -490,6 +519,8 @@ public final class ModConfigs {
     public static double attackDamageBonusPerPoint() { return value(ATTACK_DAMAGE_BONUS_PER_POINT); }
     public static double defenseReductionPerPoint() { return value(DEFENSE_REDUCTION_PER_POINT); }
     public static double defenseMinDamage() { return value(DEFENSE_MIN_DAMAGE); }
+    public static double enemyDefenseRatio() { return value(ENEMY_DEFENSE_RATIO); }
+    public static double blockedDamage() { return value(BLOCKED_DAMAGE); }
     public static double critChanceBase() { return value(CRIT_CHANCE_BASE); }
     public static double critChancePerPoint() { return value(CRIT_CHANCE_PER_POINT); }
     public static double critDamageBase() { return value(CRIT_DAMAGE_BASE); }

@@ -6,6 +6,7 @@ import com.geckolib.animation.RawAnimation;
 import com.geckolib.animation.object.PlayState;
 import io.github.kurumimnm.kurumimnmod.config.ModConfigs;
 import io.github.kurumimnm.kurumimnmod.config.ModConstants;
+import io.github.kurumimnm.kurumimnmod.enemy.EnemyMeleeAttackGoal;
 import io.github.kurumimnm.kurumimnmod.registry.ModItems;
 import java.util.EnumSet;
 import net.minecraft.server.level.ServerLevel;
@@ -21,7 +22,6 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
-import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
@@ -74,7 +74,7 @@ public class GarouEntity extends SkillMonster {
     protected void registerGoals() {
         this.goalSelector.addGoal(0, new FloatGoal(this));
         this.goalSelector.addGoal(1, new BiteSkillGoal());
-        this.goalSelector.addGoal(2, new MeleeAttackGoal(this, ModConstants.GAROU_CHASE_SPEED_MODIFIER, true));
+        this.goalSelector.addGoal(2, new EnemyMeleeAttackGoal(this, ModConstants.GAROU_CHASE_SPEED_MODIFIER, true));
         this.goalSelector.addGoal(5, new WaterAvoidingRandomStrollGoal(this, ModConstants.GAROU_WANDER_SPEED_MODIFIER));
         this.goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 8.0f));
         this.goalSelector.addGoal(7, new RandomLookAroundGoal(this));
@@ -140,7 +140,7 @@ public class GarouEntity extends SkillMonster {
         public void stop() {
             setTelegraphing(false);
             phase = Phase.DONE;
-            startSkillCooldown(ModConfigs.garouBiteCooldownTicks());
+            startSkillCooldown("bite", ModConfigs.garouBiteCooldownTicks());
         }
 
         @Override
@@ -216,7 +216,7 @@ public class GarouEntity extends SkillMonster {
                 if (e instanceof Player p && (p.isCreative() || p.isSpectator())) {
                     continue;
                 }
-                e.hurtServer(level, damageSources().mobAttack(GarouEntity.this), (float) ModConfigs.garouBiteDamage());
+                e.hurtServer(level, damageSources().mobAttack(GarouEntity.this), skillDamage("bite", ModConfigs.garouBiteDamage()));
                 hitThisLunge = true;
             }
         }

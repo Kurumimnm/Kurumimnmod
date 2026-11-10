@@ -169,6 +169,42 @@ public final class StatManager {
         return Math.max(minDamage, damage - reduction);
     }
 
+    /**
+     * 防御力ステータスでの軽減（プレイヤー・{@link DefenseHolder} の Mob・カカシで共通）。
+     * <ul>
+     *   <li>防御力 ＞ 受けるダメージ → 被ダメは Config blockedDamage（既定 1）</li>
+     *   <li>それ以外 → 受けるダメージ − (防御力 − 1) × defenseReduction（従来どおり）</li>
+     * </ul>
+     */
+    public static float applyDefenseStat(float damage, double defense) {
+        if (damage <= 0) {
+            return damage;
+        }
+        if (defense > damage) {
+            return Math.min(damage, (float) ModConfigs.blockedDamage());
+        }
+        return applyDefense(damage, defenseReduction(defense));
+    }
+
+    /**
+     * 敵の防御力（VIT・MDF）での軽減。
+     * <ul>
+     *   <li>D ≦ VIT → 被ダメは Config blockedDamage（既定 1）</li>
+     *   <li>D ＞ VIT → D − VIT × enemyDefenseRatio（既定 0.5）</li>
+     * </ul>
+     * 例（既定値・VIT 9）：D10 → 5.5、D20 → 15.5。VIT 10 に D10 → 1。
+     */
+    public static float applyEnemyDefense(float damage, int defense) {
+        if (defense <= 0 || damage <= 0) {
+            return damage;
+        }
+        float blocked = Math.min(damage, (float) ModConfigs.blockedDamage());
+        if (damage <= defense) {
+            return blocked;
+        }
+        return Math.max(blocked, damage - (float) (defense * ModConfigs.enemyDefenseRatio()));
+    }
+
     /** 技量によるクリティカル率（0.0〜1.0）。 */
     public static double critChance(Player player) {
         double dex = value(player, StatType.DEXTERITY) - 1;
