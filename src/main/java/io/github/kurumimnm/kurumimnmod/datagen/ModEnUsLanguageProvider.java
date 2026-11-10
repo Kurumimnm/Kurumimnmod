@@ -349,6 +349,12 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         add(MOD_ID + ".configuration.koboldLordKickRadius", "Wall-Kick Dive Radius (blocks)");
         add(MOD_ID + ".configuration.koboldLordKickCooldown", "Wall-Kick Dive Cooldown (seconds)");
         add(MOD_ID + ".configuration.koboldLordDualHealthRatio", "Dual-Wield Health Ratio");
+        add(MOD_ID + ".configuration.koboldLordKickKnockback", "Wall-Kick Dive Shockwave Knockback");
+        add(MOD_ID + ".configuration.koboldLordRoarRadius", "War Roar Radius (blocks)");
+        add(MOD_ID + ".configuration.koboldLordRoarKnockback", "War Roar Knockback");
+        add(MOD_ID + ".configuration.enemyStats", "Enemy Stats");
+        add(MOD_ID + ".configuration.vitMinDamage", "Minimum Damage after VIT");
+        add(MOD_ID + ".configuration.vitAppliesToMagic", "VIT Also Reduces Magic Damage");
         add(MOD_ID + ".configuration.armoredDefense", "Defense (Armored)");
 
         // ---- Config 画面（カカシ・ダメージ数字） ----

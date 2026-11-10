@@ -240,11 +240,12 @@ public final class ModConstants {
     public static final double KOBOLD_LORD_KNOCKBACK_RESISTANCE = 0.6;
     public static final double KOBOLD_LORD_CHASE_SPEED_MODIFIER = 1.1;
     public static final double KOBOLD_LORD_WANDER_SPEED_MODIFIER = 0.7;
-    public static final float KOBOLD_LORD_WIDTH = 0.8f;
-    public static final float KOBOLD_LORD_HEIGHT = 2.3f;
-    public static final float KOBOLD_LORD_EYE_HEIGHT = 1.95f;
+    /** 当たり判定（ブロック）。モデルは角の先まで約 2.4 ブロック、肩当てまで含めた幅は約 1.4 ブロック。 */
+    public static final float KOBOLD_LORD_WIDTH = 1.0f;
+    public static final float KOBOLD_LORD_HEIGHT = 2.4f;
+    public static final float KOBOLD_LORD_EYE_HEIGHT = 1.9f;
     public static final int KOBOLD_LORD_TRACKING_RANGE = 10;
-    public static final float KOBOLD_LORD_SHADOW_RADIUS = 0.7f;
+    public static final float KOBOLD_LORD_SHADOW_RADIUS = 0.85f;
     public static final float KOBOLD_LORD_HEAD_MAX_YAW = 50f;
     public static final float KOBOLD_LORD_HEAD_MAX_PITCH = 35f;
     public static final float KOBOLD_LORD_VOICE_PITCH = 0.8f;
@@ -267,6 +268,37 @@ public final class ModConstants {
     /** 二刀流：2 撃目までの間（tick）と、移動速度の上がり方（割合）。 */
     public static final int KOBOLD_LORD_DUAL_SECOND_HIT_DELAY = 6;
     public static final double KOBOLD_LORD_DUAL_SPEED_BONUS = 0.2;
+
+    // ---- コボルトロード：ボスバー ----
+    /** ボスバーを表示する距離（ブロック）。近くの別のクエスト区画にいるプレイヤーには出さない。 */
+    public static final double KOBOLD_LORD_BOSS_BAR_RANGE = 40.0;
+    /** ボスバーを見せるプレイヤーを更新する間隔（tick）。 */
+    public static final int KOBOLD_LORD_BOSS_BAR_UPDATE_INTERVAL = 10;
+
+    // ---- コボルトロード：第 2 形態への移行（二刀流＋雄たけび。範囲・強さは Config） ----
+    /** 移行の演出の長さ（tick。アニメ draw = 1.5 秒）。この間は動かない。 */
+    public static final int KOBOLD_LORD_PHASE_SHIFT_TICKS = 30;
+    /** 移行が始まってから雄たけびまで（tick。なたを抜き終わったところ）。 */
+    public static final int KOBOLD_LORD_ROAR_DELAY_TICKS = 12;
+    /** 雄たけび・衝撃波で吹き飛ばすときの上向きの速さ。 */
+    public static final double KOBOLD_LORD_KNOCKBACK_LIFT = 0.45;
+    /** 第 2 形態の間、口から煙を出す間隔（tick。クライアント）。 */
+    public static final int KOBOLD_LORD_RAGE_SMOKE_INTERVAL = 3;
+
+    // ---- コボルトロード：攻撃の演出（パーティクルの数など。見た目だけ） ----
+    /** 円形のパーティクル（衝撃波・雄たけび）の密度（円周 1 ブロックあたりの数）。 */
+    public static final double KOBOLD_LORD_RING_PARTICLES_PER_BLOCK = 3.0;
+    /** 着地の衝撃波：広がる輪の数と、輪どうしの間隔（tick）。 */
+    public static final int KOBOLD_LORD_SHOCKWAVE_RINGS = 3;
+    public static final int KOBOLD_LORD_SHOCKWAVE_RING_INTERVAL = 2;
+    /** 着地点に飛び散るブロックの破片の数。 */
+    public static final int KOBOLD_LORD_LANDING_DEBRIS = 40;
+    /** 突撃中の軌跡（1 tick あたりの煙の数）。 */
+    public static final int KOBOLD_LORD_DIVE_TRAIL_PARTICLES = 4;
+    /** 跳び上がるとき・柱にしがみついたときに飛び散る破片の数。 */
+    public static final int KOBOLD_LORD_LEAP_DEBRIS = 20;
+    /** 通常攻撃が当たったときの火花（クリティカルのパーティクル）の数。 */
+    public static final int KOBOLD_LORD_HIT_SPARKS = 10;
 
     // ---- ボスの着地点の範囲表示（クライアント） ----
     public static final int BOSS_AOE_COLOR_FILL_CENTER = 0x80FF3020;

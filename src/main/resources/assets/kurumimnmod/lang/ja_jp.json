@@ -156,6 +156,12 @@
   "kurumimnmod.configuration.koboldLordKickRadius": "壁蹴り突撃の範囲（半径・ブロック）",
   "kurumimnmod.configuration.koboldLordKickCooldown": "壁蹴り突撃のクールダウン（秒）",
   "kurumimnmod.configuration.koboldLordDualHealthRatio": "二刀流になるHPの割合",
+  "kurumimnmod.configuration.koboldLordKickKnockback": "壁蹴り突撃の衝撃波で吹き飛ばす強さ",
+  "kurumimnmod.configuration.koboldLordRoarRadius": "雄たけびの範囲（半径・ブロック）",
+  "kurumimnmod.configuration.koboldLordRoarKnockback": "雄たけびで押し返す強さ",
+  "kurumimnmod.configuration.enemyStats": "敵のステータス",
+  "kurumimnmod.configuration.vitMinDamage": "VIT軽減後の最低ダメージ",
+  "kurumimnmod.configuration.vitAppliesToMagic": "VITを魔法ダメージにもかける",
   "kurumimnmod.configuration.armoredDefense": "防御力（鎧付き）",
 
   "item.kurumimnmod.scarecrow_summon_stick": "カカシ召喚用ステッキ",
