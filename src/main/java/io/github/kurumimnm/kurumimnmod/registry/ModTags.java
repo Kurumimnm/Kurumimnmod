@@ -55,10 +55,26 @@ public final class ModTags {
          * <p>
          * このタグのダメージは、攻撃力ではなく知力の倍率で計算される（StatEvents）。
          * 中身は data/kurumimnmod/tags/damage_type/magic_attack.json
-         * （初期値: minecraft:magic, minecraft:indirect_magic）。
+         * （初期値: minecraft:magic, minecraft:indirect_magic, kurumimnmod:ice_magic）。
          * ※ NeoForge の neoforge:is_magic は茨・毒・ウィザーも含むので使わない。
          */
         public static final TagKey<DamageType> MAGIC_ATTACK = TagKey.create(Registries.DAMAGE_TYPE,
                 Identifier.fromNamespaceAndPath(Kurumimnmod.MOD_ID, "magic_attack"));
+
+        /** 属性タグのキャッシュ（属性名 → タグ）。サーバースレッドからのみ使う。 */
+        private static final java.util.Map<String, TagKey<DamageType>> ELEMENTS = new java.util.HashMap<>();
+
+        /**
+         * 属性ダメージ（kurumimnmod:element/&lt;属性名&gt;）。
+         * <p>
+         * 敵ステータスの {@code elements}（属性耐性・弱点）で使う。中身は
+         * data/kurumimnmod/tags/damage_type/element/&lt;属性名&gt;.json
+         * （初期：ice = 氷柱の杖、fire = バニラの炎系ダメージ #minecraft:is_fire）。
+         * 新しい属性はタグの JSON を追加するだけで使える。
+         */
+        public static TagKey<DamageType> element(String name) {
+            return ELEMENTS.computeIfAbsent(name, n -> TagKey.create(Registries.DAMAGE_TYPE,
+                    Identifier.fromNamespaceAndPath(Kurumimnmod.MOD_ID, "element/" + n)));
+        }
     }
 }

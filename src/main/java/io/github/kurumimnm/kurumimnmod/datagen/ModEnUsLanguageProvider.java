@@ -109,7 +109,7 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         // ---- ステータス（StatType：ステータス画面に表示する値） ----
         addStat(StatType.ATTACK, "Attack", "Increases the damage you deal to enemies.");
         add(StatType.ATTACK.nameKey() + ".effect", "Current: damage dealt x%s (except magic)");
-        addStat(StatType.DEFENSE, "Defense", "Reduces the damage you take from enemies by a flat amount (applied after armor).");
+        addStat(StatType.DEFENSE, "Defense", "Reduces the damage you take from enemies by a flat amount (applied after armor). If your Defense is higher than the damage, you take only 1.");
         add(StatType.DEFENSE.nameKey() + ".effect", "Current: damage taken -%s");
         addStat(StatType.INTELLIGENCE, "Intelligence", "Increases the damage of your magic attacks.");
         add(StatType.INTELLIGENCE.nameKey() + ".effect", "Current: magic damage x%s");
@@ -316,6 +316,9 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         add(MOD_ID + ".configuration.luckAttributePerPoint", "Vanilla Luck per Luck");
         add(MOD_ID + ".configuration.mpRegenPerSecond", "MP Regen per Second (Ratio)");
         add(MOD_ID + ".configuration.intelligenceMagicBonus", "Magic Damage Bonus per Intelligence");
+        add(MOD_ID + ".configuration.enemy", "Enemy Stats");
+        add(MOD_ID + ".configuration.enemyDefenseRatio", "Enemy VIT/MDF Reduction Ratio");
+        add(MOD_ID + ".configuration.blockedDamage", "Damage when Defense beats Attack");
         add(MOD_ID + ".configuration.magic", "Magic");
         add(MOD_ID + ".configuration.iceWand", "Icicle Wand");
         add(MOD_ID + ".configuration.mpCost", "MP Cost");
@@ -352,9 +355,6 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         add(MOD_ID + ".configuration.koboldLordKickKnockback", "Wall-Kick Dive Shockwave Knockback");
         add(MOD_ID + ".configuration.koboldLordRoarRadius", "War Roar Radius (blocks)");
         add(MOD_ID + ".configuration.koboldLordRoarKnockback", "War Roar Knockback");
-        add(MOD_ID + ".configuration.enemyStats", "Enemy Stats");
-        add(MOD_ID + ".configuration.vitMinDamage", "Minimum Damage after VIT");
-        add(MOD_ID + ".configuration.vitAppliesToMagic", "VIT Also Reduces Magic Damage");
         add(MOD_ID + ".configuration.armoredDefense", "Defense (Armored)");
 
         // ---- Config 画面（カカシ・ダメージ数字） ----

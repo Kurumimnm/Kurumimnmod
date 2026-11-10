@@ -7,6 +7,7 @@ import com.geckolib.animation.object.PlayState;
 import io.github.kurumimnm.kurumimnmod.Kurumimnmod;
 import io.github.kurumimnm.kurumimnmod.config.ModConfigs;
 import io.github.kurumimnm.kurumimnmod.config.ModConstants;
+import io.github.kurumimnm.kurumimnmod.enemy.EnemyMeleeAttackGoal;
 import io.github.kurumimnm.kurumimnmod.quest.QuestPlots;
 import io.github.kurumimnm.kurumimnmod.registry.ModItems;
 import java.util.EnumSet;
@@ -42,7 +43,6 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
-import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
@@ -67,7 +67,7 @@ import org.jspecify.annotations.Nullable;
  *   片方が折れた角付きのへこんだ兜、トゲ付きの肩当て、仕留めた獲物の頭骨の首飾り、裂けて血の染みたマント。
  *   右手に刃こぼれした血まみれの大なた、腰に 2 本目のなた。
  * 【大きさ】属性 scale の基本値 KOBOLD_LORD_SCALE（1.6 倍。高さ約 3.8 ブロック）。
- * 【ステータス】ボス。VIT（防御力）10（data_maps/entity_type/enemy_stats.json、{@link io.github.kurumimnm.kurumimnmod.status.EnemyStats}）。
+ * 【ステータス】ボス。VIT（防御力）10（data_maps/entity_type/enemy_stats.json、{@link io.github.kurumimnm.kurumimnmod.enemy.EnemyStats}）。
  *   画面上部に赤い 10 区切りのボスバー（近くのプレイヤーだけ）。
  * 【通常攻撃】大なたを振り下ろす（近接、攻撃力 KOBOLD_LORD_ATTACK_DAMAGE）。当たると斬撃と火花。
  * 【スキル：壁蹴り突撃】（ダメージ・範囲・CT は Config [mobs.koboldLord]）
@@ -148,7 +148,7 @@ public class KoboldLordEntity extends SkillMonster {
         this.goalSelector.addGoal(0, new FloatGoal(this));
         this.goalSelector.addGoal(0, new PhaseShiftGoal());
         this.goalSelector.addGoal(1, new WallKickGoal());
-        this.goalSelector.addGoal(2, new MeleeAttackGoal(this, ModConstants.KOBOLD_LORD_CHASE_SPEED_MODIFIER, true));
+        this.goalSelector.addGoal(2, new EnemyMeleeAttackGoal(this, ModConstants.KOBOLD_LORD_CHASE_SPEED_MODIFIER, true));
         this.goalSelector.addGoal(5, new WaterAvoidingRandomStrollGoal(this, ModConstants.KOBOLD_LORD_WANDER_SPEED_MODIFIER));
         this.goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 12.0f));
         this.goalSelector.addGoal(7, new RandomLookAroundGoal(this));
@@ -455,7 +455,7 @@ public class KoboldLordEntity extends SkillMonster {
             setNoGravity(false);
             resetFallDistance();
             phase = Phase.DONE;
-            startSkillCooldown(ModConfigs.koboldLordKickCooldownTicks());
+            startSkillCooldown("kick", ModConfigs.koboldLordKickCooldownTicks());
         }
 
         @Override
@@ -568,7 +568,7 @@ public class KoboldLordEntity extends SkillMonster {
                     double dx = p.getX() - landing.x;
                     double dz = p.getZ() - landing.z;
                     if (dx * dx + dz * dz <= r * r && Math.abs(p.getY() - landing.y) <= ModConstants.KOBOLD_LORD_KICK_HIT_HEIGHT) {
-                        p.hurtServer(level, damageSources().mobAttack(KoboldLordEntity.this), (float) ModConfigs.koboldLordKickDamage());
+                        p.hurtServer(level, damageSources().mobAttack(KoboldLordEntity.this), skillDamage("kick", ModConfigs.koboldLordKickDamage()));
                         if (knockback > 0) {
                             launch(p, landing, knockback);
                         }
