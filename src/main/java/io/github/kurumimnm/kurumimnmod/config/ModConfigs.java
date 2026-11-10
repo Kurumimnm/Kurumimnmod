@@ -437,6 +437,18 @@ public final class ModConfigs {
     public static final ModConfigSpec.DoubleValue KOBOLD_LORD_DUAL_HEALTH_RATIO = SYNCED_BUILDER
             .comment("The Kobold Lord draws its second machete when its health falls to this ratio of max health.")
             .defineInRange("koboldLordDualHealthRatio", 0.3, 0.0, 1.0);
+    /** 壁蹴り突撃の着地の衝撃波で、範囲の中のプレイヤーを吹き飛ばす強さ（0 = 吹き飛ばさない）。 */
+    public static final ModConfigSpec.DoubleValue KOBOLD_LORD_KICK_KNOCKBACK = SYNCED_BUILDER
+            .comment("Knockback strength of the wall-kick dive's landing shockwave (0 = none).")
+            .defineInRange("koboldLordKickKnockback", 1.2, 0.0, 10.0);
+    /** 二刀流になるときの雄たけびの範囲（半径・ブロック）。範囲の中のプレイヤーを押し返す（ダメージなし）。 */
+    public static final ModConfigSpec.DoubleValue KOBOLD_LORD_ROAR_RADIUS = SYNCED_BUILDER
+            .comment("Radius (blocks) of the war roar when the Kobold Lord draws its second machete. Pushes players back (no damage).")
+            .defineInRange("koboldLordRoarRadius", 6.0, 0.0, 32.0);
+    /** 雄たけびで押し返す強さ（0 = 押し返さない）。 */
+    public static final ModConfigSpec.DoubleValue KOBOLD_LORD_ROAR_KNOCKBACK = SYNCED_BUILDER
+            .comment("Knockback strength of the war roar (0 = none).")
+            .defineInRange("koboldLordRoarKnockback", 1.0, 0.0, 10.0);
 
     static {
         SYNCED_BUILDER.pop(); // koboldLord
@@ -555,6 +567,9 @@ public final class ModConfigs {
     public static double koboldLordKickRadius() { return value(KOBOLD_LORD_KICK_RADIUS); }
     public static int koboldLordKickCooldownTicks() { return (int) Math.round(value(KOBOLD_LORD_KICK_COOLDOWN) * 20); }
     public static double koboldLordDualHealthRatio() { return value(KOBOLD_LORD_DUAL_HEALTH_RATIO); }
+    public static double koboldLordKickKnockback() { return value(KOBOLD_LORD_KICK_KNOCKBACK); }
+    public static double koboldLordRoarRadius() { return value(KOBOLD_LORD_ROAR_RADIUS); }
+    public static double koboldLordRoarKnockback() { return value(KOBOLD_LORD_ROAR_KNOCKBACK); }
 
     /** Config 値（int / double）を安全に取得する（StatType 等から使う）。 */
     public static <T> T get(ModConfigSpec.ConfigValue<T> config) { return value(config); }

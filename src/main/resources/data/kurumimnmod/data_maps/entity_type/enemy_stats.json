@@ -1,3 +1,5 @@
 {
-  "values": {}
+  "values": {
+    "kurumimnmod:kobold_lord": { "vit": 10 }
+  }
 }
