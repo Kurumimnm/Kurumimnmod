@@ -240,7 +240,14 @@ public final class ModConstants {
     public static final double KOBOLD_LORD_KNOCKBACK_RESISTANCE = 0.6;
     public static final double KOBOLD_LORD_CHASE_SPEED_MODIFIER = 1.1;
     public static final double KOBOLD_LORD_WANDER_SPEED_MODIFIER = 0.7;
-    /** 当たり判定（ブロック）。モデルは角の先まで約 2.4 ブロック、肩当てまで含めた幅は約 1.4 ブロック。 */
+    /**
+     * 大きさの倍率（バニラの属性 scale の基本値）。モデルの見た目・当たり判定・目の高さがまとめてこの倍率になる。
+     * 1.6 で 高さ約 3.8 ブロック・幅 1.6 ブロック（アイアンゴーレム 2.7、ウォーデン 2.9）。
+     */
+    public static final double KOBOLD_LORD_SCALE = 1.6;
+    /** 段差を自動で上がれる高さ（ブロック。大きいので 1 ブロックの段差で引っかからないように）。 */
+    public static final double KOBOLD_LORD_STEP_HEIGHT = 1.0;
+    /** 当たり判定（ブロック。倍率 KOBOLD_LORD_SCALE をかける前）。モデルは角の先まで約 2.4 ブロック、肩当てまで含めた幅は約 1.4 ブロック。 */
     public static final float KOBOLD_LORD_WIDTH = 1.0f;
     public static final float KOBOLD_LORD_HEIGHT = 2.4f;
     public static final float KOBOLD_LORD_EYE_HEIGHT = 1.9f;
@@ -252,8 +259,8 @@ public final class ModConstants {
     /** 壁蹴り突撃を使う、相手との距離（ブロック）。 */
     public static final double KOBOLD_LORD_KICK_MIN_RANGE = 4.0;
     public static final double KOBOLD_LORD_KICK_MAX_RANGE = 24.0;
-    /** 柱に飛びつく高さ：柱のてっぺんからこれだけ下（ブロック）。 */
-    public static final double KOBOLD_LORD_CLING_BELOW_TOP = 4.0;
+    /** 柱に飛びつく高さ：柱のてっぺんからこれだけ下（ブロック。体が大きいので天井にめり込まない高さ）。 */
+    public static final double KOBOLD_LORD_CLING_BELOW_TOP = 5.0;
     /** 柱が近くにないとき（クエストの外など）は、その場で真上にこれだけ跳んでから突撃する（ブロック）。 */
     public static final double KOBOLD_LORD_FALLBACK_JUMP_HEIGHT = 6.0;
     /** 各段階の長さ（tick）：柱へ跳ぶ・柱にしがみつく（この間に着地点の範囲が出る）・突撃・着地後のすき。 */

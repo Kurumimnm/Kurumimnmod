@@ -31,7 +31,8 @@ public class KoboldLordRenderer<R extends EntityRenderState & GeoRenderState> ex
 
     public KoboldLordRenderer(EntityRendererProvider.Context context) {
         super(context, ModEntities.KOBOLD_LORD.get());
-        this.shadowRadius = ModConstants.KOBOLD_LORD_SHADOW_RADIUS;
+        // 影も巨体に合わせて大きく（大きさの倍率は属性 scale。モデルの拡大は GeckoLib が行う）
+        this.shadowRadius = (float) (ModConstants.KOBOLD_LORD_SHADOW_RADIUS * ModConstants.KOBOLD_LORD_SCALE);
     }
 
     @Override

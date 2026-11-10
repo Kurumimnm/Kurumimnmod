@@ -66,6 +66,7 @@ import org.jspecify.annotations.Nullable;
  * 【見た目】幾多の戦いを生き延びた歴戦の首領。猫背の巨体に傷だらけの毛皮、爪痕で潰れた右目と赤く光る左目、
  *   片方が折れた角付きのへこんだ兜、トゲ付きの肩当て、仕留めた獲物の頭骨の首飾り、裂けて血の染みたマント。
  *   右手に刃こぼれした血まみれの大なた、腰に 2 本目のなた。
+ * 【大きさ】属性 scale の基本値 KOBOLD_LORD_SCALE（1.6 倍。高さ約 3.8 ブロック）。
  * 【ステータス】ボス。VIT（防御力）10（data_maps/entity_type/enemy_stats.json、{@link io.github.kurumimnm.kurumimnmod.status.EnemyStats}）。
  *   画面上部に赤い 10 区切りのボスバー（近くのプレイヤーだけ）。
  * 【通常攻撃】大なたを振り下ろす（近接、攻撃力 KOBOLD_LORD_ATTACK_DAMAGE）。当たると斬撃と火花。
@@ -118,6 +119,8 @@ public class KoboldLordEntity extends SkillMonster {
 
     public KoboldLordEntity(EntityType<? extends KoboldLordEntity> type, Level level) {
         super(type, level);
+        // 大きさの属性（scale）を当たり判定に反映する
+        refreshDimensions();
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -126,7 +129,10 @@ public class KoboldLordEntity extends SkillMonster {
                 .add(Attributes.ATTACK_DAMAGE, ModConstants.KOBOLD_LORD_ATTACK_DAMAGE)
                 .add(Attributes.MOVEMENT_SPEED, ModConstants.KOBOLD_LORD_MOVEMENT_SPEED)
                 .add(Attributes.FOLLOW_RANGE, ModConstants.KOBOLD_LORD_FOLLOW_RANGE)
-                .add(Attributes.KNOCKBACK_RESISTANCE, ModConstants.KOBOLD_LORD_KNOCKBACK_RESISTANCE);
+                .add(Attributes.KNOCKBACK_RESISTANCE, ModConstants.KOBOLD_LORD_KNOCKBACK_RESISTANCE)
+                // ボスらしい巨体：見た目・当たり判定・目の高さをまとめて拡大（GeckoLib も描画時にこの倍率をかける）
+                .add(Attributes.SCALE, ModConstants.KOBOLD_LORD_SCALE)
+                .add(Attributes.STEP_HEIGHT, ModConstants.KOBOLD_LORD_STEP_HEIGHT);
     }
 
     @Override
@@ -361,7 +367,8 @@ public class KoboldLordEntity extends SkillMonster {
             float yaw = yHeadRot * Mth.DEG_TO_RAD;
             double fx = -Mth.sin(yaw);
             double fz = Mth.cos(yaw);
-            level().addParticle(ParticleTypes.SMOKE, getX() + fx * 0.8, getY() + 1.65, getZ() + fz * 0.8,
+            double scale = getScale();
+            level().addParticle(ParticleTypes.SMOKE, getX() + fx * 0.8 * scale, getY() + 1.65 * scale, getZ() + fz * 0.8 * scale,
                     fx * 0.02, 0.03, fz * 0.02);
         }
     }
@@ -497,7 +504,7 @@ public class KoboldLordEntity extends SkillMonster {
                         // 柱に爪を立てた衝撃で、柱の破片がこぼれる
                         playSound(SoundEvents.STONE_BREAK, 1.0f, 0.6f);
                         if (level() instanceof ServerLevel level) {
-                            Vec3 wall = position().add(0, 1.0, 0);
+                            Vec3 wall = position().add(0, getBbHeight() * 0.4, 0);
                             level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, grabBlock(level)),
                                     wall.x, wall.y, wall.z, ModConstants.KOBOLD_LORD_LEAP_DEBRIS, 0.4, 0.6, 0.4, 0.1);
                         }
@@ -522,9 +529,10 @@ public class KoboldLordEntity extends SkillMonster {
                     moveTowards(from.lerp(landing, s));
                     if (level() instanceof ServerLevel level) {
                         // 突撃の軌跡
-                        level.sendParticles(ParticleTypes.LARGE_SMOKE, getX(), getY() + 1.0, getZ(),
-                                ModConstants.KOBOLD_LORD_DIVE_TRAIL_PARTICLES, 0.3, 0.5, 0.3, 0.0);
-                        level.sendParticles(ParticleTypes.CRIT, getX(), getY() + 1.0, getZ(), 2, 0.3, 0.5, 0.3, 0.1);
+                        double mid = getBbHeight() * 0.5;
+                        level.sendParticles(ParticleTypes.LARGE_SMOKE, getX(), getY() + mid, getZ(),
+                                ModConstants.KOBOLD_LORD_DIVE_TRAIL_PARTICLES, 0.4, mid * 0.5, 0.4, 0.0);
+                        level.sendParticles(ParticleTypes.CRIT, getX(), getY() + mid, getZ(), 2, 0.4, mid * 0.5, 0.4, 0.1);
                     }
                     if (s >= 1.0) {
                         land();
