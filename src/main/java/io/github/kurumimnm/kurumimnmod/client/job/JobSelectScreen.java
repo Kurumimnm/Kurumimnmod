@@ -15,7 +15,8 @@ import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import org.jspecify.annotations.Nullable;
 
 /**
- * 職業の選択画面（チュートリアルを達成して職業が解放されたとき・まだ選んでいない状態でログインしたときに開く）。
+ * 職業の選択画面（チュートリアルを達成して職業が解放されたとき・まだ選んでいない状態でログインしたとき、
+ * 職業の分岐レベル（Lv50）に達したときに開く）。
  * <ol>
  *   <li>職業のボタンを押す（カーソルを合わせると説明）</li>
  *   <li>下の「〇〇に決める」を押すと決定（あとから変えられない）</li>
@@ -42,7 +43,7 @@ public class JobSelectScreen extends Screen {
 
     @Override
     protected void init() {
-        List<Map.Entry<Identifier, JobDefinition>> jobs = ClientJob.all();
+        List<Map.Entry<Identifier, JobDefinition>> jobs = ClientJob.choices();
         int x = (this.width - BUTTON_WIDTH) / 2;
         int rows = Math.max(jobs.size(), 2) + 2;
         this.top = (this.height - rows * (BUTTON_HEIGHT + GAP)) / 2 + 10;
@@ -80,9 +81,11 @@ public class JobSelectScreen extends Screen {
     public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTicks) {
         super.extractRenderState(g, mouseX, mouseY, partialTicks);
         int cx = this.width / 2;
-        g.centeredText(this.font, Component.translatable(KEY + ".title"), cx, this.top - 34, COLOR_TITLE);
-        g.centeredText(this.font, Component.translatable(KEY + ".note"), cx, this.top - 20, COLOR_NOTE);
-        if (ClientJob.all().isEmpty()) {
+        // 分岐（Lv50 など）のときは見出しを変える
+        String head = ClientJob.isPromotion() ? KEY + ".promotion" : KEY;
+        g.centeredText(this.font, Component.translatable(head + ".title"), cx, this.top - 34, COLOR_TITLE);
+        g.centeredText(this.font, Component.translatable(head + ".note"), cx, this.top - 20, COLOR_NOTE);
+        if (ClientJob.choices().isEmpty()) {
             g.centeredText(this.font, Component.translatable(KEY + ".empty.1"), cx, this.top + 8, COLOR_TEXT);
             g.centeredText(this.font, Component.translatable(KEY + ".empty.2"), cx, this.top + 22, COLOR_NOTE);
         }

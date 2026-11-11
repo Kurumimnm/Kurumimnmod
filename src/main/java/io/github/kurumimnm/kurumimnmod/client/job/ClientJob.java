@@ -2,6 +2,7 @@ package io.github.kurumimnm.kurumimnmod.client.job;
 
 import io.github.kurumimnm.kurumimnmod.Kurumimnmod;
 import io.github.kurumimnm.kurumimnmod.job.JobDefinition;
+import io.github.kurumimnm.kurumimnmod.job.JobManager;
 import io.github.kurumimnm.kurumimnmod.job.JobRegistry;
 import io.github.kurumimnm.kurumimnmod.job.PlayerJob;
 import io.github.kurumimnm.kurumimnmod.network.OpenJobSelectPayload;
@@ -46,6 +47,33 @@ public final class ClientJob {
         }
         list.sort(Comparator.comparingInt((Map.Entry<Identifier, JobDefinition> e) -> e.getValue().sort())
                 .thenComparing(e -> e.getKey().toString()));
+        return list;
+    }
+
+    /** 分岐（Lv50 など）の選択中か。false なら最初の職業選び。 */
+    public static boolean isPromotion() {
+        Minecraft mc = Minecraft.getInstance();
+        return mc.player != null && !state().canChoose() && JobManager.pendingPromotion(mc.player).isPresent();
+    }
+
+    /**
+     * 選択画面に並べる職業。
+     * <ul>
+     *   <li>最初の選択：selectable の職業すべて</li>
+     *   <li>分岐：promotion.options の職業（JSON に書いた順）</li>
+     * </ul>
+     */
+    public static List<Map.Entry<Identifier, JobDefinition>> choices() {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null) {
+            return List.of();
+        }
+        if (state().canChoose()) {
+            return all().stream().filter(e -> e.getValue().selectable()).toList();
+        }
+        List<Map.Entry<Identifier, JobDefinition>> list = new ArrayList<>();
+        JobManager.pendingPromotion(mc.player).ifPresent(p -> p.options().forEach(id ->
+                JobManager.definition(mc.player, id).ifPresent(def -> list.add(Map.entry(id, def)))));
         return list;
     }
 }

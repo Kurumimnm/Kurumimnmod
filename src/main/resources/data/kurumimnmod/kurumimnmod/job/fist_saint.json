@@ -1,0 +1,17 @@
+{
+  "sort": 220,
+  "icon": "minecraft:netherite_ingot",
+  "selectable": false,
+  "stats": {
+    "hp": 1.6,
+    "attack": 1.9,
+    "defense": 1.15
+  },
+  "per_level": {
+    "hp": 8,
+    "crit_chance": 0.003
+  },
+  "weapons": [
+    "kurumimnmod:weapons/gauntlet"
+  ]
+}

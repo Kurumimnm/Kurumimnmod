@@ -216,15 +216,18 @@ public final class ModConfigs {
                     "Damage = original damage * (1 + (attack - 1) * this).")
             .defineInRange("attackDamageBonus", 0.1, 0.0, 100.0);
 
-    /** 防御力 1 ごとに、敵から受けるダメージを減らす量。軽減量 = (防御力 - 1) × この値 */
+    /**
+     * 防御力 1 ごとに、敵から受けるダメージを減らす量（敵の VIT と同じ仕組み）。
+     * 受けるダメージ ≦ 防御力 なら blockedDamage、超えたら 受けるダメージ − 防御力 × この値
+     */
     public static final ModConfigSpec.DoubleValue DEFENSE_REDUCTION_PER_POINT = SYNCED_BUILDER
-            .comment("Damage from enemies reduced per Defense above 1 (flat).",
-                    "Reduction = (defense - 1) * this. Applied after armor.")
+            .comment("Damage from enemies reduced per Defense (flat). Same rule as enemy VIT:",
+                    "if damage <= defense, damage taken = blockedDamage; otherwise damage - defense * this. Applied after armor.")
             .defineInRange("defenseReduction", 0.5, 0.0, 1000.0);
 
-    /** 防御力で軽減したあとの最低ダメージ（0 = 完全に防げる）。 */
+    /** （未使用：職業の追加で防御力の式を敵の VIT と同じにしたため、最低ダメージは blockedDamage に統一） */
     public static final ModConfigSpec.DoubleValue DEFENSE_MIN_DAMAGE = SYNCED_BUILDER
-            .comment("Minimum damage after the Defense reduction (0 = can be fully blocked).")
+            .comment("Unused. The minimum damage is now blockedDamage (same rule as enemy VIT).")
             .defineInRange("defenseMinDamage", 0.0, 0.0, 1000.0);
 
     /** 技量 1 のときのクリティカル率（0.05 = 5%）。 */
@@ -281,12 +284,12 @@ public final class ModConfigs {
 
     /**
      * 防御が攻撃を上回ったときの被ダメージ（既定 1）。
-     * 敵：D ≦ VIT（魔法は MDF）のとき。プレイヤー・グリフォン・カカシ：防御力 ＞ 受けるダメージのとき。
+     * 敵：D ≦ VIT（魔法は MDF）のとき。プレイヤー・グリフォン・カカシ：受けるダメージ ≦ 防御力のとき。
      * 元のダメージがこれより小さい場合は元のダメージのまま。
      */
     public static final ModConfigSpec.DoubleValue BLOCKED_DAMAGE = SYNCED_BUILDER
             .comment("Damage taken when the defense is higher than the attack (default 1).",
-                    "Enemies: D <= VIT (MDF for magic). Players/griffins/scarecrows: Defense > incoming damage.",
+                    "Enemies: D <= VIT (MDF for magic). Players/griffins/scarecrows: incoming damage <= Defense.",
                     "If the original damage is smaller, the original damage is used.")
             .defineInRange("blockedDamage", 1.0, 0.0, 1000.0);
 
@@ -310,7 +313,7 @@ public final class ModConfigs {
             .define("scarecrowInfiniteHealth", true);
     public static final ModConfigSpec.IntValue SCARECROW_DEFENSE = SYNCED_BUILDER
             .comment("Initial Defense of a scarecrow. Works the same as the player's Defense stat",
-                    "(reduction = (defense - 1) * status.effects.defenseReduction).")
+                    "(reduction = defense * status.effects.defenseReduction).")
             .defineInRange("scarecrowDefense", 1, 0, ModConstants.SCARECROW_DEFENSE_LIMIT);
     public static final ModConfigSpec.DoubleValue SCARECROW_ARMOR = SYNCED_BUILDER
             .comment("Initial armor points of a scarecrow (vanilla armor attribute, max 30).")
@@ -365,11 +368,11 @@ public final class ModConfigs {
             .defineInRange("armoredChance", 0.2, 0.0, 1.0);
     /** 鎧なしの個体の防御力（プレイヤーの防御力ステータスと同じ式の固定値軽減。1 = 軽減なし）。 */
     public static final ModConfigSpec.IntValue GRIFFIN_DEFENSE = SYNCED_BUILDER
-            .comment("Defense of a normal griffin. Works the same as the player's Defense stat (1 = no reduction).")
+            .comment("Defense of a normal griffin. Works the same as the player's Defense stat.")
             .defineInRange("normalDefense", 1, 1, 1_000_000);
     /** 鎧付きの個体の防御力。 */
     public static final ModConfigSpec.IntValue GRIFFIN_ARMORED_DEFENSE = SYNCED_BUILDER
-            .comment("Defense of an armored griffin. Works the same as the player's Defense stat (1 = no reduction).")
+            .comment("Defense of an armored griffin. Works the same as the player's Defense stat.")
             .defineInRange("armoredDefense", 5, 1, 1_000_000);
 
     static {

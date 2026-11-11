@@ -1,0 +1,24 @@
+{
+  "sort": 10,
+  "icon": "minecraft:iron_sword",
+  "stats": {
+    "hp": 1.5,
+    "attack": 1.2,
+    "defense": 1.15
+  },
+  "per_level": {
+    "hp": 5,
+    "mp": 2,
+    "crit_chance": 0.001
+  },
+  "weapons": [
+    "kurumimnmod:weapons/sword"
+  ],
+  "promotion": {
+    "level": 50,
+    "options": [
+      "kurumimnmod:magic_swordsman",
+      "kurumimnmod:swordsman"
+    ]
+  }
+}
