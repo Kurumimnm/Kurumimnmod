@@ -336,5 +336,18 @@
   "commands.kurumimnmod.quest.not_in_field": "フィールドの中にいない",
   "commands.kurumimnmod.quest.no_field": "クエスト %s にフィールド %s はない",
   "commands.kurumimnmod.quest.preview": "区画 %s を作った：中心 X %s Z %s（一辺 %s）、入口 %s %s %s",
-  "commands.kurumimnmod.money.get": "所持金：%sG"
+  "commands.kurumimnmod.money.get": "所持金：%sG",
+  "message.kurumimnmod.job.unlocked": "職業が解放された！",
+  "message.kurumimnmod.job.selected": "職業「%s」になった！",
+  "screen.kurumimnmod.job": "職業の選択",
+  "screen.kurumimnmod.job.title": "職業を選ぼう",
+  "screen.kurumimnmod.job.note": "選んだ職業はあとから変えられない",
+  "screen.kurumimnmod.job.chosen": "▶ %s ◀",
+  "screen.kurumimnmod.job.confirm": "「%s」に決める",
+  "screen.kurumimnmod.job.later": "あとで選ぶ",
+  "screen.kurumimnmod.job.close": "閉じる",
+  "screen.kurumimnmod.job.empty.1": "職業はまだ準備中です",
+  "screen.kurumimnmod.job.empty.2": "追加されたら、ログインしたときにこの画面が開きます",
+  "commands.kurumimnmod.job.unlock": "%s 人の職業を解放しました",
+  "commands.kurumimnmod.job.reset": "%s 人の職業を取り消しました"
 }

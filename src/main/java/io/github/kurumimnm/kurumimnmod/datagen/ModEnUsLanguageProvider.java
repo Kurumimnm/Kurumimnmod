@@ -270,6 +270,20 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         add("commands." + MOD_ID + ".quest.no_field", "Quest %s has no field %s");
         add("commands." + MOD_ID + ".quest.preview", "Created plot %s: center X %s Z %s (size %s), entrance %s %s %s");
         add("commands." + MOD_ID + ".money.get", "Money: %sG");
+        // ---- 職業 ----
+        add("message.kurumimnmod.job.unlocked", "Jobs unlocked!");
+        add("message.kurumimnmod.job.selected", "You became a %s!");
+        add("screen.kurumimnmod.job", "Choose a Job");
+        add("screen.kurumimnmod.job.title", "Choose your job");
+        add("screen.kurumimnmod.job.note", "You cannot change your job later");
+        add("screen.kurumimnmod.job.chosen", "> %s <");
+        add("screen.kurumimnmod.job.confirm", "Become a %s");
+        add("screen.kurumimnmod.job.later", "Choose later");
+        add("screen.kurumimnmod.job.close", "Close");
+        add("screen.kurumimnmod.job.empty.1", "No jobs are available yet");
+        add("screen.kurumimnmod.job.empty.2", "Once jobs are added, this screen opens when you log in");
+        add("commands.kurumimnmod.job.unlock", "Unlocked jobs for %s player(s)");
+        add("commands.kurumimnmod.job.reset", "Reset the job of %s player(s)");
 
         // ---- Config 画面 ----
         add(MOD_ID + ".configuration.title", "Kurumimnmod Configs");
