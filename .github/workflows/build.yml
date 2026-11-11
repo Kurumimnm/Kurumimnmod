@@ -17,18 +17,14 @@ jobs:
           UNI=$(find ~/.gradle -name "neoforge-26.3*-universal.jar" | head -1)
           CLIENT=$(find ~/.gradle -name "client-extra*.jar" -o -name "minecraft-client*.jar" 2>/dev/null | head -1)
           echo "MC=$MC UNI=$UNI"
-          echo "################ ENTRIES"
-          unzip -Z1 "$MC" | grep -iE "clock|timeline|SetTime|weather|GameRules\.class|gamerules/|explosion" | grep -v '\$[0-9]' | head -120
-          echo "################ DATA"
-          for f in $(unzip -Z1 "$MC" | grep -E "^data/minecraft/(world_clock|timeline)/|^data/minecraft/dimension_type/overworld\.json|^data/minecraft/tags/timeline/"); do echo "==== $f"; unzip -p "$MC" "$f"; echo; done
-          echo "################ JAVAP"
-          for c in $(unzip -Z1 "$MC" | grep -iE "(clock|Clock|Timeline)[A-Za-z]*\.class$" | grep -v '\$[0-9]' | sed 's/\.class$//; s#/#.#g'); do echo "==== $c"; javap -cp "$MC" -p "$c" 2>&1 | head -80; done
-          for c in net.minecraft.network.protocol.game.ClientboundSetTimePacket net.minecraft.world.level.gamerules.GameRules; do echo "==== $c"; javap -cp "$MC" -p "$c" 2>&1 | grep -iE "time|clock|weather|class|record|ADVANCE|DAYLIGHT|MOB_GRIEF|GRIEF|SPAWN_MONSTER" | head -60; done
-          echo "==== ServerLevel"; javap -cp "$MC" -p net.minecraft.server.level.ServerLevel | grep -iE "time|clock|weather|rain|thunder" | head -60
-          echo "==== MinecraftServer"; javap -cp "$MC" -p net.minecraft.server.MinecraftServer | grep -iE "time|clock|weather" | head -40
-          echo "==== Level"; javap -cp "$MC" -p net.minecraft.world.level.Level | grep -iE "time|clock|rain|thunder|explode|ExplosionInteraction" | head -40
-          echo "==== Mob burn"; javap -cp "$MC" -p net.minecraft.world.entity.Mob | grep -iE "burn|sun" ; javap -cp "$MC" -p net.minecraft.world.entity.monster.zombie.Zombie 2>/dev/null | grep -iE "burn|sun"; javap -cp "$MC" -p net.minecraft.world.entity.monster.Zombie 2>/dev/null | grep -iE "burn|sun"
-          echo "==== attributes"; unzip -Z1 "$MC" | grep -iE "EnvironmentAttributes\.class" ; javap -cp "$MC" -p net.minecraft.world.attribute.EnvironmentAttributes 2>&1 | grep -iE "static" | head -80
-          echo "==== neo events"; unzip -Z1 "$UNI" | grep -iE "ExplosionEvent|EntityTeleportEvent|MobGriefing|Weather|Time" | head -40
+          for c in $(unzip -Z1 "$MC" | grep -E "entity/monster/.*(Spider|Creeper|EnderMan|Zombie|Skeleton)\.class$|world/clock/WorldClock\.class$" ); do echo "CLS $c"; done
+          javap -cp "$MC" -p net.minecraft.world.entity.Mob | grep -iE "goalSelector|targetSelector"
+          javap -cp "$MC" -p net.minecraft.core.registries.Registries | grep -iE "clock|timeline"
+          javap -cp "$MC" -p net.minecraft.world.level.gamerules.GameRules | grep -iE "public .*(set|get)\("
+          unzip -Z1 "$UNI" | grep -iE "MobGriefing|EntityTeleportEvent|ExplosionEvent|EntityJoinLevel" 
+          javap -cp "$UNI:$MC" -p 'net.neoforged.neoforge.event.entity.EntityMobGriefingEvent' 2>&1 | head -20
           javap -cp "$UNI:$MC" -p 'net.neoforged.neoforge.event.entity.EntityTeleportEvent$EnderEntity' 2>&1 | head -20
+          javap -cp "$UNI:$MC" -p 'net.neoforged.neoforge.event.entity.EntityTeleportEvent' 2>&1 | head -30
           javap -cp "$UNI:$MC" -p 'net.neoforged.neoforge.event.level.ExplosionEvent$Detonate' 2>&1 | head -20
+          unzip -p "$UNI" META-INF/accesstransformer.cfg 2>/dev/null | grep -iE "goalSelector|targetSelector|net.minecraft.world.entity.Mob " | head
+          find ~/.gradle -name "accesstransformer*.cfg" | head -3 | xargs -r grep -hiE "goalSelector|targetSelector" | head
