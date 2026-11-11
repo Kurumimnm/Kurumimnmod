@@ -74,15 +74,15 @@ public final class ModConfigs {
             .comment("If true, vanilla experience orbs are never spawned (mobs, mining, smelting, fishing, breeding, trading, etc.).")
             .define("disableVanillaExperience", true);
 
-    /** Lv1 → 2 に必要な経験値。必要経験値(Lv) = baseExp + growth × (Lv - 1) ^ exponent */
+    /** Lv0 → 1 に必要な経験値（必要経験値カーブの基準）。必要経験値(Lv) = baseExp + growth × Lv ^ exponent */
     public static final ModConfigSpec.DoubleValue LEVEL_BASE_EXP = SYNCED_BUILDER
-            .comment("Exp required to go from level 1 to 2.",
-                    "Required exp to level up = baseExp + growth * (level - 1) ^ exponent.")
-            .defineInRange("baseExp", 10.0, 1.0, 1_000_000.0);
+            .comment("Exp required to go from level 0 to 1 (the base of the curve).",
+                    "Required exp to level up = baseExp + growth * level ^ exponent.")
+            .defineInRange("baseExp", 20.0, 1.0, 1_000_000.0);
 
     /** 1 レベルごとの必要経験値の増え方の大きさ。 */
     public static final ModConfigSpec.DoubleValue LEVEL_GROWTH = SYNCED_BUILDER
-            .comment("How much the required exp grows per level (multiplier of (level - 1) ^ exponent).")
+            .comment("How much the required exp grows per level (multiplier of level ^ exponent).")
             .defineInRange("growth", 4.0, 0.0, 1_000_000.0);
 
     /** 必要経験値の伸び方（1.0 = 一定ペース、大きいほど高レベルで上がりにくくなる）。 */
