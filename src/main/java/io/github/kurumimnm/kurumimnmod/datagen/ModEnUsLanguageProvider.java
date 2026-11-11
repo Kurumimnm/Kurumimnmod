@@ -187,12 +187,16 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         add("biome." + MOD_ID + ".quest_void", "Void");
 
         // ---- クエスト（名前・説明・フィールド名） ----
-        add("quest." + MOD_ID + ".tutorial", "Tutorial: The Kobold Meadows");
-        add("quest." + MOD_ID + ".tutorial.description", "Learn the basics of combat on the meadows outside town. Clear out every monster in each field, then defeat the Kobold Lord waiting at the end.");
+        add("quest." + MOD_ID + ".tutorial", "Tutorial");
+        add("quest." + MOD_ID + ".tutorial.description", "Learn how to fight on the meadows outside town. Defeat every monster in both fields to clear it. Clearing it lets you choose a job.");
         add("quest." + MOD_ID + ".tutorial.field.1", "Meadow of Beginnings");
-        add("quest." + MOD_ID + ".tutorial.field.2", "Howling Meadow");
-        add("quest." + MOD_ID + ".tutorial.field.3", "Kobold Territory");
-        add("quest." + MOD_ID + ".tutorial.field.boss", "Arena of the Kobold Lord");
+        add("quest." + MOD_ID + ".tutorial.field.2", "Monster Meadow");
+        add("quest." + MOD_ID + ".kobold_meadow", "The Kobold Meadows");
+        add("quest." + MOD_ID + ".kobold_meadow.description", "Meadows overrun by kobolds. Clear out every monster in each field, then defeat the Kobold Lord waiting in the temple at the end.");
+        add("quest." + MOD_ID + ".kobold_meadow.field.1", "Meadow of Beginnings");
+        add("quest." + MOD_ID + ".kobold_meadow.field.2", "Howling Meadow");
+        add("quest." + MOD_ID + ".kobold_meadow.field.3", "Kobold Territory");
+        add("quest." + MOD_ID + ".kobold_meadow.field.boss", "Arena of the Kobold Lord");
         add("quest." + MOD_ID + ".first_trial", "The First Trial");
         add("quest." + MOD_ID + ".first_trial.description", "Cross the meadow and the forest beyond the town, and defeat the beast lurking deep inside.");
         add("quest." + MOD_ID + ".first_trial.field.1", "Meadow Path");
@@ -244,7 +248,7 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         add("screen." + MOD_ID + ".gate.locked", "%s (locked)");
         add("screen." + MOD_ID + ".gate.locked.tooltip", "Another field must be cleared first");
         add("screen." + MOD_ID + ".gate.stay", "Not yet");
-        add("screen." + MOD_ID + ".status.money", "Money $%s");
+        add("screen." + MOD_ID + ".status.money", "Money %sG");
 
         // ---- メッセージ・コマンド ----
         add("message." + MOD_ID + ".quest.already", "You already have a quest (you can abandon it from the quest screen)");
@@ -252,7 +256,7 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         add("message." + MOD_ID + ".quest.accepted", "Accepted the quest \"%s\"");
         add("message." + MOD_ID + ".quest.none", "You have no quest");
         add("message." + MOD_ID + ".quest.abandoned", "Abandoned the quest \"%s\"");
-        add("message." + MOD_ID + ".quest.completed", "Quest \"%s\" complete! Reward: $%s");
+        add("message." + MOD_ID + ".quest.completed", "Quest \"%s\" complete! Reward: %sG");
         add("message." + MOD_ID + ".quest.entered", "Entered %s");
         add("message." + MOD_ID + ".quest.field_title", "Field %s: %s");
         add("message." + MOD_ID + ".quest.hub", "Arrived at the waypoint");
@@ -265,7 +269,7 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         add("commands." + MOD_ID + ".quest.not_in_field", "You are not in a field");
         add("commands." + MOD_ID + ".quest.no_field", "Quest %s has no field %s");
         add("commands." + MOD_ID + ".quest.preview", "Created plot %s: center X %s Z %s (size %s), entrance %s %s %s");
-        add("commands." + MOD_ID + ".money.get", "Money: $%s");
+        add("commands." + MOD_ID + ".money.get", "Money: %sG");
 
         // ---- Config 画面 ----
         add(MOD_ID + ".configuration.title", "Kurumimnmod Configs");

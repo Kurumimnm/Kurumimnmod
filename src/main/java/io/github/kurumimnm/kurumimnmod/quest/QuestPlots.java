@@ -112,6 +112,24 @@ public final class QuestPlots {
                     && Math.abs(z - centerZ()) <= terrain.hallLength() / 2.0 - margin;
         }
 
+        /**
+         * (x, z) が区画の「戦える場所」の内側か（端から margin ブロック以上内側）。
+         * ふつうのフィールドは縁の崖を除いた範囲、闘技場は円の床、神殿は広間。
+         */
+        public boolean playable(double x, double z, double margin) {
+            if (isTemple()) {
+                return inHall(x, z, margin);
+            }
+            double dx = x - (centerX() + 0.5);
+            double dz = z - (centerZ() + 0.5);
+            if (isArena()) {
+                double r = arenaRadius() - margin;
+                return dx * dx + dz * dz <= r * r;
+            }
+            double reach = half() - terrain.rimWidth() - margin;
+            return Math.abs(dx) <= reach && Math.abs(dz) <= reach;
+        }
+
         /** 神殿の天井（いちばん下の段）の Y。 */
         public int ceilingY() {
             return terrain.base() + 1 + terrain.pillarHeight();

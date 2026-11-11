@@ -513,6 +513,18 @@ public final class ModConstants {
     // ---- フィールドのモブ（クエストの JSON の mobs・max_mobs） ----
     /** モブをわかせる間隔（tick）。1 回に 1 体。 */
     public static final int QUEST_SPAWN_INTERVAL_TICKS = 40;
+    /** クエスト中のエンダーマンのワープ先：戦える場所の端からこれだけ内側に限る（ブロック）。 */
+    public static final double QUEST_ENDER_TELEPORT_MARGIN = 2.0;
+    /** クエスト中のクモ：明るくても襲ってくるように足す目標・攻撃の優先度と、追いかける速さの倍率。 */
+    public static final int QUEST_SPIDER_TARGET_PRIORITY = 2;
+    public static final int QUEST_SPIDER_ATTACK_PRIORITY = 3;
+    public static final double QUEST_SPIDER_CHASE_SPEED_MODIFIER = 1.0;
+    /** クエスト中の時間の初期値（tick。クエストの JSON の time を省略したとき。6000 = 昼）。 */
+    public static final int QUEST_DEFAULT_TIME = 6000;
+    /** 天気・クエストの時計を確かめ直す間隔（tick）。 */
+    public static final int WORLD_ENVIRONMENT_CHECK_TICKS = 100;
+    /** 天気を晴れに固定するとき、晴れの残り時間をこの長さに戻し続ける（tick。0 になると雨が始まるため）。 */
+    public static final int WORLD_CLEAR_WEATHER_TICKS = 24000;
     /** 数を数える範囲（プレイヤーからの横の距離。この中のモンスターが max_mobs 未満ならわかせる）。 */
     public static final double QUEST_SPAWN_COUNT_RADIUS = 48;
     /** わかせる場所のプレイヤーからの距離。 */

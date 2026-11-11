@@ -455,6 +455,24 @@ public final class ModConfigs {
         SYNCED_BUILDER.pop(); // mobs
     }
 
+    // ---- world セクション（時間・天気） ----
+    static {
+        SYNCED_BUILDER.push("world");
+    }
+
+    /** 天気をずっと晴れに固定する（現世もクエスト中も。雨・雷にならない）。 */
+    public static final ModConfigSpec.BooleanValue FIX_WEATHER_CLEAR = SYNCED_BUILDER
+            .comment("Keep the weather clear at all times (rain and thunder never start).")
+            .define("fixWeatherClear", true);
+    /** クエスト中は時間を止める（クエストの JSON の time の時刻で固定）。 */
+    public static final ModConfigSpec.BooleanValue FREEZE_QUEST_TIME = SYNCED_BUILDER
+            .comment("Stop time in the quest dimension at the time set by each quest.")
+            .define("freezeQuestTime", true);
+
+    static {
+        SYNCED_BUILDER.pop(); // world
+    }
+
     // ---- magic セクション（魔法の杖） ----
     static {
         SYNCED_BUILDER.push("magic");
@@ -517,6 +535,8 @@ public final class ModConfigs {
     }
 
     public static boolean isDebugLogging() { return value(DEBUG_LOGGING); }
+    public static boolean fixWeatherClear() { return value(FIX_WEATHER_CLEAR); }
+    public static boolean freezeQuestTime() { return value(FREEZE_QUEST_TIME); }
     public static boolean isVanillaExperienceDisabled() { return value(DISABLE_VANILLA_EXPERIENCE); }
     public static double levelBaseExp() { return value(LEVEL_BASE_EXP); }
     public static double levelGrowth() { return value(LEVEL_GROWTH); }
