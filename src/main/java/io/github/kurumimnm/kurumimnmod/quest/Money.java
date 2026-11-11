@@ -4,7 +4,7 @@ import io.github.kurumimnm.kurumimnmod.registry.ModAttachments;
 import net.minecraft.world.entity.player.Player;
 
 /**
- * 所持金（$）。プレイヤーのデータアタッチメント {@link ModAttachments#MONEY} に保存し、本人に同期する。
+ * 所持金（G）。プレイヤーのデータアタッチメント {@link ModAttachments#MONEY} に保存し、本人に同期する。
  * 今はクエストの報酬でだけ増える（ショップは後で作る）。
  */
 public final class Money {
