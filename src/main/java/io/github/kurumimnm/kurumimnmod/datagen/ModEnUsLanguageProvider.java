@@ -279,7 +279,7 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         add(MOD_ID + ".configuration.disableHunger", "Disable Hunger");
         add(MOD_ID + ".configuration.level", "Level");
         add(MOD_ID + ".configuration.disableVanillaExperience", "Disable Vanilla Experience");
-        add(MOD_ID + ".configuration.baseExp", "Exp Required for Level 2");
+        add(MOD_ID + ".configuration.baseExp", "Exp Required for Level 1");
         add(MOD_ID + ".configuration.growth", "Required Exp Growth");
         add(MOD_ID + ".configuration.exponent", "Required Exp Curve");
         add(MOD_ID + ".configuration.maxLevel", "Max Level (0 = No Limit)");

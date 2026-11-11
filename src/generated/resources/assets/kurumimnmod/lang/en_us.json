@@ -65,7 +65,7 @@
   "kurumimnmod.configuration.attack": "Attack",
   "kurumimnmod.configuration.attackDamageBonus": "Damage Bonus per Attack",
   "kurumimnmod.configuration.attackSpeed": "Attack Speed Multiplier",
-  "kurumimnmod.configuration.baseExp": "Exp Required for Level 2",
+  "kurumimnmod.configuration.baseExp": "Exp Required for Level 1",
   "kurumimnmod.configuration.blockedDamage": "Damage when Defense beats Attack",
   "kurumimnmod.configuration.bossAssistExpRatio": "Boss Assist Exp Multiplier",
   "kurumimnmod.configuration.castRange": "Max Aim Distance",

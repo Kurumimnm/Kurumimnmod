@@ -19,7 +19,7 @@ import net.minecraft.network.codec.StreamCodec;
  */
 public record PlayerLevel(int level, long exp) {
 
-    /** 初期状態（Lv1・経験値 0）。 */
+    /** 初期状態（Lv0・経験値 0）。 */
     public static final PlayerLevel DEFAULT = new PlayerLevel(ModConstants.INITIAL_LEVEL, 0L);
 
     /** セーブデータ（NBT）用。 */

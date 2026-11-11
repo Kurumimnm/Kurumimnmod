@@ -86,7 +86,7 @@
   "kurumimnmod.configuration.disableHunger": "空腹システムを無効化",
   "kurumimnmod.configuration.level": "レベル",
   "kurumimnmod.configuration.disableVanillaExperience": "バニラの経験値を無効化",
-  "kurumimnmod.configuration.baseExp": "Lv2までの必要経験値",
+  "kurumimnmod.configuration.baseExp": "Lv1までの必要経験値",
   "kurumimnmod.configuration.growth": "必要経験値の増え幅",
   "kurumimnmod.configuration.exponent": "必要経験値の伸び方（1.0で一定）",
   "kurumimnmod.configuration.maxLevel": "最大レベル（0で上限なし）",
