@@ -2,6 +2,7 @@ package io.github.kurumimnm.kurumimnmod.client.quest;
 
 import io.github.kurumimnm.kurumimnmod.Kurumimnmod;
 import io.github.kurumimnm.kurumimnmod.network.OpenGatePayload;
+import io.github.kurumimnm.kurumimnmod.network.OpenWeaponSelectPayload;
 import io.github.kurumimnm.kurumimnmod.quest.PlayerQuest;
 import io.github.kurumimnm.kurumimnmod.quest.QuestDefinition;
 import io.github.kurumimnm.kurumimnmod.registry.ModAttachments;
@@ -36,6 +37,8 @@ public final class ClientQuest {
     static void onRegisterClientPayloadHandlers(RegisterClientPayloadHandlersEvent event) {
         event.register(OpenGatePayload.TYPE, (payload, context) ->
                 Minecraft.getInstance().gui.setScreen(new GateScreen(payload.from(), payload.options())));
+        event.register(OpenWeaponSelectPayload.TYPE, (payload, context) ->
+                Minecraft.getInstance().gui.setScreen(new WeaponSelectScreen(payload.quest())));
     }
 
     /** 自分のクエストの状態。 */

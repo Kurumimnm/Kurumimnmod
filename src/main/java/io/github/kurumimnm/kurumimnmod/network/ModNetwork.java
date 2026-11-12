@@ -19,7 +19,7 @@ public final class ModNetwork {
     private ModNetwork() {}
 
     /** 通信の互換バージョン（パケットの中身を変えたら上げる）。 */
-    private static final String VERSION = "5";
+    private static final String VERSION = "6";
 
     @SubscribeEvent
     static void onRegisterPayloads(RegisterPayloadHandlersEvent event) {
@@ -48,6 +48,9 @@ public final class ModNetwork {
         registrar.playToServer(ChooseGatePayload.TYPE, ChooseGatePayload.STREAM_CODEC, ChooseGatePayload::handle);
         // サーバー → クライアント（受け取ったときの処理は client/quest/ClientQuest で登録）
         registrar.playToClient(OpenGatePayload.TYPE, OpenGatePayload.STREAM_CODEC);
+        // 最初の武器の選択（サーバー → クライアントで画面を開き、選んだらクライアント → サーバー）
+        registrar.playToClient(OpenWeaponSelectPayload.TYPE, OpenWeaponSelectPayload.STREAM_CODEC);
+        registrar.playToServer(ChooseWeaponPayload.TYPE, ChooseWeaponPayload.STREAM_CODEC, ChooseWeaponPayload::handle);
 
         // ---- 職業 ----
         registrar.playToServer(SelectJobPayload.TYPE, SelectJobPayload.STREAM_CODEC, SelectJobPayload::handle);

@@ -268,17 +268,6 @@
   "quest.kurumimnmod.kobold_meadow.field.2": "遠吠えの草原",
   "quest.kurumimnmod.kobold_meadow.field.3": "コボルトの縄張り",
   "quest.kurumimnmod.kobold_meadow.field.boss": "コボルトロードの闘技場",
-  "quest.kurumimnmod.first_trial": "はじまりの試練",
-  "quest.kurumimnmod.first_trial.description": "街の外に広がる草原と森を抜け、奥に巣くう魔獣を討て。",
-  "quest.kurumimnmod.first_trial.field.1": "草原の小道",
-  "quest.kurumimnmod.first_trial.field.2": "木漏れ日の森",
-  "quest.kurumimnmod.first_trial.field.boss": "魔獣の闘技場",
-  "quest.kurumimnmod.forked_road": "分かれ道の遠征",
-  "quest.kurumimnmod.forked_road.description": "草原の先で道は砂漠と雪原に分かれる。両方の道を踏破した者だけが、闘技場の主に挑める。",
-  "quest.kurumimnmod.forked_road.field.1": "旅立ちの草原",
-  "quest.kurumimnmod.forked_road.field.2a": "灼熱の砂丘",
-  "quest.kurumimnmod.forked_road.field.2b": "白銀の峰",
-  "quest.kurumimnmod.forked_road.field.boss": "主の闘技場",
 
   "hud.kurumimnmod.quest.field": "フィールド %s：%s",
   "hud.kurumimnmod.quest.hub": "中間拠点",
@@ -383,5 +372,14 @@
   "job.kurumimnmod.magic_archer": "魔弓士",
   "job.kurumimnmod.magic_archer.description": "魔法も扱う射手。矢のダメージが知力でも上がる。",
   "job.kurumimnmod.sniper": "狙撃手",
-  "job.kurumimnmod.sniper.description": "物理の矢を極めた射手。攻撃力と会心率が高い。"
+  "job.kurumimnmod.sniper.description": "物理の矢を極めた射手。攻撃力と会心率が高い。",
+  "screen.kurumimnmod.weapon": "武器の選択",
+  "screen.kurumimnmod.weapon.title": "持っていく武器を選ぼう",
+  "screen.kurumimnmod.weapon.note": "耐久無限・クエストが終わると消える",
+  "screen.kurumimnmod.weapon.cancel": "やめる（クエストを受けない）",
+  "kurumimnmod.weapon.wooden_sword": "木の剣",
+  "kurumimnmod.weapon.wooden_axe": "木の斧",
+  "kurumimnmod.weapon.wooden_spear": "木の槍",
+  "kurumimnmod.weapon.bow": "弓矢（矢×64）",
+  "item.kurumimnmod.quest_item.lore": "クエスト用（クエストが終わると消える）"
 }

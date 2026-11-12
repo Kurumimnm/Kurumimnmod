@@ -7,6 +7,45 @@
   "reward_money": 50,
   "unlock_job": true,
   "time": 6000,
+  "no_drops": true,
+  "starter_weapons": [
+    {
+      "name": "kurumimnmod.weapon.wooden_sword",
+      "items": [
+        {
+          "item": "minecraft:wooden_sword"
+        }
+      ]
+    },
+    {
+      "name": "kurumimnmod.weapon.wooden_axe",
+      "items": [
+        {
+          "item": "minecraft:wooden_axe"
+        }
+      ]
+    },
+    {
+      "name": "kurumimnmod.weapon.wooden_spear",
+      "items": [
+        {
+          "item": "minecraft:wooden_spear"
+        }
+      ]
+    },
+    {
+      "name": "kurumimnmod.weapon.bow",
+      "items": [
+        {
+          "item": "minecraft:bow"
+        },
+        {
+          "item": "minecraft:arrow",
+          "count": 64
+        }
+      ]
+    }
+  ],
   "fields": {
     "1": {
       "number": 1,
