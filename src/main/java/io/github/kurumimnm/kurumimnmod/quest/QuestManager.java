@@ -31,6 +31,7 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.phys.AABB;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
@@ -140,6 +141,8 @@ public final class QuestManager {
         teleportHome(player, back);
         player.sendSystemMessage(Component.translatable(MSG + "completed", name, def.rewardMoney()));
         player.level().playSound(null, player.blockPosition(), SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.PLAYERS, 1f, 1f);
+        // ほかの仕組み（職業の解放など）へ知らせる
+        NeoForge.EVENT_BUS.post(new QuestCompletedEvent(player, q.quest().get(), def));
     }
 
     /**
@@ -187,6 +190,8 @@ public final class QuestManager {
             q = q.withKills(0);
         }
         set(player, q);
+        // クエスト中の時間：クエストの時刻で止める（QuestEnvironment）
+        QuestEnvironment.setQuestTime(server, def.get().time());
         BlockPos in = plot.entrance();
         teleport(player, level.get(), in, 180f);
         player.sendSystemMessage(Component.translatable(MSG + "entered", fieldTitle(questId, field.get(), fieldId)));

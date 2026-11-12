@@ -4,6 +4,11 @@
     "kurumimnmod:slime": { "experience": 3 },
     "kurumimnmod:garou": { "experience": 15 },
     "kurumimnmod:kobold": { "experience": 8 },
-    "kurumimnmod:kobold_lord": { "experience": 60 }
+    "kurumimnmod:kobold_lord": { "experience": 60 },
+    "minecraft:zombie": { "experience": 3 },
+    "minecraft:skeleton": { "experience": 4 },
+    "minecraft:creeper": { "experience": 4 },
+    "minecraft:spider": { "experience": 3 },
+    "minecraft:enderman": { "experience": 7 }
   }
 }

@@ -20,7 +20,9 @@ import net.minecraft.resources.Identifier;
  *   "start": ["1"],                 … 最初に入れるフィールド（ふつうは 1 つ）
  *   "goal": "boss",                 … このフィールドをクリアするとクエスト達成
  *   "sort": 10,                     … クエスト一覧の並び順
- *   "reward_money": 100,            … 達成したときにもらえるお金（$）
+ *   "reward_money": 100,            … 達成したときにもらえるお金（G）
+ *   "unlock_job": false,            … 達成したときに職業を解放する（職業の選択画面が開く）
+ *   "time": 6000,                   … クエスト中の時間（tick。0 = 朝、6000 = 昼、13000 = 夜、18000 = 真夜中）。進まない
  *   "fields": {
  *     "1":    { "number": 1, "size": 192, "biome": "kurumimnmod:quest_meadow",
  *               "terrain": { "style": "hills", "base": 70, "amplitude": 10, "scale": 90 },
@@ -42,16 +44,21 @@ import net.minecraft.resources.Identifier;
  * @param goal        クリアするとクエスト達成になるフィールド（ふつうはボス部屋）
  * @param fields      フィールド（ID → 設定）
  * @param sort        一覧の並び順（小さいほど上）
- * @param rewardMoney 達成したときにもらえるお金
+ * @param rewardMoney 達成したときにもらえるお金（G）
+ * @param unlockJob   達成したときに職業を解放するか（{@link QuestCompletedEvent} を受けた職業の仕組みが選択画面を開く）
+ * @param time        クエスト中の時間（tick、0〜23999）。フィールドに入ったときにクエスト用ディメンションの時計をこの時刻で止める
  */
-public record QuestDefinition(List<String> start, String goal, Map<String, Field> fields, int sort, int rewardMoney) {
+public record QuestDefinition(List<String> start, String goal, Map<String, Field> fields, int sort, int rewardMoney,
+                              boolean unlockJob, int time) {
 
     public static final Codec<QuestDefinition> CODEC = RecordCodecBuilder.create(i -> i.group(
             Codec.STRING.listOf().fieldOf("start").forGetter(QuestDefinition::start),
             Codec.STRING.fieldOf("goal").forGetter(QuestDefinition::goal),
             Codec.unboundedMap(Codec.STRING, Field.CODEC).fieldOf("fields").forGetter(QuestDefinition::fields),
             Codec.INT.optionalFieldOf("sort", 0).forGetter(QuestDefinition::sort),
-            Codec.INT.optionalFieldOf("reward_money", 0).forGetter(QuestDefinition::rewardMoney)
+            Codec.INT.optionalFieldOf("reward_money", 0).forGetter(QuestDefinition::rewardMoney),
+            Codec.BOOL.optionalFieldOf("unlock_job", false).forGetter(QuestDefinition::unlockJob),
+            Codec.intRange(0, 23999).optionalFieldOf("time", ModConstants.QUEST_DEFAULT_TIME).forGetter(QuestDefinition::time)
     ).apply(i, QuestDefinition::new));
 
     public Optional<Field> field(String id) {
