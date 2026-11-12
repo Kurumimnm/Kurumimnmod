@@ -312,6 +312,12 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         add("job.kurumimnmod.fist_saint.description", "The pinnacle of the fist. The highest attack and crit chance of all jobs.");
         add("job.kurumimnmod.archmage", "Archmage");
         add("job.kurumimnmod.archmage.description", "The pinnacle of magic. The highest MP and Intelligence.");
+        add("job.kurumimnmod.hunter", "Hunter");
+        add("job.kurumimnmod.hunter.description", "Fights with bows and crossbows from range. Crit chance grows with level. Branches at Lv50.");
+        add("job.kurumimnmod.magic_archer", "Magic Archer");
+        add("job.kurumimnmod.magic_archer.description", "An archer who also uses magic. Arrows also grow stronger with Intelligence.");
+        add("job.kurumimnmod.sniper", "Sniper");
+        add("job.kurumimnmod.sniper.description", "A master of physical arrows. High attack and crit chance.");
 
         // ---- Config 画面 ----
         add(MOD_ID + ".configuration.title", "Kurumimnmod Configs");

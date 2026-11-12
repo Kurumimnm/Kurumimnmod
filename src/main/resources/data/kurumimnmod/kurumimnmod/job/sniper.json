@@ -1,0 +1,17 @@
+{
+  "sort": 150,
+  "icon": "minecraft:crossbow",
+  "selectable": false,
+  "stats": {
+    "hp": 1.3,
+    "attack": 1.5,
+    "defense": 1.0
+  },
+  "per_level": {
+    "hp": 5,
+    "crit_chance": 0.0025
+  },
+  "weapons": [
+    "kurumimnmod:weapons/bow"
+  ]
+}
