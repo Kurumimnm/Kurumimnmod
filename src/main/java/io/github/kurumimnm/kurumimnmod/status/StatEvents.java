@@ -2,8 +2,6 @@ package io.github.kurumimnm.kurumimnmod.status;
 
 import io.github.kurumimnm.kurumimnmod.Kurumimnmod;
 import io.github.kurumimnm.kurumimnmod.config.ModConfigs;
-import io.github.kurumimnm.kurumimnmod.job.JobDefinition;
-import io.github.kurumimnm.kurumimnmod.job.JobManager;
 import io.github.kurumimnm.kurumimnmod.registry.ModTags;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
@@ -12,6 +10,7 @@ import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import io.github.kurumimnm.kurumimnmod.entity.MagicArrowEntity;
 import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -31,7 +30,8 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
  *   <li>攻撃力・知力 … プレイヤーが与えるダメージに倍率をかける（魔法ダメージは知力、それ以外は攻撃力）</li>
  *   <li>防御力 … 敵から受けるダメージを固定値で減らす（防具の計算のあと。ダメージ ≦ 防御力なら 1。敵の VIT と同じ式）</li>
  *   <li>技量 … クリティカルを技量の確率判定に置き換える（バニラの落下クリティカルは無効）</li>
- *   <li>矢 … 引き絞り切った矢にも同じ会心判定（バニラの「会心の矢」の乱数ボーナスは無効）。魔弓士は知力の倍率も足す</li>
+ *   <li>矢 … 引き絞り切った矢にも同じ会心判定（バニラの「会心の矢」の乱数ボーナスは無効）。
+ *       魔法の矢（{@link MagicArrowEntity}）は物理ではなく魔法攻撃として扱う（知力の倍率。誰が撃っても同じ）</li>
  * </ol>
  */
 @EventBusSubscriber(modid = Kurumimnmod.MOD_ID)
@@ -112,11 +112,11 @@ public final class StatEvents {
         if (attacker == null || attacker == victim) {
             return;
         }
-        float multiplier = event.getSource().is(ModTags.DamageTypes.MAGIC_ATTACK)
-                ? StatManager.magicMultiplier(attacker)
-                : StatManager.attackMultiplier(attacker);
+        boolean magic = event.getSource().is(ModTags.DamageTypes.MAGIC_ATTACK)
+                || event.getSource().getDirectEntity() instanceof MagicArrowEntity;
+        float multiplier = magic ? StatManager.magicMultiplier(attacker) : StatManager.attackMultiplier(attacker);
         if (event.getSource().getDirectEntity() instanceof AbstractArrow arrow) {
-            multiplier *= arrowMultiplier(attacker, arrow, victim);
+            multiplier *= arrowCritMultiplier(attacker, arrow, victim);
         }
         if (multiplier != 1f) {
             event.setAmount(event.getAmount() * multiplier);
@@ -206,19 +206,9 @@ public final class StatEvents {
         }
     }
 
-    /**
-     * 矢のダメージにかける追加の倍率。
-     * <ul>
-     *   <li>魔弓士など（JSON arrow_intelligence）：1 ＋ (知力の魔法倍率 − 1) × arrow_intelligence</li>
-     *   <li>会心：引き絞り切った矢だけ、会心率で判定して会心ダメージ倍率（近接と同じ値）</li>
-     * </ul>
-     */
-    private static float arrowMultiplier(Player attacker, AbstractArrow arrow, LivingEntity victim) {
+    /** 矢の会心によるダメージ倍率。引き絞り切った矢だけ、会心率で判定して会心ダメージ倍率（近接と同じ値）。 */
+    private static float arrowCritMultiplier(Player attacker, AbstractArrow arrow, LivingEntity victim) {
         float multiplier = 1f;
-        double ratio = JobManager.definition(attacker).map(JobDefinition::arrowIntelligence).orElse(0.0);
-        if (ratio != 0) {
-            multiplier *= (float) (1 + (StatManager.magicMultiplier(attacker) - 1) * ratio);
-        }
         boolean full = arrow.getPersistentData().getBooleanOr(FULL_CHARGE_KEY, false);
         if (full && attacker.getRandom().nextDouble() < StatManager.critChance(attacker)) {
             multiplier *= StatManager.critMultiplier(attacker);

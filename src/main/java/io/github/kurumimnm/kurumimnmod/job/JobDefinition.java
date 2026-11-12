@@ -27,8 +27,6 @@ import net.minecraft.world.item.ItemStack;
  *     "crit_chance": 0.001            … クリティカル率（0.001 = +0.1%）
  *   },
  *   "weapons": ["kurumimnmod:weapons/sword"],  … 使える武器のタグ（省略 = 制限なし）
- *   "arrow_intelligence": 1.0,        … 矢のダメージに知力の倍率をどれだけ足すか（魔弓士用。省略 = 0）
- *                                         矢のダメージ ×＝ 1 ＋ (知力の魔法倍率 − 1) × この値
  *   "promotion": {                    … 分岐（このレベルになると選択画面が開く）
  *     "level": 50,
  *     "options": ["kurumimnmod:magic_swordsman", "kurumimnmod:swordsman"]  … 自分自身＝そのまま続ける
@@ -46,7 +44,6 @@ public record JobDefinition(
         Multipliers stats,
         LevelGains perLevel,
         List<TagKey<Item>> weapons,
-        double arrowIntelligence,
         Optional<Promotion> promotion) {
 
     public static final Codec<JobDefinition> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -56,7 +53,6 @@ public record JobDefinition(
             Multipliers.CODEC.optionalFieldOf("stats", Multipliers.NONE).forGetter(JobDefinition::stats),
             LevelGains.CODEC.optionalFieldOf("per_level", LevelGains.NONE).forGetter(JobDefinition::perLevel),
             TagKey.codec(Registries.ITEM).listOf().optionalFieldOf("weapons", List.of()).forGetter(JobDefinition::weapons),
-            Codec.DOUBLE.optionalFieldOf("arrow_intelligence", 0.0).forGetter(JobDefinition::arrowIntelligence),
             Promotion.CODEC.optionalFieldOf("promotion").forGetter(JobDefinition::promotion)
     ).apply(i, JobDefinition::new));
 
