@@ -3,14 +3,19 @@ package io.github.kurumimnm.kurumimnmod.status;
 import io.github.kurumimnm.kurumimnmod.Kurumimnmod;
 import io.github.kurumimnm.kurumimnmod.config.ModConfigs;
 import io.github.kurumimnm.kurumimnmod.registry.ModTags;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import io.github.kurumimnm.kurumimnmod.entity.MagicArrowEntity;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.common.util.FakePlayer;
+import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import net.neoforged.neoforge.event.entity.player.CriticalHitEvent;
@@ -23,8 +28,10 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
  *   <li>属性の反映（最大 HP など）… ログイン・リスポーン・ディメンション移動時と、毎秒の確認</li>
  *   <li>MP の自然回復 … 毎秒</li>
  *   <li>攻撃力・知力 … プレイヤーが与えるダメージに倍率をかける（魔法ダメージは知力、それ以外は攻撃力）</li>
- *   <li>防御力 … 敵から受けるダメージを固定値で減らす（防具の計算のあと。防御力 ＞ ダメージなら 1）</li>
+ *   <li>防御力 … 敵から受けるダメージを固定値で減らす（防具の計算のあと。ダメージ ≦ 防御力なら 1。敵の VIT と同じ式）</li>
  *   <li>技量 … クリティカルを技量の確率判定に置き換える（バニラの落下クリティカルは無効）</li>
+ *   <li>矢 … 引き絞り切った矢にも同じ会心判定（バニラの「会心の矢」の乱数ボーナスは無効）。
+ *       魔法の矢（{@link MagicArrowEntity}）は物理ではなく魔法攻撃として扱う（知力の倍率。誰が撃っても同じ）</li>
  * </ol>
  */
 @EventBusSubscriber(modid = Kurumimnmod.MOD_ID)
@@ -105,9 +112,12 @@ public final class StatEvents {
         if (attacker == null || attacker == victim) {
             return;
         }
-        float multiplier = event.getSource().is(ModTags.DamageTypes.MAGIC_ATTACK)
-                ? StatManager.magicMultiplier(attacker)
-                : StatManager.attackMultiplier(attacker);
+        boolean magic = event.getSource().is(ModTags.DamageTypes.MAGIC_ATTACK)
+                || event.getSource().getDirectEntity() instanceof MagicArrowEntity;
+        float multiplier = magic ? StatManager.magicMultiplier(attacker) : StatManager.attackMultiplier(attacker);
+        if (event.getSource().getDirectEntity() instanceof AbstractArrow arrow) {
+            multiplier *= arrowCritMultiplier(attacker, arrow, victim);
+        }
         if (multiplier != 1f) {
             event.setAmount(event.getAmount() * multiplier);
         }
@@ -120,7 +130,7 @@ public final class StatEvents {
     /**
      * 敵（攻撃したエンティティがいるダメージ）から受けるダメージを減らす。
      * 防具・エンチャント・耐性エフェクトの計算が終わったあとの値から引く。
-     * 防御力が受けるダメージより高いときは被ダメ 1（Config blockedDamage）。
+     * 受けるダメージが防御力以下なら被ダメ 1（Config blockedDamage）、超えたら 防御力 × 0.5 を引く。
      * 落下・溶岩・溺れなど、攻撃者のいないダメージは対象外。/kill や奈落も対象外。
      * <p>
      * 対象：プレイヤー（防御力ステータス）と、{@link DefenseHolder} を実装した Mob（グリフォンなど）。
@@ -170,6 +180,44 @@ public final class StatEvents {
         if (crit) {
             event.setDamageMultiplier(StatManager.critMultiplier(player));
         }
+    }
+
+    // =====================================================================
+    // 矢（会心・魔弓士の知力）
+    // =====================================================================
+
+    /** 矢が「引き絞り切って撃たれた」ことを覚えておく印（エンティティの保存データ）。 */
+    private static final String FULL_CHARGE_KEY = Kurumimnmod.MOD_ID + ":full_charge";
+
+    /**
+     * プレイヤーが撃った矢が出たとき：バニラの会心の矢（乱数でダメージが増える）を止め、
+     * 引き絞り切ったかどうかだけ覚えておく（会心はステータスの判定に一本化）。
+     */
+    @SubscribeEvent
+    static void onArrowJoin(EntityJoinLevelEvent event) {
+        if (event.getLevel().isClientSide() || event.loadedFromDisk()
+                || !(event.getEntity() instanceof AbstractArrow arrow)
+                || !(arrow.getOwner() instanceof Player)) {
+            return;
+        }
+        if (arrow.isCritArrow()) {
+            arrow.getPersistentData().putBoolean(FULL_CHARGE_KEY, true);
+            arrow.setCritArrow(false);
+        }
+    }
+
+    /** 矢の会心によるダメージ倍率。引き絞り切った矢だけ、会心率で判定して会心ダメージ倍率（近接と同じ値）。 */
+    private static float arrowCritMultiplier(Player attacker, AbstractArrow arrow, LivingEntity victim) {
+        float multiplier = 1f;
+        boolean full = arrow.getPersistentData().getBooleanOr(FULL_CHARGE_KEY, false);
+        if (full && attacker.getRandom().nextDouble() < StatManager.critChance(attacker)) {
+            multiplier *= StatManager.critMultiplier(attacker);
+            if (victim.level() instanceof ServerLevel level) {
+                level.sendParticles(ParticleTypes.CRIT, victim.getX(), victim.getY(0.5), victim.getZ(),
+                        12, victim.getBbWidth() / 2, victim.getBbHeight() / 4, victim.getBbWidth() / 2, 0.2);
+            }
+        }
+        return multiplier;
     }
 
     // =====================================================================

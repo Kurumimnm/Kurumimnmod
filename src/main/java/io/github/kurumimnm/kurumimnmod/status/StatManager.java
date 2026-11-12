@@ -3,6 +3,7 @@ package io.github.kurumimnm.kurumimnmod.status;
 import io.github.kurumimnm.kurumimnmod.Kurumimnmod;
 import io.github.kurumimnm.kurumimnmod.config.ModConfigs;
 import io.github.kurumimnm.kurumimnmod.config.ModConstants;
+import io.github.kurumimnm.kurumimnmod.job.JobManager;
 import io.github.kurumimnm.kurumimnmod.level.LevelManager;
 import io.github.kurumimnm.kurumimnmod.registry.ModAttachments;
 import java.util.Map;
@@ -20,12 +21,13 @@ import net.minecraft.world.entity.player.Player;
  * <p>
  * 【計算式】（数値はすべて Config の [status] で変更可能）
  * <pre>
- * 最大 HP   = 初期HP + 体力 × 10
- * 最大 MP   = 初期MP + 魔力 × 10
- * 攻撃力    = 初期値 + 攻撃力ポイント × 1   → 与ダメージ ×(1 + (攻撃力 - 1) × 10%)
- * 防御力    = 初期値 + 防御力ポイント × 1   → 敵からの被ダメージ −(防御力 - 1) × 0.5
- * 知力      = 初期値 + 知力ポイント × 1   → 魔法ダメージ ×(1 + (知力 - 1) × 10%)（攻撃力の倍率はかからない）
- * 技量      = 初期値                        → クリ率 5% + (技量 - 1) × 0.5%、クリ倍率 1.5 + (技量 - 1) × 0.01
+ * 職業の倍率（A 方式）：最終値 ＝（初期値 ＋ 振り分け ＋ 職業のレベル上昇の合計）× 職業の倍率
+ * 最大 HP   = (初期HP + 体力 × 10 + 職業のHP上昇) × HP倍率
+ * 最大 MP   = (初期MP + 魔力 × 10 + 職業のMP上昇) × MP倍率
+ * 攻撃力    = (初期値 + 攻撃力ポイント × 1) × 攻撃倍率   → 与ダメージ ×(1 + (攻撃力 - 1) × 10%)
+ * 防御力    = (初期値 + 防御力ポイント × 1) × 防御倍率   → 被ダメージ ≦ 防御力なら 1、超えたら −防御力 × 0.5
+ * 知力      = (初期値 + 知力ポイント × 1) × 知力倍率   → 魔法ダメージ ×(1 + (知力 - 1) × 10%)（攻撃力の倍率はかからない）
+ * 技量      = 初期値                        → クリ率 5% + (技量 - 1) × 0.5% + 職業の会心率上昇、クリ倍率 1.5 + (技量 - 1) × 0.01
  * ラック    = 初期値                        → バニラの幸運 +(ラック - 1)
  * 抵抗力    = 初期値
  * </pre>
@@ -98,9 +100,13 @@ public final class StatManager {
     public static double value(Player player, StatType type) {
         PlayerStats s = get(player);
         return switch (type) {
-            case ATTACK -> cfg(ModConfigs.INITIAL_ATTACK) + s.points(AllocType.ATTACK) * cfg(ModConfigs.ATTACK_PER_POINT);
-            case DEFENSE -> cfg(ModConfigs.INITIAL_DEFENSE) + s.points(AllocType.DEFENSE) * cfg(ModConfigs.DEFENSE_PER_POINT);
-            case INTELLIGENCE -> cfg(ModConfigs.INITIAL_INTELLIGENCE) + s.points(AllocType.INTELLIGENCE) * cfg(ModConfigs.INTELLIGENCE_PER_POINT);
+            // 職業の倍率は「初期値 ＋ 振り分け」全体にかける（A 方式）
+            case ATTACK -> (cfg(ModConfigs.INITIAL_ATTACK) + s.points(AllocType.ATTACK) * cfg(ModConfigs.ATTACK_PER_POINT))
+                    * JobManager.multipliers(player).attack();
+            case DEFENSE -> (cfg(ModConfigs.INITIAL_DEFENSE) + s.points(AllocType.DEFENSE) * cfg(ModConfigs.DEFENSE_PER_POINT))
+                    * JobManager.multipliers(player).defense();
+            case INTELLIGENCE -> (cfg(ModConfigs.INITIAL_INTELLIGENCE) + s.points(AllocType.INTELLIGENCE) * cfg(ModConfigs.INTELLIGENCE_PER_POINT))
+                    * JobManager.multipliers(player).intelligence();
             case DEXTERITY -> cfg(ModConfigs.INITIAL_DEXTERITY);
             case LUCK -> cfg(ModConfigs.INITIAL_LUCK);
             case RESISTANCE -> cfg(ModConfigs.INITIAL_RESISTANCE);
@@ -110,14 +116,21 @@ public final class StatManager {
         };
     }
 
-    /** 最大 HP（ステータスから計算した値。実際の最大 HP は属性に反映済み）。 */
+    /**
+     * 最大 HP（ステータスから計算した値。実際の最大 HP は属性に反映済み）。
+     * ＝（初期HP ＋ 体力 × 10 ＋ 職業のレベル上昇の合計）× 職業の HP 倍率
+     */
     public static double maxHealth(Player player) {
-        return cfg(ModConfigs.INITIAL_HP) + get(player).points(AllocType.VITALITY) * cfg(ModConfigs.VITALITY_HP_PER_POINT);
+        double base = cfg(ModConfigs.INITIAL_HP) + get(player).points(AllocType.VITALITY) * cfg(ModConfigs.VITALITY_HP_PER_POINT)
+                + JobManager.totalGains(player).hp();
+        return Math.max(1, Math.floor(base * JobManager.multipliers(player).hp()));
     }
 
-    /** 最大 MP。 */
+    /** 最大 MP ＝（初期MP ＋ 魔力 × 10 ＋ 職業のレベル上昇の合計）× 職業の MP 倍率。 */
     public static float maxMana(Player player) {
-        return cfg(ModConfigs.INITIAL_MP) + get(player).points(AllocType.MAGIC) * cfg(ModConfigs.MAGIC_MP_PER_POINT);
+        double base = cfg(ModConfigs.INITIAL_MP) + get(player).points(AllocType.MAGIC) * cfg(ModConfigs.MAGIC_MP_PER_POINT)
+                + JobManager.totalGains(player).mp();
+        return (float) Math.floor(base * JobManager.multipliers(player).mp());
     }
 
     /** 振り分け 1 ポイントあたりの上昇量（付与画面の説明文用）。 */
@@ -152,38 +165,30 @@ public final class StatManager {
 
     /**
      * 防御力の値から被ダメージ軽減量（固定値）を求める。プレイヤー・Mob・カカシで共通の式。
-     * 防御力 1 で軽減なし、以降 1 ごとに Config の defenseReduction ずつ増える。
+     * 軽減量 ＝ 防御力 × Config の defenseReduction（敵の VIT と同じ形の式）。
      */
     public static float defenseReduction(double defense) {
-        return (float) Math.max(0, (defense - 1) * ModConfigs.defenseReductionPerPoint());
-    }
-
-    /**
-     * 軽減量を引いたダメージ（最低ダメージ保証つき）。軽減量が 0 以下なら元のダメージをそのまま返す。
-     */
-    public static float applyDefense(float damage, float reduction) {
-        if (reduction <= 0 || damage <= 0) {
-            return damage;
-        }
-        float minDamage = (float) Math.min(ModConfigs.defenseMinDamage(), damage);
-        return Math.max(minDamage, damage - reduction);
+        return (float) Math.max(0, defense * ModConfigs.defenseReductionPerPoint());
     }
 
     /**
      * 防御力ステータスでの軽減（プレイヤー・{@link DefenseHolder} の Mob・カカシで共通）。
+     * 敵の VIT（{@link #applyEnemyDefense}）と同じ仕組み：
      * <ul>
-     *   <li>防御力 ＞ 受けるダメージ → 被ダメは Config blockedDamage（既定 1）</li>
-     *   <li>それ以外 → 受けるダメージ − (防御力 − 1) × defenseReduction（従来どおり）</li>
+     *   <li>受けるダメージ ≦ 防御力 → 被ダメは Config blockedDamage（既定 1）</li>
+     *   <li>受けるダメージ ＞ 防御力 → 受けるダメージ − 防御力 × defenseReduction（既定 0.5）</li>
      * </ul>
+     * 例（既定値）：攻撃 10・防御 10 → 1、攻撃 10・防御 9 → 5.5。
      */
     public static float applyDefenseStat(float damage, double defense) {
-        if (damage <= 0) {
+        if (defense <= 0 || damage <= 0) {
             return damage;
         }
-        if (defense > damage) {
-            return Math.min(damage, (float) ModConfigs.blockedDamage());
+        float blocked = Math.min(damage, (float) ModConfigs.blockedDamage());
+        if (damage <= defense) {
+            return blocked;
         }
-        return applyDefense(damage, defenseReduction(defense));
+        return Math.max(blocked, damage - defenseReduction(defense));
     }
 
     /**
@@ -205,10 +210,11 @@ public final class StatManager {
         return Math.max(blocked, damage - (float) (defense * ModConfigs.enemyDefenseRatio()));
     }
 
-    /** 技量によるクリティカル率（0.0〜1.0）。 */
+    /** クリティカル率（0.0〜1.0）＝ 技量による率 ＋ 職業のレベル上昇の合計。 */
     public static double critChance(Player player) {
         double dex = value(player, StatType.DEXTERITY) - 1;
-        return Math.clamp(ModConfigs.critChanceBase() + dex * ModConfigs.critChancePerPoint(), 0.0, 1.0);
+        double job = JobManager.totalGains(player).critChance();
+        return Math.clamp(ModConfigs.critChanceBase() + dex * ModConfigs.critChancePerPoint() + job, 0.0, 1.0);
     }
 
     /** 技量によるクリティカル倍率。 */

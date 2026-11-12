@@ -4,6 +4,7 @@ import io.github.kurumimnm.kurumimnmod.Kurumimnmod;
 import io.github.kurumimnm.kurumimnmod.item.ScarecrowConfigStickItem;
 import io.github.kurumimnm.kurumimnmod.item.ScarecrowSummonStickItem;
 import io.github.kurumimnm.kurumimnmod.item.IceWandItem;
+import io.github.kurumimnm.kurumimnmod.item.MagicArrowItem;
 import net.minecraft.world.item.SpawnEggItem;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -45,6 +46,17 @@ public final class ModItems {
     /** 氷柱の杖（右クリック長押しで照準、左クリックで頭上から氷柱を発射）。 */
     public static final DeferredItem<IceWandItem> ICE_WAND =
             ITEMS.registerItem("ice_wand", IceWandItem::new, p -> p.stacksTo(1));
+
+    // =====================================================================
+    // 狩人系の武器
+    // =====================================================================
+
+    /**
+     * 魔法の矢（仮）。弓・クロスボウで撃つと魔法攻撃（知力の倍率）になる。見た目はバニラの矢と同じ（仮）。
+     * 入手方法（クラフト）は未定のため、今は耐久無効（スタック可）のみ設定。
+     */
+    public static final DeferredItem<MagicArrowItem> MAGIC_ARROW =
+            ITEMS.registerItem("magic_arrow", MagicArrowItem::new, p -> p.stacksTo(64));
 
     // =====================================================================
     // スポーンエッグ

@@ -1,0 +1,18 @@
+{
+  "sort": 120,
+  "icon": "minecraft:diamond_axe",
+  "selectable": false,
+  "stats": {
+    "hp": 1.75,
+    "attack": 1.45,
+    "defense": 1.0
+  },
+  "per_level": {
+    "hp": 8
+  },
+  "weapons": [
+    "kurumimnmod:weapons/sword",
+    "kurumimnmod:weapons/axe",
+    "kurumimnmod:weapons/spear"
+  ]
+}

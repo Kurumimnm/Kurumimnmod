@@ -40,6 +40,7 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         addItem(ModItems.SCARECROW_CONFIG_STICK, "Scarecrow Settings Stick");
         add("item." + MOD_ID + ".scarecrow_config_stick.desc", "Aim at a scarecrow and left-click to open its settings.");
         addItem(ModItems.ICE_WAND, "Icicle Wand");
+        addItem(ModItems.MAGIC_ARROW, "Magic Arrow");
         addItem(ModItems.GRIFFIN_SPAWN_EGG, "Griffin Spawn Egg");
         addItem(ModItems.MINION_SPAWN_EGG, "Minion Spawn Egg");
         addItem(ModItems.SLIME_SPAWN_EGG, "Slime Spawn Egg");
@@ -109,7 +110,7 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         // ---- ステータス（StatType：ステータス画面に表示する値） ----
         addStat(StatType.ATTACK, "Attack", "Increases the damage you deal to enemies.");
         add(StatType.ATTACK.nameKey() + ".effect", "Current: damage dealt x%s (except magic)");
-        addStat(StatType.DEFENSE, "Defense", "Reduces the damage you take from enemies by a flat amount (applied after armor). If your Defense is higher than the damage, you take only 1.");
+        addStat(StatType.DEFENSE, "Defense", "Reduces the damage you take from enemies (applied after armor). If the damage is at most your Defense, you take only 1; otherwise Defense x 0.5 is subtracted (same rule as enemy VIT).");
         add(StatType.DEFENSE.nameKey() + ".effect", "Current: damage taken -%s");
         addStat(StatType.INTELLIGENCE, "Intelligence", "Increases the damage of your magic attacks.");
         add(StatType.INTELLIGENCE.nameKey() + ".effect", "Current: magic damage x%s");
@@ -270,6 +271,54 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         add("commands." + MOD_ID + ".quest.no_field", "Quest %s has no field %s");
         add("commands." + MOD_ID + ".quest.preview", "Created plot %s: center X %s Z %s (size %s), entrance %s %s %s");
         add("commands." + MOD_ID + ".money.get", "Money: %sG");
+        // ---- 職業 ----
+        add("message.kurumimnmod.job.unlocked", "Jobs unlocked!");
+        add("message.kurumimnmod.job.selected", "You became a %s!");
+        add("screen.kurumimnmod.job", "Choose a Job");
+        add("screen.kurumimnmod.job.title", "Choose your job");
+        add("screen.kurumimnmod.job.note", "You cannot change your job later");
+        add("screen.kurumimnmod.job.chosen", "> %s <");
+        add("screen.kurumimnmod.job.confirm", "Become a %s");
+        add("screen.kurumimnmod.job.later", "Choose later");
+        add("screen.kurumimnmod.job.close", "Close");
+        add("screen.kurumimnmod.job.empty.1", "No jobs are available yet");
+        add("screen.kurumimnmod.job.empty.2", "Once jobs are added, this screen opens when you log in");
+        add("commands.kurumimnmod.job.unlock", "Unlocked jobs for %s player(s)");
+        add("commands.kurumimnmod.job.reset", "Reset the job of %s player(s)");
+        add("message.kurumimnmod.job.kept", "You continue as a %s!");
+        add("message.kurumimnmod.job.promotion", "You reached a new stage! Choose your path");
+        add("message.kurumimnmod.job.weapon_locked", "Your job cannot use this weapon");
+        add("screen.kurumimnmod.job.promotion.title", "Choose your path");
+        add("screen.kurumimnmod.job.promotion.note", "You cannot change this later");
+        add("commands.kurumimnmod.job.set", "Set the job of %s player(s) to %s");
+        add("commands.kurumimnmod.job.unknown", "Unknown job: %s");
+        // 職業の名前・説明（data/kurumimnmod/kurumimnmod/job/*.json）
+        add("job.kurumimnmod.swordsman", "Swordsman");
+        add("job.kurumimnmod.swordsman.description", "Fights with swords only. Balanced HP and Attack; crit chance grows with level. Branches at Lv50.");
+        add("job.kurumimnmod.warrior", "Warrior");
+        add("job.kurumimnmod.warrior.description", "Uses swords, axes and spears. High HP that grows a lot with level. Branches at Lv50.");
+        add("job.kurumimnmod.fighter", "Fighter");
+        add("job.kurumimnmod.fighter.description", "Fights with gauntlets only. Specialized in attack, and crit chance grows quickly with level.");
+        add("job.kurumimnmod.mage", "Mage");
+        add("job.kurumimnmod.mage.description", "High MP and Intelligence. Fragile; put points into Vitality if you want more HP.");
+        add("job.kurumimnmod.magic_swordsman", "Magic Swordsman");
+        add("job.kurumimnmod.magic_swordsman.description", "A swordsman who also wields magic. Gains MP and Intelligence.");
+        add("job.kurumimnmod.berserker", "Berserker");
+        add("job.kurumimnmod.berserker.description", "Gives up defense for overwhelming attack.");
+        add("job.kurumimnmod.heavy_warrior", "Heavy Warrior");
+        add("job.kurumimnmod.heavy_warrior.description", "Very high HP and Defense. Lower attack.");
+        add("job.kurumimnmod.sword_saint", "Sword Saint");
+        add("job.kurumimnmod.sword_saint.description", "The pinnacle of the sword. Well-balanced and strong all-round.");
+        add("job.kurumimnmod.fist_saint", "Fist Saint");
+        add("job.kurumimnmod.fist_saint.description", "The pinnacle of the fist. The highest attack and crit chance of all jobs.");
+        add("job.kurumimnmod.archmage", "Archmage");
+        add("job.kurumimnmod.archmage.description", "The pinnacle of magic. The highest MP and Intelligence.");
+        add("job.kurumimnmod.hunter", "Hunter");
+        add("job.kurumimnmod.hunter.description", "Fights with bows and crossbows from range. Crit chance grows with level. Branches at Lv50.");
+        add("job.kurumimnmod.magic_archer", "Magic Archer");
+        add("job.kurumimnmod.magic_archer.description", "An archer who also uses magic. Arrows also grow stronger with Intelligence.");
+        add("job.kurumimnmod.sniper", "Sniper");
+        add("job.kurumimnmod.sniper.description", "A master of physical arrows. High attack and crit chance.");
 
         // ---- Config 画面 ----
         add(MOD_ID + ".configuration.title", "Kurumimnmod Configs");
@@ -283,7 +332,7 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         add(MOD_ID + ".configuration.disableHunger", "Disable Hunger");
         add(MOD_ID + ".configuration.level", "Level");
         add(MOD_ID + ".configuration.disableVanillaExperience", "Disable Vanilla Experience");
-        add(MOD_ID + ".configuration.baseExp", "Exp Required for Level 2");
+        add(MOD_ID + ".configuration.baseExp", "Exp Required for Level 1");
         add(MOD_ID + ".configuration.growth", "Required Exp Growth");
         add(MOD_ID + ".configuration.exponent", "Required Exp Curve");
         add(MOD_ID + ".configuration.maxLevel", "Max Level (0 = No Limit)");

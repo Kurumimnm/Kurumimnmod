@@ -1,0 +1,24 @@
+{
+  "sort": 20,
+  "icon": "minecraft:iron_axe",
+  "stats": {
+    "hp": 2.0,
+    "attack": 1.15,
+    "defense": 1.2
+  },
+  "per_level": {
+    "hp": 8
+  },
+  "weapons": [
+    "kurumimnmod:weapons/sword",
+    "kurumimnmod:weapons/axe",
+    "kurumimnmod:weapons/spear"
+  ],
+  "promotion": {
+    "level": 50,
+    "options": [
+      "kurumimnmod:berserker",
+      "kurumimnmod:heavy_warrior"
+    ]
+  }
+}

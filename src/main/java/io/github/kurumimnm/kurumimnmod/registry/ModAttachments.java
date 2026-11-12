@@ -6,6 +6,7 @@ import io.github.kurumimnm.kurumimnmod.status.PlayerStats;
 import net.minecraft.network.codec.ByteBufCodecs;
 import io.github.kurumimnm.kurumimnmod.level.KillContribution;
 import io.github.kurumimnm.kurumimnmod.level.PlayerLevel;
+import io.github.kurumimnm.kurumimnmod.job.PlayerJob;
 import io.github.kurumimnm.kurumimnmod.quest.PlayerQuest;
 import java.util.function.Supplier;
 import net.neoforged.neoforge.attachment.AttachmentType;
@@ -70,7 +71,17 @@ public final class ModAttachments {
                     .build());
 
     /**
-     * 所持金（$）。保存・死亡後も維持・本人にだけ同期（ステータス画面に表示）。
+     * 職業（解放されたか・選んだ職業）。保存・死亡後も維持・本人にだけ同期（選択画面に使う）。
+     */
+    public static final Supplier<AttachmentType<PlayerJob>> JOB = ATTACHMENT_TYPES.register("job",
+            () -> AttachmentType.builder(() -> PlayerJob.EMPTY)
+                    .serialize(PlayerJob.CODEC.fieldOf("job"))
+                    .copyOnDeath()
+                    .sync((holder, to) -> holder == to, PlayerJob.STREAM_CODEC)
+                    .build());
+
+    /**
+     * 所持金（G）。保存・死亡後も維持・本人にだけ同期（ステータス画面に表示）。
      */
     public static final Supplier<AttachmentType<Long>> MONEY = ATTACHMENT_TYPES.register("money",
             () -> AttachmentType.builder(() -> 0L)

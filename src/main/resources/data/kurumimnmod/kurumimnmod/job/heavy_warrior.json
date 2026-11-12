@@ -1,0 +1,18 @@
+{
+  "sort": 130,
+  "icon": "minecraft:shield",
+  "selectable": false,
+  "stats": {
+    "hp": 2.5,
+    "attack": 1.05,
+    "defense": 1.5
+  },
+  "per_level": {
+    "hp": 10
+  },
+  "weapons": [
+    "kurumimnmod:weapons/sword",
+    "kurumimnmod:weapons/axe",
+    "kurumimnmod:weapons/spear"
+  ]
+}

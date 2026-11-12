@@ -1,0 +1,20 @@
+{
+  "sort": 110,
+  "icon": "minecraft:diamond_sword",
+  "selectable": false,
+  "stats": {
+    "hp": 1.5,
+    "mp": 1.5,
+    "attack": 1.25,
+    "defense": 1.15,
+    "intelligence": 1.1
+  },
+  "per_level": {
+    "hp": 5,
+    "mp": 4,
+    "crit_chance": 0.001
+  },
+  "weapons": [
+    "kurumimnmod:weapons/sword"
+  ]
+}

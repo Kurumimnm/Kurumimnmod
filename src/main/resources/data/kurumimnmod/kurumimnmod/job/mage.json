@@ -1,0 +1,13 @@
+{
+  "sort": 40,
+  "icon": "minecraft:blaze_rod",
+  "stats": {
+    "hp": 1.0,
+    "mp": 2.0,
+    "intelligence": 1.2
+  },
+  "per_level": {
+    "hp": 2,
+    "mp": 5
+  }
+}

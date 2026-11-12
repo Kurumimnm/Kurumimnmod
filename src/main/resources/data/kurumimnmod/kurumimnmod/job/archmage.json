@@ -1,0 +1,14 @@
+{
+  "sort": 230,
+  "icon": "minecraft:nether_star",
+  "selectable": false,
+  "stats": {
+    "hp": 1.0,
+    "mp": 3.0,
+    "intelligence": 1.5
+  },
+  "per_level": {
+    "hp": 5,
+    "mp": 10
+  }
+}

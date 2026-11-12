@@ -326,8 +326,8 @@ public final class ModConstants {
     // レベル
     // ※ ステータスの初期値・振り分けの上昇量・効果の数値は Config（ModConfigs の [status]）にある
     // =====================================================================
-    /** 初期レベル。 */
-    public static final int INITIAL_LEVEL = 1;
+    /** 初期レベル（新規プレイヤーは Lv0 から始まる）。 */
+    public static final int INITIAL_LEVEL = 0;
 
     // =====================================================================
     // HUD（画面下部の HP / MP / レベル表示）
