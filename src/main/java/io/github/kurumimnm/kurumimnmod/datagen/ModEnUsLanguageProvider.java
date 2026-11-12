@@ -40,6 +40,7 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         addItem(ModItems.SCARECROW_CONFIG_STICK, "Scarecrow Settings Stick");
         add("item." + MOD_ID + ".scarecrow_config_stick.desc", "Aim at a scarecrow and left-click to open its settings.");
         addItem(ModItems.ICE_WAND, "Icicle Wand");
+        addItem(ModItems.MAGIC_ARROW, "Magic Arrow");
         addItem(ModItems.GRIFFIN_SPAWN_EGG, "Griffin Spawn Egg");
         addItem(ModItems.MINION_SPAWN_EGG, "Minion Spawn Egg");
         addItem(ModItems.SLIME_SPAWN_EGG, "Slime Spawn Egg");

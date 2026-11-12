@@ -16,6 +16,5 @@
   },
   "weapons": [
     "kurumimnmod:weapons/bow"
-  ],
-  "arrow_intelligence": 1.0
+  ]
 }

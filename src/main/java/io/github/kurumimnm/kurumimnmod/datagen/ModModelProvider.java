@@ -41,6 +41,7 @@ public class ModModelProvider extends ModelProvider {
         itemModels.generateFlatItem(ModItems.SCARECROW_SUMMON_STICK.get(), ModelTemplates.FLAT_HANDHELD_ITEM);
         itemModels.generateFlatItem(ModItems.SCARECROW_CONFIG_STICK.get(), ModelTemplates.FLAT_HANDHELD_ITEM);
         itemModels.generateFlatItem(ModItems.ICE_WAND.get(), ModelTemplates.FLAT_HANDHELD_ITEM);
+        itemModels.generateFlatItem(ModItems.MAGIC_ARROW.get(), ModelTemplates.FLAT_ITEM);
         // スポーンエッグ（26.x は 1 種類ずつ専用テクスチャを持つ平面アイテム）
         itemModels.generateFlatItem(ModItems.GRIFFIN_SPAWN_EGG.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(ModItems.MINION_SPAWN_EGG.get(), ModelTemplates.FLAT_ITEM);

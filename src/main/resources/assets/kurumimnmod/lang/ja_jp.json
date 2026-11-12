@@ -2,6 +2,7 @@
   "itemGroup.kurumimnmod.main": "Kurumimnmod",
 
   "item.kurumimnmod.ice_wand": "氷柱の杖",
+  "item.kurumimnmod.magic_arrow": "魔法の矢",
   "entity.kurumimnmod.ice_icicle": "氷柱",
 
   "tooltip.kurumimnmod.wand.mp_cost": "必要MP: %s",
