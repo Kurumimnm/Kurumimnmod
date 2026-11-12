@@ -23,7 +23,7 @@ public class MagicArrowItem extends ArrowItem {
     }
 
     @Override
-    public AbstractArrow createArrow(Level level, ItemStack ammo, ItemStack weapon, @Nullable LivingEntity shooter) {
+    public AbstractArrow createArrow(Level level, ItemStack ammo, @Nullable LivingEntity shooter, ItemStack weapon) {
         return new MagicArrowEntity(level, shooter, ammo, weapon);
     }
 }
