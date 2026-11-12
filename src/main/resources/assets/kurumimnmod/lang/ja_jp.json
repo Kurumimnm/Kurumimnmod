@@ -376,5 +376,11 @@
   "job.kurumimnmod.fist_saint": "拳聖",
   "job.kurumimnmod.fist_saint.description": "拳を極めた者。全職業で最も攻撃力と会心率が高い。",
   "job.kurumimnmod.archmage": "魔導",
-  "job.kurumimnmod.archmage.description": "魔法を極めた者。MPと知力が最も高い。"
+  "job.kurumimnmod.archmage.description": "魔法を極めた者。MPと知力が最も高い。",
+  "job.kurumimnmod.hunter": "狩人",
+  "job.kurumimnmod.hunter.description": "弓・クロスボウで遠くから戦う。レベルが上がるごとに会心率が上がる。Lv50で分岐する。",
+  "job.kurumimnmod.magic_archer": "魔弓士",
+  "job.kurumimnmod.magic_archer.description": "魔法も扱う射手。矢のダメージが知力でも上がる。",
+  "job.kurumimnmod.sniper": "狙撃手",
+  "job.kurumimnmod.sniper.description": "物理の矢を極めた射手。攻撃力と会心率が高い。"
 }
