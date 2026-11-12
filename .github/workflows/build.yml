@@ -15,16 +15,14 @@ jobs:
         run: |
           MC=$(find build ~/.gradle -name "minecraft-patched-26.3*.jar" 2>/dev/null | grep -v sources | head -1)
           UNI=$(find ~/.gradle -name "neoforge-26.3*-universal.jar" | head -1)
-          CLIENT=$(find ~/.gradle -name "client-extra*.jar" -o -name "minecraft-client*.jar" 2>/dev/null | head -1)
-          echo "MC=$MC UNI=$UNI"
-          for c in $(unzip -Z1 "$MC" | grep -E "entity/monster/.*(Spider|Creeper|EnderMan|Zombie|Skeleton)\.class$|world/clock/WorldClock\.class$" ); do echo "CLS $c"; done
-          javap -cp "$MC" -p net.minecraft.world.entity.Mob | grep -iE "goalSelector|targetSelector"
-          javap -cp "$MC" -p net.minecraft.core.registries.Registries | grep -iE "clock|timeline"
-          javap -cp "$MC" -p net.minecraft.world.level.gamerules.GameRules | grep -iE "public .*(set|get)\("
-          unzip -Z1 "$UNI" | grep -iE "MobGriefing|EntityTeleportEvent|ExplosionEvent|EntityJoinLevel" 
-          javap -cp "$UNI:$MC" -p 'net.neoforged.neoforge.event.entity.EntityMobGriefingEvent' 2>&1 | head -20
-          javap -cp "$UNI:$MC" -p 'net.neoforged.neoforge.event.entity.EntityTeleportEvent$EnderEntity' 2>&1 | head -20
-          javap -cp "$UNI:$MC" -p 'net.neoforged.neoforge.event.entity.EntityTeleportEvent' 2>&1 | head -30
-          javap -cp "$UNI:$MC" -p 'net.neoforged.neoforge.event.level.ExplosionEvent$Detonate' 2>&1 | head -20
-          unzip -p "$UNI" META-INF/accesstransformer.cfg 2>/dev/null | grep -iE "goalSelector|targetSelector|net.minecraft.world.entity.Mob " | head
-          find ~/.gradle -name "accesstransformer*.cfg" | head -3 | xargs -r grep -hiE "goalSelector|targetSelector" | head
+          echo "################ API"
+          javap -cp "$MC" -p net.minecraft.world.entity.Entity | grep -iE "tag|RemovalReason" || true
+          javap -cp "$MC" -p 'net.minecraft.world.entity.Entity$RemovalReason' | head -20 || true
+          javap -cp "$MC" -p net.minecraft.world.item.component.ItemLore | grep -E "public|record" || true
+          javap -cp "$MC" -p net.minecraft.world.item.component.CustomData | grep -E "public" || true
+          javap -cp "$MC" -p net.minecraft.core.component.DataComponents | grep -iE "UNBREAKABLE|LORE|CUSTOM_DATA" || true
+          javap -cp "$MC" -p net.minecraft.world.item.Items | grep -iE "SPEAR|WOODEN_AXE|WOODEN_SWORD" || true
+          javap -cp "$UNI:$MC" -p net.neoforged.neoforge.event.entity.living.LivingDropsEvent | head -20 || true
+          javap -cp "$MC" -p net.minecraft.world.entity.player.Player | grep -iE " addItem| drop\(" || true
+          javap -cp "$MC" -p net.minecraft.world.item.ItemStack | grep -iE "isDamageableItem|getHoverName" || true
+          javap -cp "$MC" -p net.minecraft.world.entity.player.Inventory | grep -iE "getContainerSize|setItem|getItem\(" || true
