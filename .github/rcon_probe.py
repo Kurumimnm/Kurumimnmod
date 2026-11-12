@@ -17,9 +17,12 @@ if mode=="setup":
               O+"summon minecraft:pig 25 70 25 {Tags:[\"p2\"]}"]:
         run(c)
 elif mode=="check":
-    for c in [O+"kill @e[tag=p1]", O+"kill @e[tag=p2]"]:
+    for c in [O+"data get entity @e[tag=p1,limit=1] Pos", O+"data get entity @e[tag=p2,limit=1] Pos",
+              O+"kill @e[tag=p1]"]:
         run(c)
-    import time; time.sleep(3)
-    for c in [O+"execute if entity @e[type=minecraft:item,x=5,y=70,z=5,distance=..6]",
-              O+"execute if entity @e[type=minecraft:item,x=25,y=70,z=25,distance=..6]"]:
-        run(c)
+    import time; time.sleep(2)
+    run(O+"execute if entity @e[type=minecraft:item]")
+    run(O+"kill @e[tag=p2]")
+    time.sleep(2)
+    run(O+"execute if entity @e[type=minecraft:item]")
+    run(O+"data get entity @e[type=minecraft:item,limit=1] Item")
