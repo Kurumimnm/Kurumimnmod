@@ -37,6 +37,24 @@ public final class Kurumimnmod {
 
         // ---- ライフサイクルイベント ----
         modEventBus.addListener(this::commonSetup);
+
+        // ---- probe: dump ArrowItem API (temporary) ----
+        try {
+            StringBuilder sb = new StringBuilder("PROBE_ARROWITEM ");
+            for (java.lang.reflect.Method m : net.minecraft.world.item.ArrowItem.class.getDeclaredMethods()) {
+                if (m.getName().toLowerCase().contains("arrow")) {
+                    sb.append(m).append(" || ");
+                }
+            }
+            LOGGER.error(sb.toString());
+            StringBuilder sb2 = new StringBuilder("PROBE_ARROW_CTOR ");
+            for (java.lang.reflect.Constructor<?> c : net.minecraft.world.entity.projectile.arrow.Arrow.class.getDeclaredConstructors()) {
+                sb2.append(c).append(" || ");
+            }
+            LOGGER.error(sb2.toString());
+        } catch (Throwable t) {
+            LOGGER.error("PROBE_FAILED", t);
+        }
     }
 
     /** クライアント・サーバー共通のセットアップ処理。 */
