@@ -30,16 +30,18 @@ import net.minecraft.resources.Identifier;
  * @param completed 達成したクエスト
  * @param placements 決まった数を置くモブ（フィールドの placed）の状態（フィールドの ID → まだ置いていない種類・生きているモブ）。
  *                   フィールドに初めて入ったときに作る。キーがある＝置き始めた（全部倒しても置き直さない）
+ * @param weapon     受けるときに選んだ最初の武器（クエストの starter_weapons の番号。-1 = なし）。
+ *                   死んで武器を落としたときに、生き返ったら渡し直すのに使う
  */
 public record PlayerQuest(Optional<Identifier> quest, String location, Set<String> cleared, int kills,
                           Map<String, Integer> plots, Optional<GlobalPos> origin, Optional<UUID> boss,
-                          Set<Identifier> completed, Map<String, Placement> placements) {
+                          Set<Identifier> completed, Map<String, Placement> placements, int weapon) {
 
     public static final String NOWHERE = "";
     public static final String HUB = "@hub";
 
     public static final PlayerQuest EMPTY = new PlayerQuest(Optional.empty(), NOWHERE, Set.of(), 0, Map.of(),
-            Optional.empty(), Optional.empty(), Set.of(), Map.of());
+            Optional.empty(), Optional.empty(), Set.of(), Map.of(), -1);
 
     public static final Codec<PlayerQuest> CODEC = RecordCodecBuilder.create(i -> i.group(
             Identifier.CODEC.optionalFieldOf("quest").forGetter(PlayerQuest::quest),
@@ -52,7 +54,8 @@ public record PlayerQuest(Optional<Identifier> quest, String location, Set<Strin
             UUIDUtil.CODEC.optionalFieldOf("boss").forGetter(PlayerQuest::boss),
             Identifier.CODEC.listOf().xmap(l -> (Set<Identifier>) new HashSet<>(l), s -> List.copyOf(s))
                     .optionalFieldOf("completed", Set.of()).forGetter(PlayerQuest::completed),
-            Codec.unboundedMap(Codec.STRING, Placement.CODEC).optionalFieldOf("placements", Map.of()).forGetter(PlayerQuest::placements)
+            Codec.unboundedMap(Codec.STRING, Placement.CODEC).optionalFieldOf("placements", Map.of()).forGetter(PlayerQuest::placements),
+            Codec.INT.optionalFieldOf("weapon", -1).forGetter(PlayerQuest::weapon)
     ).apply(i, PlayerQuest::new));
 
     /** 本人のクライアントへ送る内容（HUD・クエスト画面に要るものだけ。区画・受けた場所・ボス・置いたモブは送らない）。 */
@@ -63,7 +66,7 @@ public record PlayerQuest(Optional<Identifier> quest, String location, Set<Strin
             ByteBufCodecs.VAR_INT, PlayerQuest::kills,
             ByteBufCodecs.collection(HashSet::new, Identifier.STREAM_CODEC), q -> new HashSet<>(q.completed()),
             (quest, location, cleared, kills, completed) -> new PlayerQuest(quest, location, cleared, kills, Map.of(),
-                    Optional.empty(), Optional.empty(), completed, Map.of()));
+                    Optional.empty(), Optional.empty(), completed, Map.of(), -1));
 
     public boolean active() {
         return quest.isPresent();
@@ -81,27 +84,32 @@ public record PlayerQuest(Optional<Identifier> quest, String location, Set<Strin
     // ---- 書き換えた写しを作る ----
 
     public PlayerQuest withLocation(String newLocation) {
-        return new PlayerQuest(quest, newLocation, cleared, kills, plots, origin, boss, completed, placements);
+        return new PlayerQuest(quest, newLocation, cleared, kills, plots, origin, boss, completed, placements, weapon);
     }
 
     public PlayerQuest withKills(int newKills) {
-        return new PlayerQuest(quest, location, cleared, newKills, plots, origin, boss, completed, placements);
+        return new PlayerQuest(quest, location, cleared, newKills, plots, origin, boss, completed, placements, weapon);
     }
 
     public PlayerQuest withCleared(String field) {
         Set<String> set = new HashSet<>(cleared);
         set.add(field);
-        return new PlayerQuest(quest, location, Set.copyOf(set), kills, plots, origin, boss, completed, placements);
+        return new PlayerQuest(quest, location, Set.copyOf(set), kills, plots, origin, boss, completed, placements, weapon);
     }
 
     public PlayerQuest withPlot(String field, int plot) {
         Map<String, Integer> map = new HashMap<>(plots);
         map.put(field, plot);
-        return new PlayerQuest(quest, location, cleared, kills, Map.copyOf(map), origin, boss, completed, placements);
+        return new PlayerQuest(quest, location, cleared, kills, Map.copyOf(map), origin, boss, completed, placements, weapon);
     }
 
     public PlayerQuest withBoss(Optional<UUID> newBoss) {
-        return new PlayerQuest(quest, location, cleared, kills, plots, origin, newBoss, completed, placements);
+        return new PlayerQuest(quest, location, cleared, kills, plots, origin, newBoss, completed, placements, weapon);
+    }
+
+    /** 最初の武器を選んだ（番号）。 */
+    public PlayerQuest withWeapon(int newWeapon) {
+        return new PlayerQuest(quest, location, cleared, kills, plots, origin, boss, completed, placements, newWeapon);
     }
 
     /** そのフィールドの置いたモブの状態（まだ置き始めていなければ empty）。 */
@@ -112,12 +120,12 @@ public record PlayerQuest(Optional<Identifier> quest, String location, Set<Strin
     public PlayerQuest withPlacement(String field, Placement placement) {
         Map<String, Placement> map = new HashMap<>(placements);
         map.put(field, placement);
-        return new PlayerQuest(quest, location, cleared, kills, plots, origin, boss, completed, Map.copyOf(map));
+        return new PlayerQuest(quest, location, cleared, kills, plots, origin, boss, completed, Map.copyOf(map), weapon);
     }
 
     /** クエストを受けた状態（場所はまだクエストの外）。 */
     public PlayerQuest start(Identifier id, GlobalPos from) {
-        return new PlayerQuest(Optional.of(id), NOWHERE, Set.of(), 0, Map.of(), Optional.of(from), Optional.empty(), completed, Map.of());
+        return new PlayerQuest(Optional.of(id), NOWHERE, Set.of(), 0, Map.of(), Optional.of(from), Optional.empty(), completed, Map.of(), -1);
     }
 
     /** クエストを終えた状態（達成なら completed に足す）。 */
@@ -126,7 +134,7 @@ public record PlayerQuest(Optional<Identifier> quest, String location, Set<Strin
         if (success) {
             quest.ifPresent(done::add);
         }
-        return new PlayerQuest(Optional.empty(), NOWHERE, Set.of(), 0, Map.of(), Optional.empty(), Optional.empty(), Set.copyOf(done), Map.of());
+        return new PlayerQuest(Optional.empty(), NOWHERE, Set.of(), 0, Map.of(), Optional.empty(), Optional.empty(), Set.copyOf(done), Map.of(), -1);
     }
 
     // =====================================================================

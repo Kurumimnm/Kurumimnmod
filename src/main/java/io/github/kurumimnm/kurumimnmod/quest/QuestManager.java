@@ -30,6 +30,10 @@ import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.phys.AABB;
+import io.github.kurumimnm.kurumimnmod.network.OpenWeaponSelectPayload;
+import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
+import org.jspecify.annotations.Nullable;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -95,8 +99,19 @@ public final class QuestManager {
     // 受注・辞退・達成
     // =====================================================================
 
-    /** クエストを受けて、最初のフィールドへ転移する。 */
+    /**
+     * クエストを受けて、最初のフィールドへ転移する。
+     * 最初の武器（starter_weapons）があるクエストは、先に武器の選択画面を開く（選んだら {@link #accept(ServerPlayer, Identifier, int)}）。
+     */
     public static boolean accept(ServerPlayer player, Identifier id) {
+        return accept(player, id, -1);
+    }
+
+    /**
+     * クエストを受ける。weapon = 選んだ最初の武器の番号（starter_weapons がないクエストは -1）。
+     * starter_weapons があるのに weapon が -1 なら、武器の選択画面を開くだけ。
+     */
+    public static boolean accept(ServerPlayer player, Identifier id, int weapon) {
         PlayerQuest q = get(player);
         if (q.active()) {
             player.sendSystemMessage(Component.translatable(MSG + "already"));
@@ -107,10 +122,18 @@ public final class QuestManager {
             player.sendSystemMessage(Component.translatable(MSG + "unknown", id.toString()));
             return false;
         }
+        // 最初の武器：まだ選んでいなければ選択画面を開く（選んだら、もう一度ここへ来る）
+        int weapons = def.get().starterWeapons().size();
+        if (weapons > 0 && (weapon < 0 || weapon >= weapons)) {
+            PacketDistributor.sendToPlayer(player, new OpenWeaponSelectPayload(id));
+            return false;
+        }
         // 受けた場所（クエスト用ディメンションの中で受けた場合は、元の世界のスポーン地点にする）
         GlobalPos from = inQuestLevel(player) ? worldSpawn(player.level().getServer()) : GlobalPos.of(player.level().dimension(), player.blockPosition());
-        set(player, q.start(id, from));
+        set(player, q.start(id, from).withWeapon(weapons > 0 ? weapon : -1));
         player.sendSystemMessage(Component.translatable(MSG + "accepted", Component.translatable(QuestDefinition.nameKey(id))));
+        QuestWeapons.removeAll(player); // 前のクエストの残りがあれば消す
+        QuestWeapons.give(player, def.get(), weapons > 0 ? weapon : -1);
         enterField(player, def.get().start().get(0));
         return true;
     }
@@ -125,6 +148,7 @@ public final class QuestManager {
         Component name = Component.translatable(QuestDefinition.nameKey(q.quest().get()));
         GlobalPos back = q.origin().orElseGet(() -> worldSpawn(player.level().getServer()));
         set(player, q.finish(false));
+        QuestWeapons.removeAll(player);
         teleportHome(player, back);
         player.sendSystemMessage(Component.translatable(MSG + "abandoned", name));
     }
@@ -138,6 +162,7 @@ public final class QuestManager {
             Money.add(player, def.rewardMoney());
         }
         set(player, q.finish(true));
+        QuestWeapons.removeAll(player);
         teleportHome(player, back);
         player.sendSystemMessage(Component.translatable(MSG + "completed", name, def.rewardMoney()));
         player.level().playSound(null, player.blockPosition(), SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.PLAYERS, 1f, 1f);
@@ -394,16 +419,7 @@ public final class QuestManager {
             }
         }
         // 置いたモブ（placed）：置いた本人の数を減らす（だれが・何で倒しても）
-        for (ServerPlayer player : level.getServer().getPlayerList().getPlayers()) {
-            PlayerQuest pq = get(player);
-            for (var entry : pq.placements().entrySet()) {
-                if (entry.getValue().alive().contains(id)) {
-                    set(player, pq.withPlacement(entry.getKey(), entry.getValue().died(id)));
-                    afterPlacementChanged(player, entry.getKey());
-                    break;
-                }
-            }
-        }
+        placedGone(level, id);
         // 倒した数（クリア条件 kill）
         if (!(event.getSource().getEntity() instanceof ServerPlayer killer) || !(victim instanceof Enemy)) {
             return;
@@ -504,7 +520,7 @@ public final class QuestManager {
             return;
         }
         int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
-        type.get().spawn(level, new BlockPos(x, y, z), EntitySpawnReason.TRIGGERED);
+        markQuestMob(player, type.get().spawn(level, new BlockPos(x, y, z), EntitySpawnReason.TRIGGERED));
     }
 
     // ---- 決まった数のモブ（placed） ----
@@ -593,6 +609,7 @@ public final class QuestManager {
             if (e instanceof Mob mob) {
                 mob.setPersistenceRequired(); // 離れても消えない（倒すまで残る）
             }
+            markQuestMob(player, e);
             state = state.placed(index, e.getUUID());
             placed++;
         }
@@ -657,6 +674,7 @@ public final class QuestManager {
         BlockPos pos = new BlockPos(plot.centerX(), plot.terrain().base() + 1, plot.centerZ());
         level.getChunk(pos);
         Entity boss = type.get().spawn(level, pos, EntitySpawnReason.TRIGGERED);
+        markQuestMob(player, boss);
         if (boss instanceof Mob mob) {
             mob.setPersistenceRequired();
         }
@@ -716,11 +734,78 @@ public final class QuestManager {
         }
     }
 
-    /** 死んで元の世界で生き返ったら、場所を「クエストの外」にする（クエストは続く。クエスト画面から戻れる）。 */
+    /**
+     * 死んで元の世界で生き返ったら、場所を「クエストの外」にする（クエストは続く。クエスト画面から戻れる）。
+     * 最初の武器は死んだときに消える（{@link #onLivingDrops}）ので、クエストが続いていれば渡し直す。
+     */
     @SubscribeEvent
     static void onRespawn(PlayerEvent.PlayerRespawnEvent event) {
-        if (event.getEntity() instanceof ServerPlayer player && !inQuestLevel(player) && get(player).active()) {
+        if (!(event.getEntity() instanceof ServerPlayer player) || !get(player).active()) {
+            return;
+        }
+        if (!inQuestLevel(player)) {
             set(player, get(player).withLocation(PlayerQuest.NOWHERE));
+        }
+        int weapon = get(player).weapon();
+        if (weapon >= 0 && !QuestWeapons.hasAny(player)) {
+            current(player).ifPresent(def -> QuestWeapons.give(player, def, weapon));
+        }
+    }
+
+    // =====================================================================
+    // 置いたモブがいなくなった・ドロップ
+    // =====================================================================
+
+    /** 置いたモブ（placed）がいなくなった：置いた本人の数を減らす。すでに減らしていれば何もしない。 */
+    private static void placedGone(ServerLevel level, UUID id) {
+        for (ServerPlayer player : level.getServer().getPlayerList().getPlayers()) {
+            PlayerQuest pq = get(player);
+            for (var entry : pq.placements().entrySet()) {
+                if (entry.getValue().alive().contains(id)) {
+                    set(player, pq.withPlacement(entry.getKey(), entry.getValue().died(id)));
+                    afterPlacementChanged(player, entry.getKey());
+                    return;
+                }
+            }
+        }
+    }
+
+    /**
+     * 死なずに消えたモブも数える（クリーパーの爆発は「死亡」ではなく「消える」扱いなので、LivingDeathEvent が来ない）。
+     * 消えた理由が「もう戻らない」（倒された・消された）ときだけ。チャンクの読み込み解除・ディメンション移動は数えない。
+     */
+    @SubscribeEvent
+    static void onEntityLeave(EntityLeaveLevelEvent event) {
+        Entity entity = event.getEntity();
+        Entity.RemovalReason reason = entity.getRemovalReason();
+        if (reason == null || !reason.shouldDestroy() || !(event.getLevel() instanceof ServerLevel level)
+                || !level.dimension().equals(ModWorldgen.QUEST_LEVEL)) {
+            return;
+        }
+        placedGone(level, entity.getUUID());
+    }
+
+    /**
+     * ドロップ：クエストで出したモブ（no_drops のクエスト）は何も落とさない。
+     * プレイヤーが死んだときは、クエスト用のアイテム（最初の武器）を落とさず消す（生き返ったら渡し直す）。
+     */
+    @SubscribeEvent
+    static void onLivingDrops(LivingDropsEvent event) {
+        LivingEntity entity = event.getEntity();
+        if (entity instanceof ServerPlayer) {
+            event.getDrops().removeIf(drop -> QuestWeapons.isQuestItem(drop.getItem()));
+        } else if (entity.entityTags().contains(NO_DROPS_TAG)) {
+            event.setCanceled(true);
+        }
+    }
+
+    /** ドロップなしのモブに付けるタグ（no_drops のクエストで出したモブ）。 */
+    public static final String NO_DROPS_TAG = Kurumimnmod.MOD_ID + ".no_drops";
+
+    /** クエストで出したモブの印付け（no_drops のクエストならドロップなしのタグを付ける）。 */
+    private static void markQuestMob(ServerPlayer player, @Nullable Entity entity) {
+        if (entity != null && current(player).map(QuestDefinition::noDrops).orElse(false)) {
+            entity.addTag(NO_DROPS_TAG);
         }
     }
 }

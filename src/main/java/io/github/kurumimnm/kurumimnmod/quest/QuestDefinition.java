@@ -23,6 +23,11 @@ import net.minecraft.resources.Identifier;
  *   "reward_money": 100,            … 達成したときにもらえるお金（G）
  *   "unlock_job": false,            … 達成したときに職業を解放する（職業の選択画面が開く）
  *   "time": 6000,                   … クエスト中の時間（tick。0 = 朝、6000 = 昼、13000 = 夜、18000 = 真夜中）。進まない
+ *   "no_drops": true,               … クエストで出したモブがアイテムを落とさない
+ *   "starter_weapons": [            … 受けるときに選ぶ最初の武器（省略 = 選ばない）。耐久無限・クエスト終了時に消える
+ *     { "name": "kurumimnmod.weapon.sword", "items": [{ "item": "minecraft:wooden_sword" }] },
+ *     { "name": "kurumimnmod.weapon.bow", "items": [{ "item": "minecraft:bow" }, { "item": "minecraft:arrow", "count": 64 }] }
+ *   ],
  *   "fields": {
  *     "1":    { "number": 1, "size": 192, "biome": "kurumimnmod:quest_meadow",
  *               "terrain": { "style": "hills", "base": 70, "amplitude": 10, "scale": 90 },
@@ -47,9 +52,11 @@ import net.minecraft.resources.Identifier;
  * @param rewardMoney 達成したときにもらえるお金（G）
  * @param unlockJob   達成したときに職業を解放するか（{@link QuestCompletedEvent} を受けた職業の仕組みが選択画面を開く）
  * @param time        クエスト中の時間（tick、0〜23999）。フィールドに入ったときにクエスト用ディメンションの時計をこの時刻で止める
+ * @param noDrops     クエストで出したモブ（placed・mobs・ボス）がアイテムを落とさない
+ * @param starterWeapons 受けるときに選ぶ最初の武器（{@link QuestWeapons}）。空なら選ばずにすぐ始まる
  */
 public record QuestDefinition(List<String> start, String goal, Map<String, Field> fields, int sort, int rewardMoney,
-                              boolean unlockJob, int time) {
+                              boolean unlockJob, int time, boolean noDrops, List<StarterWeapon> starterWeapons) {
 
     public static final Codec<QuestDefinition> CODEC = RecordCodecBuilder.create(i -> i.group(
             Codec.STRING.listOf().fieldOf("start").forGetter(QuestDefinition::start),
@@ -58,7 +65,9 @@ public record QuestDefinition(List<String> start, String goal, Map<String, Field
             Codec.INT.optionalFieldOf("sort", 0).forGetter(QuestDefinition::sort),
             Codec.INT.optionalFieldOf("reward_money", 0).forGetter(QuestDefinition::rewardMoney),
             Codec.BOOL.optionalFieldOf("unlock_job", false).forGetter(QuestDefinition::unlockJob),
-            Codec.intRange(0, 23999).optionalFieldOf("time", ModConstants.QUEST_DEFAULT_TIME).forGetter(QuestDefinition::time)
+            Codec.intRange(0, 23999).optionalFieldOf("time", ModConstants.QUEST_DEFAULT_TIME).forGetter(QuestDefinition::time),
+            Codec.BOOL.optionalFieldOf("no_drops", false).forGetter(QuestDefinition::noDrops),
+            StarterWeapon.CODEC.listOf().optionalFieldOf("starter_weapons", List.of()).forGetter(QuestDefinition::starterWeapons)
     ).apply(i, QuestDefinition::new));
 
     public Optional<Field> field(String id) {
@@ -235,6 +244,27 @@ public record QuestDefinition(List<String> start, String goal, Map<String, Field
                 Identifier.CODEC.fieldOf("type").forGetter(Mob::type),
                 Codec.INT.optionalFieldOf("weight", 1).forGetter(Mob::weight)
         ).apply(i, Mob::new));
+    }
+
+    /**
+     * 受けるときに選ぶ最初の武器 1 つ分（選択画面のボタン 1 つ）。
+     *
+     * @param name  ボタンに出す名前の lang キー（省略なら最初のアイテムの名前）
+     * @param items 渡すアイテム（耐久があるものは耐久無限にする）
+     */
+    public record StarterWeapon(Optional<String> name, List<Grant> items) {
+        public static final Codec<StarterWeapon> CODEC = RecordCodecBuilder.create(i -> i.group(
+                Codec.STRING.optionalFieldOf("name").forGetter(StarterWeapon::name),
+                Grant.CODEC.listOf().fieldOf("items").forGetter(StarterWeapon::items)
+        ).apply(i, StarterWeapon::new));
+    }
+
+    /** 渡すアイテム 1 種類。 */
+    public record Grant(Identifier item, int count) {
+        public static final Codec<Grant> CODEC = RecordCodecBuilder.create(i -> i.group(
+                Identifier.CODEC.fieldOf("item").forGetter(Grant::item),
+                Codec.intRange(1, 64).optionalFieldOf("count", 1).forGetter(Grant::count)
+        ).apply(i, Grant::new));
     }
 
     /** 決まった数だけ置くモブ。 */

@@ -198,17 +198,6 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         add("quest." + MOD_ID + ".kobold_meadow.field.2", "Howling Meadow");
         add("quest." + MOD_ID + ".kobold_meadow.field.3", "Kobold Territory");
         add("quest." + MOD_ID + ".kobold_meadow.field.boss", "Arena of the Kobold Lord");
-        add("quest." + MOD_ID + ".first_trial", "The First Trial");
-        add("quest." + MOD_ID + ".first_trial.description", "Cross the meadow and the forest beyond the town, and defeat the beast lurking deep inside.");
-        add("quest." + MOD_ID + ".first_trial.field.1", "Meadow Path");
-        add("quest." + MOD_ID + ".first_trial.field.2", "Sunlit Woods");
-        add("quest." + MOD_ID + ".first_trial.field.boss", "Arena of the Beast");
-        add("quest." + MOD_ID + ".forked_road", "The Forked Road");
-        add("quest." + MOD_ID + ".forked_road.description", "Past the meadow the road splits into desert and snowfield. Only those who conquer both may challenge the master of the arena.");
-        add("quest." + MOD_ID + ".forked_road.field.1", "Meadow of Departure");
-        add("quest." + MOD_ID + ".forked_road.field.2a", "Scorching Dunes");
-        add("quest." + MOD_ID + ".forked_road.field.2b", "Silver Peaks");
-        add("quest." + MOD_ID + ".forked_road.field.boss", "Arena of the Master");
 
         // ---- 左上の表示 ----
         add("hud." + MOD_ID + ".quest.field", "Field %s: %s");
@@ -271,6 +260,17 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         add("commands." + MOD_ID + ".quest.no_field", "Quest %s has no field %s");
         add("commands." + MOD_ID + ".quest.preview", "Created plot %s: center X %s Z %s (size %s), entrance %s %s %s");
         add("commands." + MOD_ID + ".money.get", "Money: %sG");
+        // ---- クエストの最初の武器 ----
+        add("screen.kurumimnmod.weapon", "Choose a Weapon");
+        add("screen.kurumimnmod.weapon.title", "Choose a weapon to take with you");
+        add("screen.kurumimnmod.weapon.note", "Unbreakable. Disappears when the quest ends");
+        add("screen.kurumimnmod.weapon.cancel", "Cancel (do not accept the quest)");
+        add("kurumimnmod.weapon.wooden_sword", "Wooden Sword");
+        add("kurumimnmod.weapon.wooden_axe", "Wooden Axe");
+        add("kurumimnmod.weapon.wooden_spear", "Wooden Spear");
+        add("kurumimnmod.weapon.bow", "Bow and Arrows (x64)");
+        add("item.kurumimnmod.quest_item.lore", "Quest item (disappears when the quest ends)");
+
         // ---- 職業 ----
         add("message.kurumimnmod.job.unlocked", "Jobs unlocked!");
         add("message.kurumimnmod.job.selected", "You became a %s!");
