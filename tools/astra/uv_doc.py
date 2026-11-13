@@ -17,8 +17,8 @@ for y in range(TH):
         px[x, y] = (58, 60, 72) if (x // 4 + y // 4) % 2 == 0 else (48, 50, 60)
 img.paste(bg, (ox, oy)); img.paste(tex, (ox, oy), tex)
 GROUPS = [('膜（上・下の腕／羽、尾。1 枚ずつ別の絵）', (110, 160, 255), ('wing',)),
-          ('顔の板（闇・仮面・盛り上がり・牙）', (255, 210, 90), ('facep',)),
-          ('頭の中身・角・牙・膜の骨', (255, 150, 90), ('skull', 'horn', 'bone')),
+          ('頭（肌・目・眉・牙・口の中）', (255, 210, 90), ('skin', 'eye', 'ridge', 'fang', 'gullet')),
+          ('角・背のとげ・膜の骨', (255, 150, 90), ('horn', 'bone')),
           ('胴の格子・カーテン', (240, 200, 255), ('lacebox', 'lace', 'drape')),
           ('葉（襟・羽飾り・膜の裏・欠片）', (150, 230, 160), ('frond', 'shard')),
           ('帯・触腕・糸', (120, 230, 200), ('ribbon', 'thread')),
@@ -56,8 +56,8 @@ for g in GROUPS:
 notes = ['・Box UV：1 つのキューブは「上・下 / 東・北・西・南」の順に並ぶ（枠の中の文字がその面）。モデルの前（顔）は北（-Z）側',
          '・膜（wing_up / wing_low / tail）は扇全体でつながる絵を短冊ごとに切り分けている。左右の膜は同じ絵を mirror で共有',
          '・膜・葉・帯などの薄い板は上面と下面（または北面と南面）だけ描き、側面は透明。輪郭・穴は透明ピクセルで切り抜き',
-         '・顔は板を前後に重ねている：face_void（奥の闇。目と喉の光）→ face_mask（仮面。目・口は穴）→ face_relief（眉・鼻筋・頬骨など）→ face_fang（牙）',
-         '・発光は astra_glowmask.png（同じ配置。目・喉・ふち・筋・爪・星の粒）',
+         '・頭は厚さ 8px の輪切り（head_upper / head_jaw）を前へ並べたくさび形。目（eye）は 4 つ、口の中（mouth_inside）は暗い紫',
+         '・発光は astra_glowmask.png（同じ配置。目・口の中・ふち・筋・爪・星の粒）',
          '・1 ピクセル = 1/2 ブロック（レンダラーで 8 倍。ModConstants.ASTRA_RENDER_SCALE）',
          '・Blockbench：GeckoLib Animated Model で astra.geo.json を読み込むと同じ配置になる']
 ny = oy + TH + 16

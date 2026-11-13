@@ -18,6 +18,6 @@ python3 uv_doc.py out out/uv.png
 - 生成したファイルを `assets/kurumimnmod/geckolib/...`・`textures/entity/` にコピーして使います
 - Blockbench で手直しした場合は、再生成すると上書きされます。手直し後はスクリプトを使わないでください
 - 乱数のシードを固定しているので、同じスクリプトからは毎回同じ結果になります
-- 1 ピクセル = 1/2 ブロック（`ModConstants.ASTRA_RENDER_SCALE` = 8）。原点（エンティティの位置）はあごの先
-- 形を変える主な場所：`build_wing(...)` の引数（膜の付け根・傾き・扇の角度・長さ）、`up_shape` / `low_shape` / `tail_shape`（膜の反り）、`face_fields` / `paint_face`（顔の絵）
-- 攻撃アニメ用のボーン：`head`、`jaw_l` / `jaw_r`（あご）、`wing_up_l` / `wing_up_r` / `wing_low_l` / `wing_low_r` / `tail_c`（膜の付け根）、`talon_*`（爪）
+- 1 ピクセル = 1/2 ブロック（`ModConstants.ASTRA_RENDER_SCALE` = 8）。原点（エンティティの位置）は胴の中心の真下
+- 形を変える主な場所：`build_wing(...)` の引数（膜の付け根・傾き・扇の角度・長さ）、`up_shape` / `low_shape` / `tail_shape`（膜の反り）、「頭」の節の `sl(k)`（頭の輪切りの幅・高さ）と `paint_skin`（肌の色）
+- 攻撃アニメ用のボーン：`head`、`jaw`（下あご）、`wing_up_l` / `wing_up_r` / `wing_low_l` / `wing_low_r` / `tail_c`（膜の付け根）、`talon_*`（爪）
