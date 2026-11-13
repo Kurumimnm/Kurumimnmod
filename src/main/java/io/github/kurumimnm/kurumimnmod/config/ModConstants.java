@@ -313,25 +313,28 @@ public final class ModConstants {
     public static final double ASTRA_VEIL_MAX_HEALTH = 1000.0;
     /** ノックバック耐性（1.0 = まったく押されない）。 */
     public static final double ASTRA_VEIL_KNOCKBACK_RESISTANCE = 1.0;
-    /** 描画の倍率。モデル（geo.json）は約 1/10 の大きさで作ってあり、ここで拡大する（翼幅 約 100 ブロック）。 */
-    public static final float ASTRA_VEIL_RENDER_SCALE = 10.0f;
+    /**
+     * 描画の倍率。モデル（geo.json）は小さく作ってあり、ここで拡大する。
+     * 8 倍で 翼幅 約 150・帯の先まで 約 175・高さ 約 125 ブロック（当たり判定・画面外判定・浮かぶ高さも合わせて変える）。
+     */
+    public static final float ASTRA_VEIL_RENDER_SCALE = 8.0f;
     /**
      * 当たり判定（ブロック）。巨体全体ではなく「顔」のまわりだけ（エンティティの位置 = 顔の下端）。
      * 幕・触腕は見た目だけで当たり判定はない（部位ごとの判定は攻撃を作るときに検討）。
      */
-    public static final float ASTRA_VEIL_WIDTH = 10.0f;
+    public static final float ASTRA_VEIL_WIDTH = 12.0f;
     public static final float ASTRA_VEIL_HEIGHT = 24.0f;
     public static final float ASTRA_VEIL_EYE_HEIGHT = 16.0f;
     /** クライアントへ同期する距離（チャンク）。遠くからでも見えるように大きめ。 */
     public static final int ASTRA_VEIL_TRACKING_RANGE = 16;
     /** 描画する最大距離（ブロック）。巨体なのでバニラの判定より遠くまで描く。 */
-    public static final double ASTRA_VEIL_RENDER_DISTANCE = 256.0;
+    public static final double ASTRA_VEIL_RENDER_DISTANCE = 320.0;
     /** 描画の判定に使う範囲（ブロック。エンティティの位置からの横・下・上）。翼・触腕の先まで含める。 */
-    public static final double ASTRA_VEIL_CULL_HALF_WIDTH = 72.0;
-    public static final double ASTRA_VEIL_CULL_BELOW = 64.0;
-    public static final double ASTRA_VEIL_CULL_ABOVE = 56.0;
+    public static final double ASTRA_VEIL_CULL_HALF_WIDTH = 96.0;
+    public static final double ASTRA_VEIL_CULL_BELOW = 70.0;
+    public static final double ASTRA_VEIL_CULL_ABOVE = 72.0;
     /** スポーンエッグ・/summon で出したとき、置いた場所からこれだけ上に浮かべる（ブロック。触腕の先が地面に届くくらい）。 */
-    public static final double ASTRA_VEIL_SPAWN_HOVER_HEIGHT = 60.0;
+    public static final double ASTRA_VEIL_SPAWN_HOVER_HEIGHT = 64.0;
 
     // ---- ボスの着地点の範囲表示（クライアント） ----
     public static final int BOSS_AOE_COLOR_FILL_CENTER = 0x80FF3020;

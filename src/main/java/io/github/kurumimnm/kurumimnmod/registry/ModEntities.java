@@ -139,7 +139,7 @@ public final class ModEntities {
 
     /**
      * アストラ・ヴェイル（星幽の巡界者。フィールドにランダムエンカウントする超大型ボス）。
-     * 今は見た目のみ（スポーンエッグ・/summon で出す）。当たり判定は顔のまわりだけで、見た目はレンダラーで 10 倍にする。
+     * 今は見た目のみ（スポーンエッグ・/summon で出す）。当たり判定は顔のまわりだけで、見た目はレンダラーで拡大する（ASTRA_VEIL_RENDER_SCALE）。
      * 炎・溶岩で燃えない。ドロップなし（撃破報酬は後で決める）。
      */
     public static final DeferredHolder<EntityType<?>, EntityType<AstraVeilEntity>> ASTRA_VEIL =

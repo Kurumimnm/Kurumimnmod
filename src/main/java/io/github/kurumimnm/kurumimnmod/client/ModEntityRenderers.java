@@ -49,7 +49,7 @@ public final class ModEntityRenderers {
         event.registerEntityRenderer(ModEntities.KOBOLD.get(), context -> new KoboldRenderer<>(context));
         event.registerEntityRenderer(ModEntities.KOBOLD_LORD.get(), context -> new KoboldLordRenderer<>(context));
 
-        // アストラ・ヴェイル（10 倍に拡大・半透明・発光レイヤー・画面外判定の拡大を行う専用レンダラー）
+        // アストラ・ヴェイル（拡大・半透明・発光レイヤー・画面外判定の拡大を行う専用レンダラー）
         event.registerEntityRenderer(ModEntities.ASTRA_VEIL.get(), context -> new AstraVeilRenderer<>(context));
 
 
