@@ -5,7 +5,7 @@
 設計（設定画から読み取った形）：
   - 4 本の「腕／羽」：上の 2 枚は外上へ、下の 2 枚は外下へ広がる巨大な膜。1 枚が 100 ブロック四方のフィールドを覆う大きさ。
     膜は肩を中心とした扇形で、傘の骨のような筋・楕円の穴（レース）・真珠色のふちを「扇全体でつながった 1 枚の絵」として描く
-  - 顔：正面中央の縦に長い骨の仮面。つり上がった 3 対の目と額の縦の目、縦に裂けた口と噛み合う牙、とげのある輪郭、角
+  - 顔：正面中央の逆三角形の仮面（上が広く、あごの先へ細る）。つり上がった 4 つの目、縦に裂けた口と噛み合う牙、とげのある輪郭、角
   - 胴：顔の後ろから下へ垂れる穴だらけの格子の柱。まわりにカーテン・触腕・襟の葉
   - 後ろへ長くたなびく尾の膜と帯（横からのシルエットが前後に長い）
   - まわりに漂う欠片と星の粒
@@ -243,12 +243,12 @@ for j, k in enumerate((0, 3, 4, 7)):
     curl_ribbon(f"curl_tail_{j}", WINGS["tail"]["c"][k][-1], 1, 1 if j % 2 == 0 else -1)
 
 # ---------------------------------------------------------------------------
-# 顔：縦に長い骨の仮面（幅 約 40・高さ 100 ブロック）。板を前後に重ねて彫りの深さを出す
+# 顔：逆三角形の仮面（上の幅 約 50・高さ 100 ブロック）。目は 4 つ。板を前後に重ねて彫りの深さを出す
 #   奥：闇（目と喉の光）→ 仮面（目・口は穴）→ 盛り上がり（眉・鼻筋・頬骨・口のふち）→ 牙
 #   下半分は左右のあご（jaw_l / jaw_r）に分かれていて、あとで口を横に開くアニメを付けられる
 # ---------------------------------------------------------------------------
 FZ = -44            # 仮面の前面
-FW = 41             # 仮面の半幅（板の大きさ）
+FW = 56             # 仮面の半幅（板の大きさ）
 JAW_Y = 104         # あごと上の仮面の境
 H = bone("head", "body", (0, 110, -20))
 anim("head", rot=[wave(200, 1.6), wave(120, 2.0, 45), wave(40, 0.8, 45)])
@@ -260,7 +260,7 @@ face_plate(H, "mask", -FW, FW, JAW_Y, 202, FZ + 2)
 face_plate(H, "relief", -FW, FW, JAW_Y, 202, FZ)
 JAWS = {}
 for sd, t in ((1, "l"), (-1, "r")):
-    J = bone(f"jaw_{t}", H, (27 * sd, JAW_Y, FZ + 3))
+    J = bone(f"jaw_{t}", H, (34 * sd, JAW_Y, FZ + 3))
     JAWS[t] = J
     anim(J, rot=[0, 0, wave(0, -1.6 * sd, 45)])          # ゆっくり口が開閉する（呼吸）
     xa, xb = (0, FW) if sd > 0 else (-FW, 0)
@@ -272,7 +272,7 @@ for sd, t in ((1, "l"), (-1, "r")):
     segs = [dict(L=20, W=t_, H=t_, mat="horn") for t_ in (7, 6, 5, 3, 2)]
     for i, s in enumerate(segs):
         s["rz"] = 74 if i == 0 else -11; s["ry"] = 16 if i == 0 else 4
-    chain(f"tusk_{t}", J, (24, 96, FZ + 1), segs, side=sd, shape="vert")
+    chain(f"tusk_{t}", J, (31, 96, FZ + 1), segs, side=sd, shape="vert")
 
 # 頭の中身（横から見たときの厚み）：骨の塊
 for i, (w, h, d, y, z) in enumerate([(52, 70, 46, 112, FZ + 6), (38, 54, 32, 60, FZ + 6), (18, 46, 20, 16, FZ + 6)]):
@@ -286,7 +286,7 @@ for sd, t in ((1, "l"), (-1, "r")):
     segs = [dict(L=24, W=w, H=w, mat="horn") for w in (11, 10, 9, 7, 6, 4, 3, 2)]
     for i, s in enumerate(segs):
         s["rz"] = -64 if i == 0 else 9 + i * 2.2; s["ry"] = 8 if i == 0 else 7
-    names = chain(f"horn_{t}", H, (18, 186, FZ + 20), segs, side=sd, shape="vert",
+    names = chain(f"horn_{t}", H, (26, 186, FZ + 20), segs, side=sd, shape="vert",
                   anim_fn=lambda i, s_: [0, 0, wave(i * 20, 0.5 * s_, 45)] if i == 0 else None)
     for i in (1, 2, 3, 4):   # 枝角
         b = bone_index[names[i]]; bx = abs(b["pivot"][0]) + 10
@@ -296,11 +296,11 @@ for sd, t in ((1, "l"), (-1, "r")):
     segs = [dict(L=20, W=w, H=w, mat="horn") for w in (8, 7, 5, 4, 2)]
     for i, s in enumerate(segs):
         s["rz"] = -8 if i == 0 else -13; s["ry"] = -28 if i == 0 else -5
-    chain(f"horn2_{t}", H, (31, 146, FZ + 10), segs, side=sd, shape="vert")
+    chain(f"horn2_{t}", H, (47, 152, FZ + 10), segs, side=sd, shape="vert")
     # ほおのとげ（横へ突き出す 3 本）
     for j in range(3):
         yy = 118 - j * 16; ln = 22 - j * 4
-        bx = 30 - j * 5
+        bx = 38 - j * 5
         cube(H, (bx if sd > 0 else -bx - ln, yy, FZ + 6), (ln, 3, 3), "horn|4|1", rotation=(0, -20 * sd, (18 + j * 8) * sd),
              pivot=(bx * sd, yy + 1.5, FZ + 7.5), label="cheek_spike")
 # 頭の後ろから立ち上がる羽飾り（葉の扇。設定画で顔の上に広がる花びら）
@@ -317,10 +317,10 @@ for sd, t in ((1, "l"), (-1, "r")):
 for sd in (1, -1):
     for k in range(22):
         sz = rnd.choice([2, 3, 3, 4, 5, 6])
-        px = rnd.uniform(20, 44); py = rnd.uniform(96, 196); pz = FZ + rnd.uniform(4, 30)
+        px = rnd.uniform(30, 60); py = rnd.uniform(96, 196); pz = FZ + rnd.uniform(4, 30)
         cube(H, (px if sd > 0 else -px - sz, py, pz), (sz, sz, sz), "pearl", label="pearl")
     for k in range(4):
-        bx, by = 30 + k * 4, 104 - k * 8
+        bx, by = 40 + k * 4, 110 - k * 8
         for j in range(10):
             sz = 4 if j % 3 == 0 else 3
             xx = (bx + math.sin(j * 0.7 + k) * 1.5) * sd
@@ -715,13 +715,13 @@ def paint_orb(w, h, rs, a, b, gcol, garef):
     return col, gl
 
 # ---- 顔（モデルの座標で描く。x：見る人から見て右が正、y：あごの先 0 〜 頭の上 200） ----
-EYES = [(17.0, 141, 13.5, 4.4, 27), (12.0, 123.0, 8.0, 2.7, 23), (8.0, 110.0, 4.8, 1.9, 18)]   # (x, y, 半長, 半高, つり上がりの角度)
+EYES = [(25.0, 150, 15.0, 4.8, 24), (14.5, 124.0, 9.5, 3.2, 26)]   # 目は 4 つ（2 対）：(x, y, 半長, 半高, つり上がりの角度)
 def face_fields(X, Y):
     ax = np.abs(X)
-    hw = np.interp(Y, [0, 20, 60, 104, 140, 165, 188, 202], [1.6, 4.5, 15, 26, 35, 31, 24, 17])
+    hw = np.interp(Y, [0, 150, 176, 190, 202], [1.6, 50, 50, 46, 40])            # 逆三角形：上が広く、あごの先へまっすぐ細る
     saw = np.mod(Y - 26, 13) / 13.0
     barb = np.where((Y > 26) & (Y < 122), 4.5 * saw ** 2.2, 0.0)             # 輪郭のとげ（下向きの鉤）
-    ytop = 184 + 17 * np.abs(np.cos(ax * math.pi / 12.5)) ** 1.6 * (1 - ax / 60)   # 頭の上のぎざぎざ（王冠）
+    ytop = 184 + 17 * np.abs(np.cos(ax * math.pi / 12.5)) ** 1.6 * (1 - ax / 90)   # 頭の上のぎざぎざ（王冠）
     sil = (ax < hw + barb) & (Y < ytop) & (Y > 0)
     mw = 10.0 * np.sin(math.pi * np.clip((Y - 9) / 90.0, 0, 1)) ** 0.7        # 口（縦の裂け目）の半幅
     mw = np.where((Y > 9) & (Y < 99), mw, 0.0)
@@ -732,8 +732,7 @@ def face_fields(X, Y):
         return u_, v_, (np.abs(u_) < a + grow) & (np.abs(v_) < (b + grow) * (1 - (u_ / (a + grow)) ** 2))
     eyes = [lens(*e) for e in EYES]
     sockets = [lens(*e, grow=3.4)[2] for e in EYES]
-    third = (np.abs(Y - 168) < 9.5) & (ax < 2.7 * (1 - ((Y - 168) / 9.5) ** 2))        # 額の縦の目
-    third_s = (np.abs(Y - 168) < 12) & (ax < 4.8 * (1 - ((Y - 168) / 12) ** 2))
+    third = np.zeros(X.shape, bool); third_s = third                                 # 額の目はなし（目は 4 つ）
     return dict(ax=ax, hw=hw, barb=barb, sil=sil, mw=mw, eyes=eyes, sockets=sockets, third=third, third_s=third_s, ytop=ytop)
 
 def paint_face(w, h, art, rs):
@@ -762,13 +761,9 @@ def paint_face(w, h, art, rs):
             f = np.clip(1 - (np.abs(v_) / (e[3] * 0.6 + 0.3)) ** 2 - (np.abs(u_) / (e[2] + 0.5)) ** 2 * 0.9, 0, 1)
             col[big] = mix(C("#2a0f96"), C("#8feaff"), f ** 0.8)[big]; col[big & (f > 0.75)] = WHITE
             gl[big] = mix(G_VIOLET * np.array([1, 1, 1, 0.35], np.float32), G_CYAN, f ** 1.5)[big]
-            if e[2] > 10:      # いちばん上の目は縦に細い瞳
+            if e[2] > 8:       # 縦に細い瞳
                 pup = (np.abs(u_ - 1.0) < 1.1) & m
                 col[pup] = VOID; gl[pup] = 0
-        t3 = np.abs(Y - 168) < 13
-        f3 = np.clip(1 - (ax / 4.5) ** 2, 0, 1) * np.clip(1 - (np.abs(Y - 168) / 12.0) ** 2, 0, 1)
-        sel = t3 & (ax < 5.5)
-        col[sel] = mix(C("#5a2cd6"), G_EYE, f3 ** 0.6)[sel]; gl[sel] = mix(G_VIOLET, G_CYAN, f3)[sel]
         col[..., 3] = 255
     elif layer == "mask":
         mask = F["sil"] & part & (ax >= mw) & ~F["third"]
@@ -797,12 +792,12 @@ def paint_face(w, h, art, rs):
     elif layer == "relief":
         # 盛り上がり：怒った眉（中心へ向かって下がる）、鼻筋、頬骨、口のふち、王冠、あごの先
         u_, v_, _ = F["eyes"][0]
-        brow = (v_ > 4.6) & (v_ < 10.5 - 0.12 * np.abs(u_)) & (u_ > -15.5) & (u_ < 14.5)
+        brow = (v_ > 5.2) & (v_ < 11.5 - 0.12 * np.abs(u_)) & (u_ > -20) & (u_ < 16.5)
         u2, v2, _ = F["eyes"][1]
-        brow2 = (v2 > 3.2) & (v2 < 6.0) & (np.abs(u2) < 8.5)
-        nose = (ax < 2.2 + 2.6 * np.clip(1 - np.abs(Y - 146) / 9.0, 0, 1)) & (Y > 101) & (Y < 157)
-        d_ch = np.abs((ax - 31) * 24 + (Y - 127) * 22) / math.hypot(24, 22)           # 頬骨：(31,127) → (9,103)
-        cheek = (d_ch < 2.3) & (ax > 8) & (ax < 32)
+        brow2 = (v2 > 3.8) & (v2 < 7.2) & (np.abs(u2) < 10.5)
+        nose = (ax < 2.4 + 3.4 * np.clip(1 - np.abs(Y - 140) / 10.0, 0, 1)) & (Y > 101) & (Y < 180)
+        d_ch = np.abs((ax - 40) * 26 - (Y - 130) * 28) / math.hypot(26, 28)           # 頬骨：(40,130) → (12,104)
+        cheek = (d_ch < 2.3) & (ax > 12) & (ax < 40)
         lips = (ax >= mw + 0.3) & (ax < mw + 3.2) & (Y > 9) & (Y < 100)
         crown = (Y > 179) & (ax < hw - 2) & (Y < F["ytop"] - 2)
         chin = (Y < 26) & (ax < hw - 0.5) & (Y > 1)

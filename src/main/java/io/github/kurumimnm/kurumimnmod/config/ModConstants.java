@@ -350,7 +350,7 @@ public final class ModConstants {
      */
     public static final float ASTRA_RENDER_SCALE = 8.0f;
     /** 当たり判定（ブロック）。顔だけ（エンティティの位置 = あごの先）。膜・胴・触腕は見た目だけで当たり判定はない。 */
-    public static final float ASTRA_WIDTH = 36.0f;
+    public static final float ASTRA_WIDTH = 50.0f;
     public static final float ASTRA_HEIGHT = 100.0f;
     public static final float ASTRA_EYE_HEIGHT = 70.0f;
     /** クライアントへ同期する距離（チャンク）。サーバーの描画距離が上限になる。 */
