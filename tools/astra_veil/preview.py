@@ -1,12 +1,12 @@
 """geo.json を GeckoLib と同じ変換で組み立て、テクスチャ付きで簡易レンダリングする（形の確認用）。"""
-import json, math, sys
+import json, math, sys, os
 import numpy as np
 from PIL import Image, ImageDraw
 
 geo_path, tex_path, glow_path, out_path = sys.argv[1:5]
 view = sys.argv[5] if len(sys.argv) > 5 else "front"
-RENDER_SCALE = 8.0  # ModConstants.ASTRA_VEIL_RENDER_SCALE と合わせる
-HOVER = float(sys.argv[6]) if len(sys.argv) > 6 else 64.0  # ModConstants.ASTRA_VEIL_SPAWN_HOVER_HEIGHT
+RENDER_SCALE = float(os.environ.get('RS', '8'))  # ModConstants.ASTRA_VEIL_RENDER_SCALE と合わせる
+HOVER = float(sys.argv[6]) if len(sys.argv) > 6 else 52.0  # ModConstants.ASTRA_VEIL_SPAWN_HOVER_HEIGHT
 
 geo = json.load(open(geo_path))["minecraft:geometry"][0]
 TW, TH = geo["description"]["texture_width"], geo["description"]["texture_height"]
@@ -41,16 +41,10 @@ def bone_mat(name):
     return m
 
 # エンティティの描画：Y 軸 180 度回転（yRot = 0）→ 10 倍 → 浮遊の高さ
-if view == "front":
-    ent = T([0, HOVER, 0]) @ S(RENDER_SCALE) @ Ry(math.pi)
-    cam = np.eye(4)
-elif view == "below":
-    ent = T([0, HOVER, 0]) @ S(RENDER_SCALE) @ Ry(math.pi)
-    cam = Rx(math.radians(-14)) @ Ry(math.radians(18))
-else:  # side
-    ent = T([0, HOVER, 0]) @ S(RENDER_SCALE) @ Ry(math.pi)
-    cam = Ry(math.radians(90))
-
+VIEWS = {"front": (0, 0), "below": (18, -14), "side": (90, 0), "player": (25, -38), "under": (0, -80), "top": (0, 80)}
+yaw, pitch = VIEWS[view]
+ent = T([0, HOVER, 0]) @ S(RENDER_SCALE) @ Ry(math.pi)
+cam = Rx(math.radians(pitch)) @ Ry(math.radians(yaw))
 faces = []
 for name, b in bones.items():
     M = bone_mat(name)

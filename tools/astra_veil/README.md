@@ -1,6 +1,6 @@
 # アストラ・ヴェイルのモデル生成スクリプト
 
-アストラ・ヴェイルのモデル・テクスチャ・待機アニメを、手作業ではなくスクリプトで生成しています（キューブが 700 個以上あるため）。
+アストラ・ヴェイルのモデル・テクスチャ・待機アニメを、手作業ではなくスクリプトで生成しています（キューブが 900 個以上あるため）。
 
 | ファイル | 内容 |
 |---|---|
@@ -10,7 +10,7 @@
 
 ```
 python3 generate.py out          # out/ に astra_veil.geo.json・.png・_glowmask.png・.animation.json
-python3 preview.py out/astra_veil.geo.json out/astra_veil.png out/astra_veil_glowmask.png out/preview.png below
+python3 preview.py out/astra_veil.geo.json out/astra_veil.png out/astra_veil_glowmask.png out/preview.png player   # 視点: player（地上から見上げ）/ front / side / below / under / top
 python3 uv_doc.py out out/uv.png
 ```
 

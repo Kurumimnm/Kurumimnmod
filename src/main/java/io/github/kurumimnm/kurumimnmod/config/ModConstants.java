@@ -315,7 +315,7 @@ public final class ModConstants {
     public static final double ASTRA_VEIL_KNOCKBACK_RESISTANCE = 1.0;
     /**
      * 描画の倍率。モデル（geo.json）は小さく作ってあり、ここで拡大する。
-     * 8 倍で 翼幅 約 150・帯の先まで 約 175・高さ 約 125 ブロック（当たり判定・画面外判定・浮かぶ高さも合わせて変える）。
+     * 8 倍で 翼幅 約 125・渦巻く帯の先まで 約 155・高さ 約 75・前後 約 95 ブロック（当たり判定・画面外判定・浮かぶ高さも合わせて変える）。
      */
     public static final float ASTRA_VEIL_RENDER_SCALE = 8.0f;
     /**
@@ -331,10 +331,10 @@ public final class ModConstants {
     public static final double ASTRA_VEIL_RENDER_DISTANCE = 320.0;
     /** 描画の判定に使う範囲（ブロック。エンティティの位置からの横・下・上）。翼・触腕の先まで含める。 */
     public static final double ASTRA_VEIL_CULL_HALF_WIDTH = 96.0;
-    public static final double ASTRA_VEIL_CULL_BELOW = 70.0;
-    public static final double ASTRA_VEIL_CULL_ABOVE = 72.0;
+    public static final double ASTRA_VEIL_CULL_BELOW = 56.0;
+    public static final double ASTRA_VEIL_CULL_ABOVE = 48.0;
     /** スポーンエッグ・/summon で出したとき、置いた場所からこれだけ上に浮かべる（ブロック。触腕の先が地面に届くくらい）。 */
-    public static final double ASTRA_VEIL_SPAWN_HOVER_HEIGHT = 64.0;
+    public static final double ASTRA_VEIL_SPAWN_HOVER_HEIGHT = 52.0;
 
     // ---- ボスの着地点の範囲表示（クライアント） ----
     public static final int BOSS_AOE_COLOR_FILL_CENTER = 0x80FF3020;

@@ -18,14 +18,14 @@ for y in range(TH):
         dr.rectangle([ox+x*S,oy+y*S,ox+x*S+S-1,oy+y*S+S-1],fill=c)
 big=tex.resize((TW*S,TH*S),Image.NEAREST)
 img.paste(big,(ox,oy),big)
-COL={'face':(255,210,90),'core':(255,210,90),'lens':(255,210,90),'antenna':(255,210,90),'crown':(255,210,90),
+COL={'lace':(240,200,255),'drape':(150,120,255),'fin':(110,160,255),'pearl':(255,210,90),'gem':(255,210,90),'face':(255,210,90),'core':(255,210,90),'lens':(255,210,90),'antenna':(255,210,90),'crown':(255,210,90),
      'membrane':(110,160,255),'flat':(190,120,255),'ribbon':(120,230,200),'tentacle':(255,120,150),'feather':(150,200,255),'slit':(255,210,90),'coral':(190,120,255)}
-GROUP={'face':'顔・冠・目','core':'顔・冠・目','lens':'顔・冠・目','antenna':'顔・冠・目','crown':'顔・冠・目',
+GROUP={'lace':'骨のような格子（胴・襟・葉・欠片）','drape':'骨のような格子（胴・襟・葉・欠片）','fin':'翼の膜（節ごとに色が変わる）','pearl':'顔・冠・目','gem':'顔・冠・目','face':'顔・冠・目','core':'顔・冠・目','lens':'顔・冠・目','antenna':'顔・冠・目','crown':'顔・冠・目',
        'membrane':'幕（翼3層・下の幕・胴）','flat':'平たい触腕・珊瑚の房','coral':'平たい触腕・珊瑚の房','ribbon':'渦を巻く帯','tentacle':'細い触腕','feather':'羽・背中の扇','slit':'顔・冠・目'}
 NAMES={'up':'上','down':'下','east':'東','north':'北','west':'西','south':'南'}
 groups={}
 for k,s in slots.items():
-    u,v=s['uv']; w,h,dd=[int(math.ceil(q)) for q in s['size']]; col=COL[s['mat']]
+    u,v=s['uv']; w,h,dd=[int(math.ceil(q)) for q in s['size']]; mk=s['mat'] if not (s['mat'].startswith('fin') and s['mat'][3:].isdigit()) else 'fin'; col=COL[mk]
     rects={'up':(u+dd,v,w,dd),'down':(u+dd+w,v,w,dd),'east':(u,v+dd,dd,h),'north':(u+dd,v+dd,w,h),'west':(u+dd+w,v+dd,dd,h),'south':(u+2*dd+w,v+dd,w,h)}
     for fn,(x,y,ww,hh) in rects.items():
         if ww<=0 or hh<=0: continue
@@ -35,7 +35,7 @@ for k,s in slots.items():
     labels=s['labels']
     name=labels[0] if len(labels)==1 else f"{labels[0]} ほか{len(labels)-1}個"
     sz='×'.join(str(int(q)) if float(q).is_integer() else str(q) for q in s['size'])
-    groups.setdefault(GROUP[s['mat']],[]).append((col,f"{name}  UV({u},{v})  {sz}"))
+    groups.setdefault(GROUP[mk],[]).append((col,f"{name}  UV({u},{v})  {sz}"))
 lx=TW*S+30; ly=60; col_start=60; col_w=330; max_ly=0
 for g,items in groups.items():
     col=items[0][0]
@@ -45,7 +45,7 @@ for g,items in groups.items():
         max_ly=max(max_ly,ly)
         if ly>1300: lx+=col_w; ly=col_start
     ly+=8
-notes=['・モデルの前（顔）は北（-Z）側','・同じ大きさ・同じ材質のキューブは同じUVを共有（例：帯・触腕の節）',
+notes=['・モデルの前（顔）は北（-Z）側','・同じ大きさ・同じ材質のキューブは同じUVを共有（翼の膜は根元からの節ごとに別の色）',
        '・透明ピクセル：幕の穴・下のふちの欠け（半透明で描画）','・発光：astra_veil_glowmask.png（同じ配置。目・継ぎ目・ふち・葉脈・星の粒）',
        '・モデルは小さく作り、レンダラーで8倍（ModConstants ASTRA_VEIL_RENDER_SCALE）','・Blockbench: GeckoLib Animated Model で geo.json を読み込むと同じ配置']
 legend_end=max(max_ly,ly)

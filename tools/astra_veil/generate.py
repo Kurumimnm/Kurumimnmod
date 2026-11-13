@@ -1,17 +1,29 @@
 """
-アストラ・ヴェイル（星幽の巡界者）v2：高密度版のモデル・テクスチャ・アニメーションを生成する。
-座標は Bedrock / Blockbench 形式（1px = 1/16 ブロック、前は北 -Z）。小さく作り、レンダラーで拡大する（ModConstants ASTRA_VEIL_RENDER_SCALE）。
+アストラ・ヴェイル（星幽の巡界者）v3：設定画（星幽の巡界者のデザインシート）に合わせたモデル・テクスチャ・アニメーションの生成。
+
+設定画から読み取った形：
+  - 全体：水平に大きく広がる「布のような膜」。翼幅 約 100 ブロック、高さは翼幅の 1/3 ほど（サイズ比較の図）。
+    地上から見上げると、膜の裏面（穴・ひれの筋）が空を覆う
+  - 横から：前後に長く、触腕と帯が後ろへたなびく（横からのシルエット）
+  - 顔：上の中央。細長い V 字の銀の仮面（2 本の柱が下で合わさる）、中央の稜線、上に小さな触角、
+    まわりに真珠の粒の房と、花びらのような襟（顔部アップ）
+  - 胴：顔の下へ縦に垂れる、穴だらけの骨のような格子のカーテン。下で大きな葉が外へ巻く
+  - まわりに漂う欠片（穴の開いた葉のかけら）、先に玉の付いた渦巻く帯（その他のディテール）
+  - 膜：大きな楕円の穴と太い真珠色のふち（レース）、ひれのように放射する筋
+
+座標は Bedrock / Blockbench 形式（1px = 1/16 ブロック、前は北 -Z）。小さく作り、レンダラーで拡大する。
+回転の向き（Bedrock 座標・GeckoLib で確認済み）：
+  ry 正 = +x の先が前（-z）へ、rz 正 = +x の先が下へ、rx 正 = +z の先が上へ。左右反転は x・ry・rz の符号を反転
 """
 import json, math, random, sys, os
 import numpy as np
 from PIL import Image
 
-OUT = sys.argv[1] if len(sys.argv) > 1 else "out2"
+OUT = sys.argv[1] if len(sys.argv) > 1 else "out3"
 os.makedirs(OUT, exist_ok=True)
-rnd = random.Random(11)
+rnd = random.Random(23)
 
-bones, bone_index = [], {}
-anims = {}   # bone name -> dict(rotation=[...], position=[...])
+bones, bone_index, anims = [], {}, {}
 T = "query.anim_time"
 
 def bone(name, parent, pivot, rotation=(0, 0, 0)):
@@ -21,258 +33,269 @@ def bone(name, parent, pivot, rotation=(0, 0, 0)):
     if any(abs(r) > 1e-9 for r in rotation):
         b["rotation"] = [round(r, 2) for r in rotation]
     bones.append(b); bone_index[name] = b
-    return b
+    return name
 
-def cube(bname, origin, size, mat, rotation=None, pivot=None, label=None, inflate=None):
-    size = [int(round(s)) for s in size]
+def cube(bname, origin, size, mat, rotation=None, pivot=None, label=None):
+    size = [max(1, int(round(s))) for s in size]
     c = {"origin": [round(o, 3) for o in origin], "size": size, "_mat": mat, "_label": label or bname}
     if rotation:
         c["rotation"] = [round(r, 2) for r in rotation]; c["pivot"] = [round(p, 3) for p in pivot]
-    if inflate:
-        c["inflate"] = inflate
     bone_index[bname]["cubes"].append(c)
-    return c
 
 def wave(phase, amp, speed=45, fn="sin"):
-    """8 秒で割り切れる周期（45°/s = 8 秒、90°/s = 4 秒）の揺れ。"""
     if abs(amp) < 0.05:
         return 0
     return f"math.{fn}({T}*{speed}-{phase:.0f})*{amp:.2f}"
 
 def anim(name, rot=None, pos=None):
-    a = {}
-    if rot:
-        a["rotation"] = rot
-    if pos:
-        a["position"] = pos
-    anims[name] = a
+    anims[name] = {k: v for k, v in (("rotation", rot), ("position", pos)) if v}
 
 # ---------------------------------------------------------------------------
-# 横へ伸びる鎖（幕・帯）。side = 1（+x）/ -1（-x）
-#   segs: [(w, h, d, rz, ry, rx)]  rz 正 = 先が垂れる（左右対称に side を掛ける）
+# 鎖：+x 方向へ節を連ねる。side = 1 / -1 で左右反転。
+#   segs: dict(L 長さ, W 横幅, H 厚み, ry, rz, rx, mat)
+#   shape="flat" … 水平の板（L × H × W）：翼の膜。見上げると裏面が見える
+#   shape="vert" … 縦の板（L × W × H）：帯・カーテン
 # ---------------------------------------------------------------------------
-def x_chain(prefix, parent, start, segs, mat, side, yalign="top", overlap=2, feathers=None, anim_amp=(2, 1.2),
-            anim_speed=45, phase0=0, extra=None):
+def chain(prefix, parent, start, segs, side=1, shape="flat", overlap=1, anim_fn=None):
     x, y, z = start
     names = []
-    for i, (w, h, d, rz, ry, rx) in enumerate(segs):
-        name = f"{prefix}_{i}"
-        bone(name, parent, (x * side, y, z), (rx, ry * side, rz * side))
-        if yalign == "top":
-            oy = y - h + 2
+    for i, s in enumerate(segs):
+        name = bone(f"{prefix}_{i}", parent, (x * side, y, z), (s.get("rx", 0), s.get("ry", 0) * side, s.get("rz", 0) * side))
+        L, W, H = s["L"], s["W"], s.get("H", 1)
+        ox = x if side > 0 else -x - L
+        if shape == "flat":
+            cube(name, (ox, y - H / 2, z - W / 2), (L, H, W), s["mat"])
         else:
-            oy = y - h / 2
-        ox = x if side > 0 else -x - w
-        cube(name, (ox, oy, z - d / 2), (w, h, d), mat)
-        if feathers:
-            fw, fh, n = feathers
-            for k in range(n):
-                fx = x + 2 + k * max(1, (w - 4) // max(1, n))
-                fname = f"{name}_f{k}"
-                bone(fname, name, (fx * side, oy + 3, z - d / 2 - 0.5), (10 + rnd.uniform(-4, 4), 0, (-28 - k * 14 + rnd.uniform(-5, 5)) * side))
-                fww = max(3, int(fw * (1 - i * 0.07)))
-                cube(fname, (fx if side > 0 else -fx - fww, oy + 3 - fh, z - d / 2 - 1), (fww, fh, 1), "feather")
-                anim(fname, rot=[wave(phase0 + i * 30 + k * 50 + 40, 3 + i * 0.4, 90), 0, wave(phase0 + i * 30 + k * 40, (2 + i * 0.3) * side, 90)])
-        if extra:
-            extra(name, i, x, y, z, w, h)
-        a0, a1 = anim_amp
-        anim(name, rot=[wave(phase0 + i * 32 + 60, a1 + i * 0.4, anim_speed * 2), 0, wave(phase0 + i * 30, (a0 + i * 0.9) * side, anim_speed)])
+            cube(name, (ox, y - W / 2, z - H / 2), (L, W, H), s["mat"])
+        if anim_fn:
+            anim(name, rot=anim_fn(i, side))
         names.append(name)
         parent = name
-        x += w - overlap
+        x += L - overlap
     return names
 
-# ---------------------------------------------------------------------------
-# 下へ伸びる鎖（触腕）
-# ---------------------------------------------------------------------------
-def y_chain(prefix, parent, start, segs, mat, phase0=0, amp=1.0):
+# 下へ垂れる鎖（カーテン・触腕）。板は yaw の向きに面を向ける
+def hang(prefix, parent, start, segs, yaw=0.0, anim_fn=None):
     x, y, z = start
-    for i, (w, d, L, rx, rz) in enumerate(segs):
-        name = f"{prefix}_{i}"
-        bone(name, parent, (x, y, z), (rx, 0, rz))
-        cube(name, (x - w / 2, y - L, z - d / 2), (w, L, d), mat)
-        anim(name, rot=[wave(phase0 + i * 34, (1.5 + i * 0.9) * amp, 90), 0, wave(phase0 + i * 30 + 90, (1.2 + i * 0.8) * amp, 45, "cos")])
+    names = []
+    for i, s in enumerate(segs):
+        rot = (s.get("rx", 0), yaw if i == 0 else 0, s.get("rz", 0))
+        name = bone(f"{prefix}_{i}", parent, (x, y, z), rot)
+        W, L, H = s["W"], s["L"], s.get("H", 1)
+        cube(name, (x - W / 2, y - L, z - H / 2), (W, L, H), s["mat"])
+        if anim_fn:
+            anim(name, rot=anim_fn(i))
+        names.append(name)
         parent = name
         y -= L - 1
+    return names
 
-# ===========================================================================
-# 骨格
 # ===========================================================================
 bone("root", None, (0, 0, 0))
-bone("body", "root", (0, 8, 0))
-anim("body", rot=[wave(90, 1.2), wave(0, 1.6), 0], pos=[0, wave(0, 1.5), 0])
+bone("body", "root", (0, 0, 0))
+anim("body", rot=[wave(90, 1.5), wave(0, 1.5), wave(45, 1.0)], pos=[0, wave(0, 2.0), 0])
 
 # ---------------------------------------------------------------------------
-# 顔（縦長の銀白の仮面＋冠）
+# 翼（布のような膜）：肩から扇形に放射する「ひれ」を並べて 1 枚の膜にする
+#   上の膜 11 本、下の膜 7 本。節ごとに波打たせ、前のひれは先が巻き上がり、後ろのひれは長く垂れる
 # ---------------------------------------------------------------------------
-bone("head", "body", (0, 14, -2))
-anim("head", rot=[wave(200, 1.8), wave(120, 1.2, 90), wave(40, 0.8, 90)])
-H = "head"
-cube(H, (-5, 0, -7), (10, 36, 5), "face", label="face_spine")
-cube(H, (-1, 1, -8), (2, 32, 1), "slit", label="face_slit")
-for side in (1, -1):
-    t = "l" if side > 0 else "r"
-    # 縦の稜線
-    cube(H, (3.5 if side > 0 else -5.5, 2, -8), (2, 30, 1), "face", label=f"ridge_{t}")
-    # 頬（斜めに張り出す板を 2 段）
-    cube(H, (5 if side > 0 else -11, 10, -5), (6, 16, 2), "crown", rotation=(0, 10 * side, 16 * side), pivot=(5 * side, 26, -4), label=f"cheek_{t}")
-    cube(H, (9 if side > 0 else -15, 4, -3), (6, 14, 2), "crown", rotation=(0, 18 * side, 28 * side), pivot=(9 * side, 18, -2), label=f"cheek2_{t}")
-    # 下あごの牙のような板
-    cube(H, (2 if side > 0 else -5, -12, -6), (3, 14, 2), "face", rotation=(0, 0, -10 * side), pivot=(3 * side, 2, -5), label=f"mandible_{t}")
-    # 目（レンズ）
-    for i, (lx, ly) in enumerate([(3, 27), (6, 29), (8.5, 26), (5, 23)]):
-        cube(H, (lx - 1 if side > 0 else -lx - 1, ly - 1, -8.5), (2, 2, 1), "lens", label=f"lens_{t}{i}")
-# 眉・冠（上へ広がる段）
-for i, (w, y, d) in enumerate([(14, 30, 6), (18, 34, 6), (22, 37, 5), (16, 40, 4)]):
-    cube(H, (-w / 2, y, -6 + i * 0.5), (w, 4, d), "crown", label=f"crown_{i}")
-# 冠の枝角（左右に放射状、2 段）
-for side in (1, -1):
-    t = "l" if side > 0 else "r"
-    for i in range(7):
-        ang = 6 + i * 11
-        h = 12 - i * 0.8
-        px = (1.5 + i * 1.6) * side
-        cube(H, (px - 0.5, 42, -3), (1, h, 1), "crown", rotation=(rnd.uniform(-8, 8), 0, -ang * side), pivot=(px, 42, -2.5), label=f"spike_{t}{i}")
-        if i % 2 == 0:
-            cube(H, (px - 0.5, 42 + h * 0.5, -3), (1, h * 0.45, 1), "crown", rotation=(0, 0, -(ang + 28) * side), pivot=(px, 42 + h * 0.5, -2.5), label=f"twig_{t}{i}")
-# 冠の上の宝玉の房
-for i, (ox, oy) in enumerate([(0, 46), (-2.5, 44), (2.5, 44), (-1.2, 49), (1.2, 49), (0, 53)]):
-    cube(H, (ox - 1, oy, -4), (2, 2, 2), "lens", label=f"orb_{i}")
-cube(H, (-0.5, 44, -3.5), (1, 16, 1), "antenna", label="horn")
-# 胸の核と、下へ伸びる節のある柱
-cube(H, (-2.5, 4, -9), (5, 6, 2), "core", label="core")
-for i, w in enumerate([8, 7, 6, 5, 4, 3]):
-    y = -12 - i * 7
-    cube(H, (-w / 2, y, -5 + i * 0.3), (w, 6, 4), "face", label=f"column_{i}")
-    cube(H, (-1, y + 2, -6 + i * 0.3), (2, 2, 1), "core", label=f"column_gem_{i}")
+def wing_sheet(tag, side, n_rays, a0, a1, y0, z0, z1, n_seg, droop0, droop_k, wave_amp, w_base, w_k, mat, layer_phase, bank=-38):
+    rays = []
+    for k in range(n_rays):
+        q = k / (n_rays - 1)
+        heading = a0 + (a1 - a0) * q          # ry：正 = 前向き、負 = 後ろ向き
+        n = n_seg + int(round(q * 3))         # 後ろのひれほど長い
+        segs = []
+        r = 6
+        for i in range(n):
+            L = 13
+            r += L - 1
+            W = min(30, w_base + r * w_k)
+            undul = wave_amp * math.sin(i * 1.05 + k * 0.22 + layer_phase)
+            rz = droop0 + droop_k * i + undul
+            if k == 0 and i >= n - 4:          # 前のひれ：先が上へ巻き上がる
+                rz = -18 - (i - (n - 4)) * 14
+            if k >= n_rays - 3 and i >= n - 4:  # 後ろのひれ：先が下へ垂れて巻く
+                rz += 10 + (i - (n - 4)) * 9
+            segs.append(dict(L=L, W=W, H=1, ry=(heading if i == 0 else rnd.uniform(-1, 1)), rz=rz,
+                             rx=(bank * (1 - 0.6 * q) if i == 0 else 5 * math.sin(i * 0.8 + k * 0.3)), mat=f"{mat}{min(i, 11)}"))
+        start = (8, y0, z0 + (z1 - z0) * q)
+        def af(i, sd, k=k):
+            return [wave(i * 38 + k * 22 + 90, 2.0 + i * 0.35, 90), 0, wave(i * 40 + k * 18 + layer_phase * 50, (2.2 + i * 0.75) * sd)]
+        rays.append(chain(f"{tag}{k}", "body", start, segs, side=side, shape="flat", overlap=1, anim_fn=af))
+    return rays
+
+wings = {}
+for side, t in ((1, "l"), (-1, "r")):
+    wings[(t, "up")] = wing_sheet(f"wing_{t}", side, 12, 34, -62, 2, -8, 10, 9, -9, 1.7, 7, 8, 0.27, "fin", 0)
+    wings[(t, "lo")] = wing_sheet(f"under_{t}", side, 8, 22, -55, -7, -4, 10, 6, 2, 3.2, 6, 7, 0.26, "fin", 1.7, bank=-30)
+
+# 顔の左右から上へ立ち上がり、外へ巻き下りる幕（設定画で頭の上に広がる膜）
+for side, t in ((1, "l"), (-1, "r")):
+    for k in range(3):
+        segs = []
+        for i in range(7):
+            rz = (-62 + k * 10) if i == 0 else 9 + i * 1.5 + rnd.uniform(-3, 3)
+            segs.append(dict(L=11, W=14 - i, H=1, ry=(-25 - k * 20) if i == 0 else rnd.uniform(-4, 4), rz=rz, rx=rnd.uniform(-6, 6), mat="fin"))
+        chain(f"cape_{t}{k}", "body", (5, 16, -8 + k * 6), segs, side=side, shape="flat",
+              anim_fn=lambda i, sd, k=k: [wave(i * 35 + k * 40, 2 + i * 0.4, 90), 0, wave(i * 38 + k * 30 + 20, (2 + i * 0.6) * sd)])
 
 # ---------------------------------------------------------------------------
-# 胴（顔の後ろ〜下の幕の重なり）と、顔のまわりの珊瑚のような房
+# 顔（細長い V 字の仮面）
 # ---------------------------------------------------------------------------
-cube("body", (-9, -16, -2), (18, 26, 8), "membrane", label="torso")
-cube("body", (-12, -30, -1), (24, 16, 6), "membrane", label="torso_low")
-cube("body", (-8, -40, 0), (16, 12, 5), "membrane", label="torso_tail")
+H = bone("head", "body", (0, 10, -14))
+anim("head", rot=[wave(200, 2.0), wave(120, 1.5, 90), wave(40, 1.0, 90)])
+FZ = -16  # 仮面の前面
+for side, t in ((1, "l"), (-1, "r")):
+    # 2 本の柱：上は離れ、下で合わさる
+    cube(H, (2.5 if side > 0 else -6.5, -12, FZ), (4, 40, 3), "face", rotation=(0, 0, 7 * side), pivot=(4.5 * side, 28, FZ + 1.5), label=f"mask_bar_{t}")
+    # 仮面のふちの張り出し
+    cube(H, (5 if side > 0 else -8, 6, FZ + 2), (3, 20, 2), "face", rotation=(0, 12 * side, 14 * side), pivot=(5 * side, 26, FZ + 3), label=f"mask_flange_{t}")
+    # 目（小さな光る点）
+    cube(H, (1 if side > 0 else -2, 19, FZ - 0.5), (1, 2, 1), "gem", label=f"eye_{t}")
+    # 触角（2 本ずつ。外へ反って先に玉）
+    for k in range(2):
+        segs = [dict(L=6, W=1, H=1, ry=10 + k * 25, rz=-70 + k * 12, mat="face"),
+                dict(L=6, W=1, H=1, rz=14, mat="face"), dict(L=5, W=1, H=1, rz=18, mat="face")]
+        names = chain(f"antenna_{t}{k}", H, (1.5 + k, 30, FZ + 2), segs, side=side, shape="vert",
+                      anim_fn=lambda i, sd, k=k: [wave(i * 30 + k * 60, 3, 90), 0, wave(i * 30 + k * 50, 4 * sd, 90)])
+        tip = bone_index[names[-1]]
+        tx = abs(tip["pivot"][0]) + 4
+        cube(names[-1], (tx - 1 if side > 0 else -tx - 1, 29, FZ + 1), (2, 2, 2), "pearl", label=f"antenna_orb_{t}{k}")
+    # 真珠の粒の房（頭の上の左右）
+    for k in range(9):
+        sz = rnd.choice([2, 2, 3, 3, 4])
+        px = rnd.uniform(4, 11); py = rnd.uniform(16, 31); pz = FZ + rnd.uniform(1, 7)
+        cube(H, (px if side > 0 else -px - sz, py, pz), (sz, sz, sz), "pearl", label=f"pearl_{t}{k}")
+# 中央の稜線（光る継ぎ目）と眉
+cube(H, (-0.5, 2, FZ - 1), (1, 26, 1), "slit", label="mask_ridge")
+cube(H, (-6, 24, FZ + 1), (12, 5, 4), "face", label="mask_brow")
+cube(H, (-4, 28, FZ + 2), (8, 4, 4), "face", label="mask_crest")
+cube(H, (-2, -16, FZ + 0.5), (4, 7, 3), "face", label="mask_chin")
+# 襟（顔のまわりに放射状に開く花びら。穴の開いた膜）
 for k in range(12):
+    ang = -165 + k * 30
+    if abs(ang) < 20:
+        continue
+    rad = math.radians(ang)
+    px, py = math.sin(rad) * 7, 10 + math.cos(rad) * 12
+    w, h = rnd.choice([8, 9, 10]), rnd.choice([18, 20, 22])
+    cube(H, (px - w / 2, py, FZ + 5), (w, h, 1), "lace", rotation=(rnd.uniform(-15, 5), 0, -ang), pivot=(px, py, FZ + 5.5), label=f"collar_{k}")
+# 顔の下へ伸びる細い柱と宝石
+cube(H, (-1, -50, FZ + 2), (2, 36, 2), "face", label="spine")
+cube(H, (-1.5, -44, FZ + 1), (3, 4, 1), "gem", label="spine_gem")
+
+# ---------------------------------------------------------------------------
+# 胴：穴だらけの骨のような格子が縦に垂れる（中心の塊＋まわりのカーテン）
+# ---------------------------------------------------------------------------
+for i, (w, h, d, y) in enumerate([(16, 18, 14, -14), (13, 18, 12, -30), (10, 16, 10, -45), (7, 12, 7, -56)]):
+    cube("body", (-w / 2, y, -6 - d / 2 + 4), (w, h, d), "lace", label=f"core_{i}")
+for k in range(24):
+    th = k / 24 * math.tau
+    cx, cz = math.sin(th) * (11 + rnd.uniform(-2, 2)), math.cos(th) * 9 + 2
+    yaw = -math.degrees(th)
+    n = rnd.choice([5, 6, 6, 7, 8])
+    segs = []
+    for i in range(n):
+        segs.append(dict(W=max(3, 9 - i * 0.6), L=10, H=1, rx=(rnd.uniform(-10, 4) if i else -8), rz=(9 if i % 2 else -9) + rnd.uniform(-5, 5),
+                         mat=("lace" if (k + i) % 3 else "drape")))
+    hang(f"drape_{k}", "body", (cx, -4 - rnd.uniform(0, 8), cz), segs, yaw=yaw,
+         anim_fn=lambda i, k=k: [wave(i * 36 + k * 29, 2 + i * 0.7, 90), 0, wave(i * 33 + k * 23 + 90, 2 + i * 0.6, 45, "cos")])
+
+# 下で外へ巻く大きな葉（穴の開いた葉）
+for k in range(9):
+    th = (k + 0.5) / 9 * math.tau
+    cx, cz = math.sin(th) * 9, math.cos(th) * 7 + 2
+    yaw = -math.degrees(th)
+    segs = []
+    for i in range(7):
+        rx = -28 if i == 0 else (-10 - i * 11 if i >= 2 else rnd.uniform(-8, 0))
+        segs.append(dict(W=max(4, 13 - i * 1.2), L=10, H=1, rx=rx, rz=rnd.uniform(-6, 6), mat="lace"))
+    hang(f"leaf_{k}", "body", (cx, -52, cz), segs, yaw=yaw,
+         anim_fn=lambda i, k=k: [wave(i * 40 + k * 37, 2.5 + i * 0.8, 90), 0, wave(i * 30 + k * 41, 2 + i * 0.6, 45, "cos")])
+
+# ---------------------------------------------------------------------------
+# 後ろへたなびく帯（横からのシルエット）：体の後ろと翼の付け根から後ろ下へ
+# ---------------------------------------------------------------------------
+for k in range(10):
     side = 1 if k % 2 == 0 else -1
     j = k // 2
-    sx = (6 + j * 0.8) * side
-    sy = 34 - j * 7.5
-    base = (35 + j * 12) * side
+    start = (2 + j * 5, -6 - j * 7, 12)
+    n = 13 + rnd.randint(-2, 2)
     segs = []
-    for i in range(5):
-        segs.append((5 - i, 1, 5, rnd.uniform(-10, 10), -base if i == 0 else -(22 + i * 8) * side))
-    # 横向きの短い巻きひげ（y_chain を横に倒して使う）
-    y_chain(f"coral_{k}", "body", (sx, sy, -1.5 - (k % 3)), segs, "coral", phase0=k * 40, amp=0.7)
+    for i in range(n):
+        segs.append(dict(L=10, W=max(3, 7 - i * 0.3), H=1, ry=(-90 + j * 6) if i == 0 else rnd.uniform(-6, 6),
+                         rz=(14 if i == 0 else 4 + 7 * math.sin(i * 0.9 + k)), rx=rnd.uniform(-8, 8), mat="ribbon"))
+    chain(f"trail_{k}", "body", start, segs, side=side, shape="vert",
+          anim_fn=lambda i, sd, k=k: [wave(i * 36 + k * 30, 3 + i * 0.4, 90), wave(i * 30 + k * 25, 3 * sd), wave(i * 34 + k * 27 + 60, (3 + i * 0.6) * sd, 90)])
 
-# ---------------------------------------------------------------------------
-# 背中の扇（頭の後ろに放射状に立つ幕）
-# ---------------------------------------------------------------------------
-for k in range(9):
-    ang = -72 + k * 18
-    segs = []
-    for i, (w, L) in enumerate([(7, 16), (6, 14), (5, 12), (4, 10), (3, 8)]):
-        segs.append((w, 1, L, rnd.uniform(-5, 5) - 4, (180 + ang) if i == 0 else -ang * 0.18 + rnd.uniform(-4, 4)))
-    y_chain(f"fan_{k}", "body", (ang * 0.06, 40, 5 + abs(ang) * 0.02), segs, "feather", phase0=k * 30, amp=0.8)
-
-# ---------------------------------------------------------------------------
-# 翼（3 層の幕。それぞれの節の下に羽のようなひだが重なる）
-# ---------------------------------------------------------------------------
-WING_A = [(26, 28, 2, -22, -4, 0), (25, 27, 2, -6, -4, 0), (24, 26, 2, -2, -4, 0), (22, 25, 2, 2, -3, 0), (20, 23, 2, 5, -3, 0),
-          (18, 21, 2, 9, -3, 0), (15, 18, 2, 13, -2, 0), (12, 15, 2, 19, -2, 0), (9, 12, 2, 27, 0, 0), (6, 9, 2, 38, 0, 0)]
-WING_B = [(24, 24, 2, 0, -2, 0), (22, 23, 2, 3, -2, 0), (20, 22, 2, 5, -2, 0), (18, 20, 2, 8, -2, 0),
-          (16, 18, 2, 11, -2, 0), (13, 15, 2, 15, 0, 0), (10, 12, 2, 22, 0, 0), (7, 9, 2, 30, 0, 0)]
-WING_C = [(20, 22, 2, 30, 4, 0), (18, 20, 2, 6, 2, 0), (16, 18, 2, 7, 2, 0), (14, 16, 2, 10, 0, 0),
-          (11, 13, 2, 14, 0, 0), (8, 10, 2, 20, 0, 0), (6, 8, 2, 28, 0, 0)]
-wing_names = {}
+# 翼のふちから出て渦を巻く帯（先に玉）
 for side, t in ((1, "l"), (-1, "r")):
-    wing_names[(t, "a")] = x_chain(f"wing_a{t}", "body", (6, 46, 2), WING_A, "membrane", side, overlap=3, feathers=(8, 12, 2), anim_amp=(2.5, 1.5), phase0=0)
-    wing_names[(t, "b")] = x_chain(f"wing_b{t}", "body", (8, 34, -0.5), WING_B, "membrane", side, overlap=3, feathers=(7, 11, 2), anim_amp=(2.8, 1.5), phase0=50)
-    wing_names[(t, "c")] = x_chain(f"wing_c{t}", "body", (7, 20, -3), WING_C, "membrane", side, overlap=3, feathers=(6, 10, 1), anim_amp=(3, 1.8), phase0=100)
-
-# ---------------------------------------------------------------------------
-# 渦を巻く長い帯（翼の先・ふちから出て、外へ流れてくるりと巻く）
-# ---------------------------------------------------------------------------
-TENDRILS = [  # (親の層, 節, 付け根の x 割合, 初めの向き rz, 巻きの強さ, 巻く向き, 本数の節)
-    ("a", 1, 0.5, -38, 26, -1, 15),
-    ("a", 4, 0.8, -18, 30, 1, 15),
-    ("a", 7, 0.9, -6, 34, 1, 14),
-    ("a", 9, 1.0, 8, 38, 1, 12),
-    ("b", 5, 0.9, 16, 30, -1, 14),
-    ("c", 4, 0.9, 30, 32, 1, 13),
-]
-for side, t in ((1, "l"), (-1, "r")):
-    for k, (layer, si, fx, rz0, curl, cdir, n) in enumerate(TENDRILS):
-        parent = wing_names[(t, layer)][si]
-        pb = bone_index[parent]
-        pc = pb["cubes"][0]
-        px = abs(pb["pivot"][0]) + pc["size"][0] * fx
-        py = pc["origin"][1] + pc["size"][1] - 4
-        pz = pb["pivot"][2] - 1.5
+    for k, (ray, frac, curl) in enumerate([(1, 0.6, 1), (5, 0.9, -1), (9, 1.0, 1)]):
+        names = wings[(t, "up")][ray]
+        parent = names[min(len(names) - 1, int(len(names) * frac))]
+        pb = bone_index[parent]; pc = pb["cubes"][0]
+        sx = abs(pb["pivot"][0]) + pc["size"][0] - 1
+        n = 12
         segs = []
         for i in range(n):
-            w = max(3, 9 - i * 0.35)
-            h = max(2, 6 - i * 0.3)
             q = i / (n - 1)
-            rz = rz0 if i == 0 else cdir * curl * (0.08 + q ** 2.2) + rnd.uniform(-2, 2)
-            segs.append((w, h, 1, rz, rnd.uniform(-5, 5), rnd.uniform(-4, 4)))
-        x_chain(f"tendril_{t}{k}", parent, (px, py, pz), segs, "ribbon", side, yalign="mid", overlap=1,
-                anim_amp=(1.5, 2.0), anim_speed=45, phase0=k * 55)
+            segs.append(dict(L=7, W=max(2, 5 - i * 0.25), H=1, ry=(rnd.uniform(-20, 20) if i == 0 else 0),
+                             rz=(10 if i == 0 else curl * (6 + 34 * q ** 2)), rx=rnd.uniform(-5, 5), mat="ribbon"))
+        names2 = chain(f"curl_{t}{k}", parent, (sx, pb["pivot"][1], pb["pivot"][2]), segs, side=side, shape="vert",
+                       anim_fn=lambda i, sd, k=k: [wave(i * 30 + k * 70, 3, 90), 0, wave(i * 32 + k * 60, (2 + i * 0.5) * sd, 90)])
+        tb = bone_index[names2[-1]]
+        tx = abs(tb["pivot"][0]) + 5
+        cube(names2[-1], (tx if side > 0 else -tx - 3, tb["pivot"][1] - 1.5, tb["pivot"][2] - 1.5), (3, 3, 3), "pearl", label=f"curl_orb_{t}{k}")
 
 # ---------------------------------------------------------------------------
-# 下の幕（腰から左右斜め下へ 2 段）
+# まわりに漂う欠片（穴の開いた葉のかけら）
 # ---------------------------------------------------------------------------
-for side, t in ((1, "l"), (-1, "r")):
-    x_chain(f"skirt_a{t}", "body", (8, 4, -2), [(18, 24, 2, 40, 8, 0), (15, 21, 2, 14, 4, 0), (12, 17, 2, 12, 0, 0), (9, 13, 2, 12, 0, 0), (6, 9, 2, 14, 0, 0)],
-            "membrane", side, feathers=(7, 12, 2), anim_amp=(3, 2), phase0=150)
-    x_chain(f"skirt_b{t}", "body", (6, -14, 1), [(16, 22, 2, 58, -6, 0), (13, 19, 2, 16, -4, 0), (10, 15, 2, 12, 0, 0), (7, 11, 2, 12, 0, 0)],
-            "membrane", side, feathers=(6, 10, 1), anim_amp=(3, 2), phase0=200)
+for k in range(28):
+    ang = rnd.uniform(0, math.tau)
+    rr = rnd.uniform(30, 115)
+    px, pz = math.cos(ang) * rr, math.sin(ang) * rr * 0.6
+    py = rnd.uniform(-60, 24)
+    name = bone(f"shard_{k}", "body", (px, py, pz), (rnd.uniform(-60, 60), rnd.uniform(0, 360), rnd.uniform(-60, 60)))
+    w, h = rnd.choice([(4, 7), (5, 9), (6, 10), (3, 6)])
+    cube(name, (px - w / 2, py - h / 2, pz), (w, h, 1), rnd.choice(["lace", "fin", "lace"]))
+    anim(name, rot=[wave(k * 47, 12, 45), wave(k * 31, 20, 45), wave(k * 53, 10, 90)], pos=[0, wave(k * 41, 2.5, 90), 0])
 
-# ---------------------------------------------------------------------------
-# 触腕（外側：平たい葉のような帯 16 本、内側：細い糸 12 本）
-# ---------------------------------------------------------------------------
-tent = 0
-for k in range(16):
-    ang = k / 16 * math.tau
-    tx, tz = math.cos(ang) * 11, math.sin(ang) * 4
-    n = rnd.choice([7, 8, 8, 9])
-    spread = tx * 1.8
-    curl = rnd.choice([-1, 1]) * rnd.uniform(5, 9)
-    segs = []
-    for i in range(n):
-        w = max(2, 8 - i * 0.7)
-        rz = -spread if i == 0 else (curl * (i - n + 5) * 0.9 * (1 if tx > 0 else -1) if i >= n - 5 else -spread * 0.1 + rnd.uniform(-3, 3))
-        rx = (4 + tz * 2) if i == 0 else rnd.uniform(-5, 5)
-        segs.append((w, 1, 9, rx, rz))
-    y_chain(f"tentacle_{k}", "body", (tx, -36, tz), segs, "flat", phase0=k * 37)
-for k in range(8):
-    ang = (k + 0.5) / 8 * math.tau
-    tx, tz = math.cos(ang) * 7, math.sin(ang) * 3
-    n = rnd.choice([7, 8, 9])
-    segs = []
-    for i in range(n):
-        w = max(1, 3 - i // 4)
-        rz = (-tx * 1.4) if i == 0 else rnd.uniform(-5, 5)
-        segs.append((w, w, 10, rnd.uniform(-5, 5), rz))
-    y_chain(f"strand_{k}", "body", (tx, -40, tz), segs, "tentacle", phase0=k * 41 + 20, amp=1.3)
+# 顔まわり（head とその子）を拡大する（設定画では顔が大きく目立つ）
+HEAD_SCALE = 1.4
+def _desc(name):
+    out = [name]
+    for b in bones:
+        if b.get("parent") in out:
+            out.append(b["name"])
+    return out
+_hp = bone_index["head"]["pivot"]
+def _sc(p):
+    return [round(_hp[i] + (p[i] - _hp[i]) * HEAD_SCALE, 3) for i in range(3)]
+for n in _desc("head"):
+    b = bone_index[n]
+    if n != "head":
+        b["pivot"] = _sc(b["pivot"])
+    for c in b["cubes"]:
+        c["origin"] = _sc(c["origin"]); c["size"] = [max(1, int(round(v * HEAD_SCALE))) for v in c["size"]]
+        if "pivot" in c:
+            c["pivot"] = _sc(c["pivot"])
 
 # ===========================================================================
-# Box UV の割り付け（同じ大きさ・同じ材質は UV を共有）
+# Box UV の割り付け
 # ===========================================================================
-UNIQUE = ("face", "core", "slit")
+UNIQUE = ("face", "slit")
 def foot(size):
     w, h, d = size
     return 2 * (w + d), d + h
-
 slots = {}
 for b in bones:
     for c in b["cubes"]:
         key = (tuple(c["size"]), c["_mat"]) + ((c["_label"],) if c["_mat"] in UNIQUE else ())
         s = slots.setdefault(key, {"size": c["size"], "mat": c["_mat"], "labels": []})
-        s["labels"].append(c["_label"] if c["_label"] != b["name"] else b["name"])
-        c["_key"] = key
-
+        s["labels"].append(c["_label"]); c["_key"] = key
 TEX_W = 512
-order = sorted(slots.keys(), key=lambda k: (-foot(slots[k]["size"])[1], -foot(slots[k]["size"])[0]))
+order = sorted(slots, key=lambda k: (-foot(slots[k]["size"])[1], -foot(slots[k]["size"])[0]))
 u = v = shelf = 0
 for k in order:
     fw, fh = foot(slots[k]["size"])
@@ -290,7 +313,7 @@ def face_rects(u, v, size):
             "north": (u + d, v + d, w, h), "west": (u + d + w, v + d, d, h), "south": (u + 2 * d + w, v + d, w, h)}
 
 # ===========================================================================
-# テクスチャ
+# テクスチャ（設定画の色：淡い藤色〜ペリウィンクル、真珠色のハイライト、奥は深い紫）
 # ===========================================================================
 tex = np.zeros((TEX_H, TEX_W, 4), np.float32)
 glow = np.zeros((TEX_H, TEX_W, 4), np.float32)
@@ -298,189 +321,133 @@ def C(s, a=255):
     s = s.lstrip("#"); return np.array([int(s[i:i + 2], 16) for i in (0, 2, 4)] + [a], np.float32)
 def L(a, b, t):
     return a + (b - a) * max(0.0, min(1.0, t))
-
-DEEP = C("#3b2a9e", 200); VIOLET = C("#5d4be0", 180); SKY = C("#8fb2ff", 160); MIST = C("#c9d4ff", 150)
-PEARL = C("#e4e2ff", 225); WHITE = C("#ffffff", 250)
-G_RIM = C("#b9e4ff", 70); G_VEIN = C("#8fd2ff", 90); G_STAR = C("#e6f6ff", 220); G_CYAN = C("#8ff3ff", 255)
+DEEP = C("#3f33a3", 215); VIOL = C("#5b4fd0", 200); PERI = C("#7d82e8", 180); PALE = C("#aab6f6", 165); MIST = C("#d6d8ff", 170)
+PEARL = C("#f3f0ff", 235); WHITE = C("#ffffff", 245); IRI = C("#bfefff", 190)
+G_RIM = C("#d6eeff", 60); G_VEIN = C("#a5e0ff", 80); G_STAR = C("#f0f8ff", 230); G_CYAN = C("#9ff4ff", 255)
 
 def put(x, y, col, g=None):
     tex[y, x] = col
     if g is not None:
         glow[y, x] = g
 
-def paint_membrane(x, y, w, h, fname, lace=1.0):
-    big = w >= 6 and h >= 6
-    for j in range(h):
-        for i in range(w):
-            t = j / max(1, h - 1)
-            col = L(DEEP, VIOLET, t * 1.6) if t < 0.5 else L(VIOLET, SKY, (t - 0.5) * 2)
-            col = L(col, MIST, rnd.random() * 0.35)
-            # 細かい鱗の模様
-            if (i + (j // 2) * 2) % 4 == 0 and (j % 2 == 0):
-                col = L(col, MIST, 0.45)
-            put(x + i, y + j, col)
-            if rnd.random() < 0.03:
-                put(x + i, y + j, WHITE, G_STAR)
-    if not big:
-        for i in range(w):
-            put(x + i, y + h - 1, PEARL, G_RIM)
-            put(x + i, y, PEARL)
-        return
-    if fname not in ("north", "south"):
-        for j in range(h):
-            put(x, y + j, PEARL, G_RIM)
-        return
-    # 放射状の葉脈
-    for vline in range(max(2, w // 5)):
-        sx = x + 1 + (vline * (w - 2)) // max(1, w // 5)
-        drift = rnd.uniform(-0.25, 0.25)
-        for j in range(h - 2):
-            xx = int(round(sx + drift * j + math.sin(j * 0.5 + vline) * 0.8))
-            if x < xx < x + w - 1:
-                put(xx, y + j, L(PEARL, SKY, 0.3), G_VEIN)
-    # レースの穴（大小）
-    for _ in range(int(max(1, (w * h) // 55) * lace)):
-        r = rnd.choice([1, 1, 1, 2, 2, 3])
-        if w <= 4 + 2 * r or h <= 6 + 2 * r:
+def holes(x, y, w, h, count, rmin, rmax, rim=1, oval=1.4):
+    for _ in range(count):
+        rx_ = rnd.uniform(rmin, rmax) * oval; ry_ = rx_ / oval
+        if w < 2 * rx_ + 4 or h < 2 * ry_ + 4:
             continue
-        hx = rnd.randint(x + 2 + r, x + w - 3 - r); hy = rnd.randint(y + 3 + r, y + h - 4 - r)
-        for j in range(-r - 1, r + 2):
-            for i in range(-r - 1, r + 2):
-                d2 = i * i + j * j
-                if d2 <= r * r:
-                    tex[hy + j, hx + i] = 0; glow[hy + j, hx + i] = 0
-                elif d2 <= (r + 1) ** 2 + 1:
-                    put(hx + i, hy + j, PEARL, G_RIM * np.array([1, 1, 1, 0.6]))
-    # 下のふち：真珠色＋不規則な欠け
-    for i in range(w):
-        cut = 0 if i in (0, w - 1) else rnd.choice([0, 1, 1, 2, 3])
-        for jj in range(cut):
-            tex[y + h - 1 - jj, x + i] = 0; glow[y + h - 1 - jj, x + i] = 0
-        put(x + i, y + h - 1 - cut, WHITE, G_RIM)
-        if h - 2 - cut > 0:
-            put(x + i, y + h - 2 - cut, PEARL)
+        cx = rnd.uniform(x + rx_ + 2, x + w - rx_ - 2); cy = rnd.uniform(y + ry_ + 2, y + h - ry_ - 2)
+        for j in range(int(cy - ry_ - rim - 1), int(cy + ry_ + rim + 2)):
+            for i in range(int(cx - rx_ - rim - 1), int(cx + rx_ + rim + 2)):
+                if not (x <= i < x + w and y <= j < y + h):
+                    continue
+                d = ((i + 0.5 - cx) / rx_) ** 2 + ((j + 0.5 - cy) / ry_) ** 2
+                if d <= 1.0:
+                    tex[j, i] = 0; glow[j, i] = 0
+                elif d <= (1 + rim / max(1, ry_)) ** 2 + 0.25 and tex[j, i, 3] > 0:
+                    put(i, j, PEARL, G_RIM)
 
-def paint_feather(x, y, w, h, fname):
+def paint_fin(x, y, w, h, big, idx):
+    """翼の膜。idx = 根元からの節の番号（0〜11）。根元は濃い藤色、先へいくほど淡いペリウィンクル（節の境目で色が飛ばないように節の番号で決める）。"""
+    t0, t1 = idx / 12, (idx + 1) / 12
+    for j in range(h):
+        for i in range(w):
+            t = t0 + (t1 - t0) * (i / max(1, w - 1))
+            n = math.sin(i * 0.3 + j * 0.7 + idx) * 0.05 + rnd.uniform(-0.05, 0.05)
+            col = L(VIOL, PERI, t * 2 + n) if t < 0.5 else L(PERI, PALE, (t - 0.5) * 2 + n)
+            if rnd.random() < 0.04:
+                col = L(col, IRI, 0.4)
+            put(x + i, y + j, col, G_STAR if rnd.random() < 0.008 else None)
+    if not big:
+        return
+    for j in range(3, h - 1, 7):  # 細いひれの筋
+        for i in range(w):
+            if rnd.random() < 0.85:
+                put(x + i, y + j, L(col, MIST, 0.45), G_VEIN if rnd.random() < 0.4 else None)
+    if idx >= 5 and w >= 10 and h >= 10 and rnd.random() < 0.55:
+        holes(x, y, w, h, 1, 1.2, 2.2)
+
+def paint_lace(x, y, w, h, big):
+    """骨のような格子：淡い真珠色に、大きな楕円の穴と太いふち（その他のディテール 1 枚目）。"""
     for j in range(h):
         for i in range(w):
             t = j / max(1, h - 1)
-            col = L(VIOLET, SKY, t)
-            if (i - j // 2) % 3 == 0:
-                col = L(col, MIST, 0.55)
-            put(x + i, y + j, L(col, MIST, rnd.random() * 0.25))
-    if fname in ("north", "south"):
-        cx = x + w // 2
-        for j in range(h):
-            put(cx, y + j, PEARL, G_VEIN)
-        # 先をとがらせる（下の角を透明に）
-        for j in range(h):
-            k = max(0, (j - (h - w // 2 - 1)))
-            for i in range(k):
-                if x + i < cx:
-                    tex[y + j, x + i] = 0; glow[y + j, x + i] = 0
-                if x + w - 1 - i > cx:
-                    tex[y + j, x + w - 1 - i] = 0; glow[y + j, x + w - 1 - i] = 0
+            col = L(MIST, PERI, t * 0.6 + rnd.random() * 0.25)
+            put(x + i, y + j, col, G_STAR if rnd.random() < 0.01 else None)
+    if big:
+        holes(x, y, w, h, max(1, (w * h) // 30), 1.0, 2.4, rim=1)
         for i in range(w):
-            if tex[y + h - 1, x + i, 3] > 0:
-                put(x + i, y + h - 1, WHITE, G_RIM)
+            put(x + i, y, PEARL, G_RIM)
 
-def paint_ribbon(x, y, w, h, fname):
+def paint_drape(x, y, w, h, big):
+    for j in range(h):
+        for i in range(w):
+            col = L(DEEP, PERI, (i % 3) / 3 * 0.5 + rnd.random() * 0.3)
+            put(x + i, y + j, col)
+    if big:
+        for i in range(0, w, 3):
+            for j in range(h):
+                put(x + i, y + j, L(PERI, MIST, 0.6), G_VEIN if j % 5 == 0 else None)
+        holes(x, y, w, h, max(1, (w * h) // 45), 0.8, 1.6)
+
+def paint_ribbon(x, y, w, h, big):
     for j in range(h):
         for i in range(w):
             edge = j == 0 or j == h - 1
-            col = PEARL if edge else L(VIOLET, SKY, rnd.random() * 0.6 + 0.2)
-            if not edge and rnd.random() < 0.15:
-                col = MIST
-            put(x + i, y + j, col, G_RIM if j == h - 1 else (G_STAR if rnd.random() < 0.03 else None))
-    if fname in ("north", "south") and w >= 4 and h >= 3:
-        for i in range(0, w, 3):
-            tex[y + h // 2, x + i] = 0
+            col = PEARL if edge else L(PERI, PALE, rnd.random())
+            put(x + i, y + j, col, G_RIM if edge else (G_STAR if rnd.random() < 0.02 else None))
 
-def paint_flat(x, y, w, h, fname):
+def paint_solid(x, y, w, h, a, b, gcol=None, gp=0.0):
     for j in range(h):
         for i in range(w):
-            t = j / max(1, h - 1)
-            col = L(VIOLET, MIST, t * 0.8 + rnd.random() * 0.2)
-            put(x + i, y + j, col, G_STAR if rnd.random() < 0.03 else None)
-    if fname in ("north", "south") and w >= 3:
-        for j in range(h):
-            put(x, y + j, PEARL, G_RIM); put(x + w - 1, y + j, PEARL, G_RIM)
-            if w >= 5 and j % 4 == 1:
-                put(x + w // 2, y + j, PEARL, G_VEIN)
-        put(x + w // 2, y + h - 1, WHITE, G_STAR)
+            put(x + i, y + j, L(a, b, j / max(1, h - 1) * 0.7 + rnd.random() * 0.3), gcol if (gcol is not None and rnd.random() < gp) else None)
 
-def paint_strand(x, y, w, h, fname):
-    for j in range(h):
-        for i in range(w):
-            put(x + i, y + j, L(SKY, PEARL, (j % 4) / 4 * 0.6 + 0.2), G_RIM if j % 4 == 0 else None)
-
-SIL_A = C("#f2f4fc"); SIL_B = C("#a8b0d8"); SIL_D = C("#5a5f96")
-CR_A = C("#d8d4fb"); CR_B = C("#6b64c9")
-def paint_solid(x, y, w, h, a, b, gcol=None, gp=0.0, rim=None):
-    for j in range(h):
-        for i in range(w):
-            put(x + i, y + j, L(a, b, j / max(1, h - 1) * 0.75 + rnd.random() * 0.25), gcol if (gcol is not None and rnd.random() < gp) else None)
-    if rim is not None:
-        for i in range(w):
-            put(x + i, y, rim); put(x + i, y + h - 1, rim)
-        for j in range(h):
-            put(x, y + j, rim); put(x + w - 1, y + j, rim)
-
+STEEL_HI = C("#e9ecfb"); STEEL = C("#9aa0c8"); STEEL_D = C("#4c5080")
 def paint_face(x, y, w, h, fname, label):
-    paint_solid(x, y, w, h, SIL_A, SIL_B, rim=C("#ffffff"))
-    if fname != "north":
-        return
-    # 彫り込みの横帯
-    for j in range(3, h - 1, 4):
-        for i in range(1, w - 1):
-            put(x + i, y + j, L(SIL_B, SIL_D, 0.5))
-    if label == "face_spine":
-        cx = x + w // 2
-        for j in range(1, h - 1):
-            put(cx - 1, y + j, SIL_D); put(cx, y + j, SIL_D)
-        # 左右対称の紋様
-        for j in range(2, h - 2, 6):
-            for i in (1, 2):
-                put(cx - 2 - i, y + j + i, C("#7d84bd")); put(cx + 1 + i, y + j + i, C("#7d84bd"))
+    paint_solid(x, y, w, h, STEEL_HI, STEEL)
+    if fname in ("north", "east", "west") and h >= 8:
+        for j in range(h):  # 縦の彫り込み
+            if w >= 3:
+                put(x + w // 2, y + j, STEEL_D)
+        for j in range(2, h, 5):
+            for i in range(w):
+                put(x + i, y + j, L(STEEL, STEEL_D, 0.4))
+        put(x, y, WHITE); put(x + w - 1, y, WHITE)
 
 for k, s in slots.items():
     u0, v0 = s["uv"]
+    rects = face_rects(u0, v0, s["size"])
+    areas = sorted(rects.items(), key=lambda kv: -kv[1][2] * kv[1][3])
+    bigfaces = {areas[0][0], areas[1][0]}
     lab = s["labels"][0]
-    for fname, (x, y, w, h) in face_rects(u0, v0, s["size"]).items():
+    for fname, (x, y, w, h) in rects.items():
         if w <= 0 or h <= 0:
             continue
-        m = s["mat"]
-        if m == "membrane":
-            paint_membrane(x, y, w, h, fname)
-        elif m == "feather":
-            paint_feather(x, y, w, h, fname)
+        m = s["mat"]; big = fname in bigfaces
+        if m.startswith("fin") and m[3:].isdigit():
+            paint_fin(x, y, w, h, big, int(m[3:]))
+        elif m == "fin":
+            paint_fin(x, y, w, h, big, 6)
+        elif m == "lace":
+            paint_lace(x, y, w, h, big)
+        elif m == "drape":
+            paint_drape(x, y, w, h, big)
         elif m == "ribbon":
-            paint_ribbon(x, y, w, h, fname)
-        elif m in ("flat", "coral"):
-            paint_flat(x, y, w, h, fname)
-        elif m == "tentacle":
-            paint_strand(x, y, w, h, fname)
+            paint_ribbon(x, y, w, h, big)
         elif m == "face":
             paint_face(x, y, w, h, fname, lab)
         elif m == "slit":
             for j in range(h):
                 for i in range(w):
-                    lit = (j % 3 != 0) and j > h * 0.15
-                    put(x + i, y + j, C("#7ff0ff") if lit else C("#2b2d66"), G_CYAN if lit else None)
-        elif m == "crown":
-            paint_solid(x, y, w, h, CR_A, CR_B, C("#bff6ff", 170), 0.08, rim=C("#f4f2ff"))
-        elif m == "core":
-            paint_solid(x, y, w, h, C("#dffcff"), C("#36a6ec"), G_CYAN, 1.0)
-        elif m == "lens":
-            paint_solid(x, y, w, h, C("#f2feff"), C("#64d2f0"), C("#d6fcff"), 1.0)
-        elif m == "antenna":
-            paint_solid(x, y, w, h, C("#f8f9ff"), C("#b2bbe6"), C("#dff8ff", 230), 0.6)
+                    put(x + i, y + j, C("#c8f7ff"), G_CYAN * np.array([1, 1, 1, 0.7]))
+        elif m == "pearl":
+            paint_solid(x, y, w, h, C("#ffffff"), C("#c6c4f4"), C("#eef6ff", 140), 0.5)
+            put(x, y, WHITE, G_STAR)
+        elif m == "gem":
+            paint_solid(x, y, w, h, C("#e8feff"), C("#45b8f0"), G_CYAN, 1.0)
 
 Image.fromarray(np.clip(tex, 0, 255).astype(np.uint8), "RGBA").save(os.path.join(OUT, "astra_veil.png"))
 Image.fromarray(np.clip(glow, 0, 255).astype(np.uint8), "RGBA").save(os.path.join(OUT, "astra_veil_glowmask.png"))
 
-# ===========================================================================
-# 書き出し
 # ===========================================================================
 def clean(b):
     nb = {"name": b["name"]}
@@ -492,30 +459,22 @@ def clean(b):
         for c in b["cubes"]:
             nc = {"origin": c["origin"], "size": c["size"]}
             if "rotation" in c: nc["pivot"] = c["pivot"]; nc["rotation"] = c["rotation"]
-            if "inflate" in c: nc["inflate"] = c["inflate"]
             nc["uv"] = c["uv"]; nb["cubes"].append(nc)
     return nb
-
 geo = {"format_version": "1.12.0", "minecraft:geometry": [{
     "description": {"identifier": "geometry.astra_veil", "texture_width": TEX_W, "texture_height": TEX_H,
-                    "visible_bounds_width": 16, "visible_bounds_height": 14, "visible_bounds_offset": [0, 0, 0]},
+                    "visible_bounds_width": 16, "visible_bounds_height": 12, "visible_bounds_offset": [0, 0, 0]},
     "bones": [clean(b) for b in bones]}]}
 json.dump(geo, open(os.path.join(OUT, "astra_veil.geo.json"), "w"), indent="\t", ensure_ascii=False)
-
-def tidy(v):
-    return v if isinstance(v, str) else 0
-anim_bones = {}
+ab = {}
 for b in bones:
     a = anims.get(b["name"])
     if not a:
         continue
-    out = {}
-    for k in ("rotation", "position"):
-        if k in a and any(isinstance(x, str) for x in a[k]):
-            out[k] = [tidy(x) for x in a[k]]
-    if out:
-        anim_bones[b["name"]] = out
-json.dump({"format_version": "1.8.0", "animations": {"animation.astra_veil.idle": {"loop": True, "animation_length": 8.0, "bones": anim_bones}}},
+    o = {k: [x if isinstance(x, str) else 0 for x in v] for k, v in a.items() if any(isinstance(x, str) for x in v)}
+    if o:
+        ab[b["name"]] = o
+json.dump({"format_version": "1.8.0", "animations": {"animation.astra_veil.idle": {"loop": True, "animation_length": 8.0, "bones": ab}}},
           open(os.path.join(OUT, "astra_veil.animation.json"), "w"), indent="\t", ensure_ascii=False)
 json.dump({"slots": {str(k): v for k, v in slots.items()}, "tex": [TEX_W, TEX_H]}, open(os.path.join(OUT, "_slots.json"), "w"), ensure_ascii=False, default=str)
-print("tex", TEX_W, TEX_H, "slots", len(slots), "bones", len(bones), "cubes", sum(len(b["cubes"]) for b in bones), "animated", len(anim_bones))
+print("tex", TEX_W, TEX_H, "slots", len(slots), "bones", len(bones), "cubes", sum(len(b["cubes"]) for b in bones))
