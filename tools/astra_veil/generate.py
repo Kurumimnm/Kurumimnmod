@@ -19,11 +19,14 @@ import json, math, random, sys, os
 import numpy as np
 from PIL import Image
 
-OUT = sys.argv[1] if len(sys.argv) > 1 else "out3"
+OUT = sys.argv[1] if len(sys.argv) > 1 else "out4"
+K = 4          # モデルの細かさ（1 = 旧版。4 で 1 ピクセル = 1/8 ブロック。レンダラーの倍率は 8 / K）
+NCAP = 13      # 節の番号の上限（色・形の段階）
 os.makedirs(OUT, exist_ok=True)
 rnd = random.Random(23)
 
 bones, bone_index, anims = [], {}, {}
+PLATES = ("fin", "lace", "drape", "ribbon", "shard", "petal")   # 薄い板（ふち・穴をテクスチャの透明で切り抜く）
 T = "query.anim_time"
 
 def bone(name, parent, pivot, rotation=(0, 0, 0)):
@@ -35,9 +38,16 @@ def bone(name, parent, pivot, rotation=(0, 0, 0)):
     bones.append(b); bone_index[name] = b
     return name
 
-def cube(bname, origin, size, mat, rotation=None, pivot=None, label=None):
+def cube(bname, origin, size, mat, rotation=None, pivot=None, label=None, mirror=False, px=None):
+    """px = 拡大後の大きさ（ピクセル）を直接指定する細かい部品用。"""
     size = [max(1, int(round(s))) for s in size]
     c = {"origin": [round(o, 3) for o in origin], "size": size, "_mat": mat, "_label": label or bname}
+    if mirror:
+        c["mirror"] = True
+    if px:
+        c["_px"] = list(px)
+    elif mat.split("|")[0] in PLATES and size.count(1) == 1:
+        c["_thin"] = size.index(1)
     if rotation:
         c["rotation"] = [round(r, 2) for r in rotation]; c["pivot"] = [round(p, 3) for p in pivot]
     bone_index[bname]["cubes"].append(c)
@@ -56,17 +66,20 @@ def anim(name, rot=None, pos=None):
 #   shape="flat" … 水平の板（L × H × W）：翼の膜。見上げると裏面が見える
 #   shape="vert" … 縦の板（L × W × H）：帯・カーテン
 # ---------------------------------------------------------------------------
-def chain(prefix, parent, start, segs, side=1, shape="flat", overlap=1, anim_fn=None):
+def chain(prefix, parent, start, segs, side=1, shape="flat", overlap=1, anim_fn=None, deco=None, var=0):
     x, y, z = start
     names = []
     for i, s in enumerate(segs):
         name = bone(f"{prefix}_{i}", parent, (x * side, y, z), (s.get("rx", 0), s.get("ry", 0) * side, s.get("rz", 0) * side))
         L, W, H = s["L"], s["W"], s.get("H", 1)
         ox = x if side > 0 else -x - L
+        m = f"{s['mat']}|{min(i, NCAP)}|{int(i == len(segs) - 1)}|u|{var}"
         if shape == "flat":
-            cube(name, (ox, y - H / 2, z - W / 2), (L, H, W), s["mat"])
+            cube(name, (ox, y - H / 2, z - W / 2), (L, H, W), m, mirror=side < 0)
         else:
-            cube(name, (ox, y - W / 2, z - H / 2), (L, W, H), s["mat"])
+            cube(name, (ox, y - W / 2, z - H / 2), (L, W, H), m, mirror=side < 0)
+        if deco:
+            deco(name, i, len(segs), ox, y, z, L, W)
         if anim_fn:
             anim(name, rot=anim_fn(i, side))
         names.append(name)
@@ -82,7 +95,7 @@ def hang(prefix, parent, start, segs, yaw=0.0, anim_fn=None):
         rot = (s.get("rx", 0), yaw if i == 0 else 0, s.get("rz", 0))
         name = bone(f"{prefix}_{i}", parent, (x, y, z), rot)
         W, L, H = s["W"], s["L"], s.get("H", 1)
-        cube(name, (x - W / 2, y - L, z - H / 2), (W, L, H), s["mat"])
+        cube(name, (x - W / 2, y - L, z - H / 2), (W, L, H), f"{s['mat']}|{min(i, NCAP)}|{int(i == len(segs) - 1)}|v|{rnd.randint(0, 1)}")
         if anim_fn:
             anim(name, rot=anim_fn(i))
         names.append(name)
@@ -93,7 +106,7 @@ def hang(prefix, parent, start, segs, yaw=0.0, anim_fn=None):
 # ===========================================================================
 bone("root", None, (0, 0, 0))
 bone("body", "root", (0, 0, 0))
-anim("body", rot=[wave(90, 1.5), wave(0, 1.5), wave(45, 1.0)], pos=[0, wave(0, 2.0), 0])
+anim("body", rot=[wave(90, 1.5), wave(0, 1.5), wave(45, 1.0)], pos=[0, wave(0, 2.0 * K), 0])
 
 # ---------------------------------------------------------------------------
 # 翼（布のような膜）：肩から扇形に放射する「ひれ」を並べて 1 枚の膜にする
@@ -118,11 +131,19 @@ def wing_sheet(tag, side, n_rays, a0, a1, y0, z0, z1, n_seg, droop0, droop_k, wa
             if k >= n_rays - 3 and i >= n - 4:  # 後ろのひれ：先が下へ垂れて巻く
                 rz += 10 + (i - (n - 4)) * 9
             segs.append(dict(L=L, W=W, H=1, ry=(heading if i == 0 else rnd.uniform(-1, 1)), rz=rz,
-                             rx=(bank * (1 - 0.6 * q) if i == 0 else 5 * math.sin(i * 0.8 + k * 0.3)), mat=f"{mat}{min(i, 11)}"))
+                             rx=(bank * (1 - 0.6 * q) if i == 0 else 5 * math.sin(i * 0.8 + k * 0.3)), mat=mat))
         start = (8, y0, z0 + (z1 - z0) * q)
         def af(i, sd, k=k):
             return [wave(i * 38 + k * 22 + 90, 2.0 + i * 0.35, 90), 0, wave(i * 40 + k * 18 + layer_phase * 50, (2.2 + i * 0.75) * sd)]
-        rays.append(chain(f"{tag}{k}", "body", start, segs, side=side, shape="flat", overlap=1, anim_fn=af))
+        def deco(name, i, n, ox, y, z, L, W, q=q):
+            # 膜の裏から垂れる細い糸（ふさ）と、付け根近くの真珠の粒
+            for _ in range(rnd.choice([0, 1, 1, 2]) if i >= 1 else 0):
+                ln = int(rnd.uniform(8, 22 + 22 * q))
+                cube(name, (ox + rnd.uniform(0.5, L - 0.5), y - 0.5 - ln / K, z + rnd.uniform(-0.45, 0.45) * W), (1, 1, 1), "thread", px=(1, ln, 1))
+            if i < 5 and rnd.random() < 0.55:
+                sz = rnd.choice([3, 4, 5, 6])
+                cube(name, (ox + rnd.uniform(1, L - 2), y + 0.4, z + rnd.uniform(-0.35, 0.35) * W), (1, 1, 1), "pearl", px=(sz, sz, sz))
+        rays.append(chain(f"{tag}{k}", "body", start, segs, side=side, shape="flat", overlap=1, anim_fn=af, deco=deco, var=k % 2))
     return rays
 
 wings = {}
@@ -180,7 +201,25 @@ for k in range(12):
     rad = math.radians(ang)
     px, py = math.sin(rad) * 7, 10 + math.cos(rad) * 12
     w, h = rnd.choice([8, 9, 10]), rnd.choice([18, 20, 22])
-    cube(H, (px - w / 2, py, FZ + 5), (w, h, 1), "lace", rotation=(rnd.uniform(-15, 5), 0, -ang), pivot=(px, py, FZ + 5.5), label=f"collar_{k}")
+    cube(H, (px - w / 2, py, FZ + 5), (w, h, 1), f"petal|0|1|b|{k % 3}", rotation=(rnd.uniform(-15, 5), 0, -ang), pivot=(px, py, FZ + 5.5), label=f"collar_{k}")
+# --- 細部：仮面のとげ、細かい真珠、垂れ下がる珠の連なり、あごの糸 ---
+for side, t in ((1, "l"), (-1, "r")):
+    for j, yy in enumerate(range(-8, 24, 4)):
+        bx = 4.5 + (yy + 12) * 0.12
+        cube(H, (bx if side > 0 else -bx - 4, yy, FZ + 1), (4, 1, 1), "face", rotation=(0, 0, -28 * side), pivot=(bx * side, yy + 0.5, FZ + 1.5), label=f"barb_{t}{j}")
+    for k in range(16):
+        sz = rnd.choice([3, 3, 4, 5])
+        px_ = rnd.uniform(3, 14); py_ = rnd.uniform(4, 34); pz_ = FZ + rnd.uniform(0, 9)
+        cube(H, (px_ if side > 0 else -px_ - sz / K, py_, pz_), (1, 1, 1), "pearl", px=(sz, sz, sz), label=f"seed_{t}{k}")
+    for k in range(4):
+        bx, by = 5 + k * 2.4, 12 - k * 3.5
+        for j in range(9):
+            sz = 4 if j % 3 == 0 else 3
+            xx = (bx + math.sin(j * 0.7 + k) * 0.8) * side
+            cube(H, (xx - sz / K / 2, by - j * 1.6, FZ + 3 + k), (1, 1, 1), "pearl", px=(sz, sz, sz), label=f"beads_{t}{k}_{j}")
+for k in range(10):
+    ln = int(rnd.uniform(30, 80))
+    cube(H, (rnd.uniform(-3.5, 3.5), -16 - ln / K, FZ + rnd.uniform(0.5, 3)), (1, 1, 1), "thread", px=(1, ln, 1), label=f"whisker_{k}")
 # 顔の下へ伸びる細い柱と宝石
 cube(H, (-1, -50, FZ + 2), (2, 36, 2), "face", label="spine")
 cube(H, (-1.5, -44, FZ + 1), (3, 4, 1), "gem", label="spine_gem")
@@ -251,17 +290,25 @@ for side, t in ((1, "l"), (-1, "r")):
 # ---------------------------------------------------------------------------
 # まわりに漂う欠片（穴の開いた葉のかけら）
 # ---------------------------------------------------------------------------
-for k in range(28):
+for k in range(64):
     ang = rnd.uniform(0, math.tau)
     rr = rnd.uniform(30, 115)
     px, pz = math.cos(ang) * rr, math.sin(ang) * rr * 0.6
     py = rnd.uniform(-60, 24)
     name = bone(f"shard_{k}", "body", (px, py, pz), (rnd.uniform(-60, 60), rnd.uniform(0, 360), rnd.uniform(-60, 60)))
-    w, h = rnd.choice([(4, 7), (5, 9), (6, 10), (3, 6)])
-    cube(name, (px - w / 2, py - h / 2, pz), (w, h, 1), rnd.choice(["lace", "fin", "lace"]))
-    anim(name, rot=[wave(k * 47, 12, 45), wave(k * 31, 20, 45), wave(k * 53, 10, 90)], pos=[0, wave(k * 41, 2.5, 90), 0])
+    w, h = rnd.choice([(4, 8), (5, 10), (6, 12), (3, 6), (7, 14)])
+    cube(name, (px - w / 2, py - h / 2, pz), (w, h, 1), f"shard|0|1|v|{k % 4}")
+    anim(name, rot=[wave(k * 47, 12, 45), wave(k * 31, 20, 45), wave(k * 53, 10, 90)], pos=[0, wave(k * 41, 2.5 * K, 90), 0])
 
-# 顔まわり（head とその子）を拡大する（設定画では顔が大きく目立つ）
+# 星の粒（体のまわりに漂う小さな光。body に直接付ける）
+for k in range(110):
+    ang = rnd.uniform(0, math.tau); rr = rnd.uniform(12, 120)
+    sz = rnd.choice([1, 2, 2, 3])
+    cube("body", (math.cos(ang) * rr, rnd.uniform(-70, 34), math.sin(ang) * rr * 0.65), (1, 1, 1), "pearl", px=(sz, sz, sz), label=f"mote_{k}")
+
+# ===========================================================================
+# 顔まわり（head とその子）を拡大 → 全体を K 倍に細かくする
+# ===========================================================================
 HEAD_SCALE = 1.4
 def _desc(name):
     out = [name]
@@ -271,7 +318,7 @@ def _desc(name):
     return out
 _hp = bone_index["head"]["pivot"]
 def _sc(p):
-    return [round(_hp[i] + (p[i] - _hp[i]) * HEAD_SCALE, 3) for i in range(3)]
+    return [_hp[i] + (p[i] - _hp[i]) * HEAD_SCALE for i in range(3)]
 for n in _desc("head"):
     b = bone_index[n]
     if n != "head":
@@ -281,8 +328,22 @@ for n in _desc("head"):
         if "pivot" in c:
             c["pivot"] = _sc(c["pivot"])
 
+for b in bones:
+    b["pivot"] = [round(p * K, 2) for p in b["pivot"]]
+    for c in b["cubes"]:
+        o = [p * K for p in c["origin"]]
+        if "_px" in c:
+            c["size"] = c["_px"]
+        else:
+            c["size"] = [v * K for v in c["size"]]
+            if "_thin" in c:   # 薄い板は厚み 1 ピクセルのまま（中心を保つ）
+                a = c["_thin"]; c["size"][a] = 1; o[a] += (K - 1) / 2
+        c["origin"] = [round(p, 2) for p in o]
+        if "pivot" in c:
+            c["pivot"] = [round(p * K, 2) for p in c["pivot"]]
+
 # ===========================================================================
-# Box UV の割り付け
+# Box UV の割り付け（同じ大きさ・同じ材質は UV を共有。左右は mirror で反転）
 # ===========================================================================
 UNIQUE = ("face", "slit")
 def foot(size):
@@ -291,10 +352,11 @@ def foot(size):
 slots = {}
 for b in bones:
     for c in b["cubes"]:
-        key = (tuple(c["size"]), c["_mat"]) + ((c["_label"],) if c["_mat"] in UNIQUE else ())
-        s = slots.setdefault(key, {"size": c["size"], "mat": c["_mat"], "labels": []})
+        kind = c["_mat"].split("|")[0]
+        key = (tuple(c["size"]), c["_mat"]) + ((c["_label"],) if kind in UNIQUE else ())
+        s = slots.setdefault(key, {"size": c["size"], "mat": c["_mat"], "labels": [], "thin": c.get("_thin")})
         s["labels"].append(c["_label"]); c["_key"] = key
-TEX_W = 512
+TEX_W = 2048
 order = sorted(slots, key=lambda k: (-foot(slots[k]["size"])[1], -foot(slots[k]["size"])[0]))
 u = v = shelf = 0
 for k in order:
@@ -302,7 +364,7 @@ for k in order:
     if u + fw > TEX_W:
         u = 0; v += shelf; shelf = 0
     slots[k]["uv"] = (u, v); u += fw; shelf = max(shelf, fh)
-TEX_H = 1 << (v + shelf - 1).bit_length()
+TEX_H = -(-(v + shelf) // 64) * 64
 for b in bones:
     for c in b["cubes"]:
         c["uv"] = list(slots[c["_key"]]["uv"])
@@ -313,140 +375,261 @@ def face_rects(u, v, size):
             "north": (u + d, v + d, w, h), "west": (u + d + w, v + d, d, h), "south": (u + 2 * d + w, v + d, w, h)}
 
 # ===========================================================================
-# テクスチャ（設定画の色：淡い藤色〜ペリウィンクル、真珠色のハイライト、奥は深い紫）
+# テクスチャ（numpy で 1 面ずつ描く）
+#   板の描画は「長さ方向 = 横（x: 0 = 付け根 → 1 = 先）、幅方向 = 縦（y: -1〜1）」の向きで作り、面の向きに合わせて貼る
 # ===========================================================================
 tex = np.zeros((TEX_H, TEX_W, 4), np.float32)
 glow = np.zeros((TEX_H, TEX_W, 4), np.float32)
 def C(s, a=255):
     s = s.lstrip("#"); return np.array([int(s[i:i + 2], 16) for i in (0, 2, 4)] + [a], np.float32)
-def L(a, b, t):
-    return a + (b - a) * max(0.0, min(1.0, t))
-DEEP = C("#3f33a3", 215); VIOL = C("#5b4fd0", 200); PERI = C("#7d82e8", 180); PALE = C("#aab6f6", 165); MIST = C("#d6d8ff", 170)
-PEARL = C("#f3f0ff", 235); WHITE = C("#ffffff", 245); IRI = C("#bfefff", 190)
-G_RIM = C("#d6eeff", 60); G_VEIN = C("#a5e0ff", 80); G_STAR = C("#f0f8ff", 230); G_CYAN = C("#9ff4ff", 255)
+DEEP = C("#3a2f9c", 225); VIOL = C("#5a4ed0", 205); PERI = C("#7d84ea", 185); PALE = C("#aebaf8", 165); MIST = C("#d9dbff", 190)
+PEARL = C("#f4f1ff", 240); WHITE = C("#ffffff", 250); IRI = C("#b4f0ff", 190); ROSE = C("#e3c4ff", 190)
+G_RIM = C("#d8efff", 70); G_VEIN = C("#a8e2ff", 85); G_STAR = C("#f2f9ff", 235); G_CYAN = C("#9ff4ff", 255)
+STEEL_HI = C("#eef0fc"); STEEL = C("#a3a9d0"); STEEL_D = C("#4d5184")
 
-def put(x, y, col, g=None):
-    tex[y, x] = col
-    if g is not None:
-        glow[y, x] = g
+def mix(a, b, t):
+    t = np.clip(np.asarray(t, np.float32), 0, 1)[..., None]
+    return a * (1 - t) + b * t
 
-def holes(x, y, w, h, count, rmin, rmax, rim=1, oval=1.4):
+def smooth(h, w, scale, rs):
+    gh, gw = int(h / scale) + 2, int(w / scale) + 2
+    g = rs.random((gh, gw)).astype(np.float32)
+    ys, xs = np.arange(h) / scale, np.arange(w) / scale
+    y0, x0 = ys.astype(int), xs.astype(int)
+    fy, fx = (ys - y0)[:, None], (xs - x0)[None, :]
+    return (g[y0][:, x0] * (1 - fx) * (1 - fy) + g[y0][:, x0 + 1] * fx * (1 - fy)
+            + g[y0 + 1][:, x0] * (1 - fx) * fy + g[y0 + 1][:, x0 + 1] * fx * fy)
+
+def erode(m, r):
+    for _ in range(r):
+        p = np.pad(m, 1, mode="edge")
+        m = p[1:-1, 1:-1] & p[:-2, 1:-1] & p[2:, 1:-1] & p[1:-1, :-2] & p[1:-1, 2:]
+    return m
+
+def grid(Lp, Wp):
+    X = (np.arange(Lp) + 0.5)[None, :] / Lp * np.ones((Wp, 1), np.float32)
+    Y = ((np.arange(Wp) + 0.5)[:, None] / Wp * 2 - 1) * np.ones((1, Lp), np.float32)
+    return X, Y, X * Lp, Y * Wp / 2
+
+def punch(mask, PX, PY, rs, count, r0, r1, Lp, Wp, margin=0.12):
     for _ in range(count):
-        rx_ = rnd.uniform(rmin, rmax) * oval; ry_ = rx_ / oval
-        if w < 2 * rx_ + 4 or h < 2 * ry_ + 4:
+        ra = rs.uniform(r0, r1); rb = ra * rs.uniform(0.55, 0.85)
+        if Lp < 2 * ra + 6 or Wp < 2 * rb + 6:
             continue
-        cx = rnd.uniform(x + rx_ + 2, x + w - rx_ - 2); cy = rnd.uniform(y + ry_ + 2, y + h - ry_ - 2)
-        for j in range(int(cy - ry_ - rim - 1), int(cy + ry_ + rim + 2)):
-            for i in range(int(cx - rx_ - rim - 1), int(cx + rx_ + rim + 2)):
-                if not (x <= i < x + w and y <= j < y + h):
-                    continue
-                d = ((i + 0.5 - cx) / rx_) ** 2 + ((j + 0.5 - cy) / ry_) ** 2
-                if d <= 1.0:
-                    tex[j, i] = 0; glow[j, i] = 0
-                elif d <= (1 + rim / max(1, ry_)) ** 2 + 0.25 and tex[j, i, 3] > 0:
-                    put(i, j, PEARL, G_RIM)
+        cx = rs.uniform(ra + 3, Lp - ra - 3); cy = rs.uniform(-Wp / 2 * (1 - margin) + rb, Wp / 2 * (1 - margin) - rb)
+        mask &= ~((((PX - cx) / ra) ** 2 + ((PY - cy) / rb) ** 2) < 1)
+    return mask
 
-def paint_fin(x, y, w, h, big, idx):
-    """翼の膜。idx = 根元からの節の番号（0〜11）。根元は濃い藤色、先へいくほど淡いペリウィンクル（節の境目で色が飛ばないように節の番号で決める）。"""
-    t0, t1 = idx / 12, (idx + 1) / 12
-    for j in range(h):
-        for i in range(w):
-            t = t0 + (t1 - t0) * (i / max(1, w - 1))
-            n = math.sin(i * 0.3 + j * 0.7 + idx) * 0.05 + rnd.uniform(-0.05, 0.05)
-            col = L(VIOL, PERI, t * 2 + n) if t < 0.5 else L(PERI, PALE, (t - 0.5) * 2 + n)
-            if rnd.random() < 0.04:
-                col = L(col, IRI, 0.4)
-            put(x + i, y + j, col, G_STAR if rnd.random() < 0.008 else None)
-    if not big:
-        return
-    for j in range(3, h - 1, 7):  # 細いひれの筋
-        for i in range(w):
-            if rnd.random() < 0.85:
-                put(x + i, y + j, L(col, MIST, 0.45), G_VEIN if rnd.random() < 0.4 else None)
-    if idx >= 5 and w >= 10 and h >= 10 and rnd.random() < 0.55:
-        holes(x, y, w, h, 1, 1.2, 2.2)
+def finish(col, gl, mask, rs, rim_w=2, rim_col=PEARL, rim_glow=G_RIM, sparkle=0.004):
+    rim = mask & ~erode(mask, rim_w)
+    col[rim] = rim_col; gl[rim] = rim_glow
+    sp = (rs.random(mask.shape) < sparkle) & mask
+    col[sp] = WHITE; gl[sp] = G_STAR
+    col[~mask] = 0; gl[~mask] = 0
+    return col, gl
 
-def paint_lace(x, y, w, h, big):
-    """骨のような格子：淡い真珠色に、大きな楕円の穴と太いふち（その他のディテール 1 枚目）。"""
-    for j in range(h):
-        for i in range(w):
-            t = j / max(1, h - 1)
-            col = L(MIST, PERI, t * 0.6 + rnd.random() * 0.25)
-            put(x + i, y + j, col, G_STAR if rnd.random() < 0.01 else None)
-    if big:
-        holes(x, y, w, h, max(1, (w * h) // 30), 1.0, 2.4, rim=1)
-        for i in range(w):
-            put(x + i, y, PEARL, G_RIM)
+def paint_fin(Lp, Wp, i, tip, rs):
+    """翼の膜：ひれの筋・細かい葉脈・虹色のつや・楕円の穴・波打つふち。先の節は二股の尾のように細る。"""
+    X, Y, PX, PY = grid(Lp, Wp)
+    t = (i + X) / (NCAP + 1)
+    env = 0.94 - 0.06 * (0.5 + 0.5 * np.sin((i + X) * math.tau * 2)) - 0.03 * smooth(Wp, Lp, 9, rs)
+    if tip:
+        env = env * np.clip(1 - X ** 2.4, 0, 1) ** 0.55
+    mask = np.abs(Y) < env
+    if tip:
+        mask &= ~((np.abs(Y) < (X - 0.55) * 0.9) & (X > 0.55))
+    if i >= 3:
+        mask = punch(mask, PX, PY, rs, 1 + (Lp * Wp) // 3000, 3.5, 9.0, Lp, Wp)
+    mask = punch(mask, PX, PY, rs, (Lp * Wp) // 900, 1.2, 2.2, Lp, Wp)
+    n = smooth(Wp, Lp, 14, rs) * 0.18 - 0.09
+    col = np.where((t < 0.5)[..., None], mix(VIOL, PERI, t * 2 + n), mix(PERI, PALE, (t - 0.5) * 2 + n))
+    col = mix(col, DEEP, np.clip(0.55 - t * 3.5, 0, 1))
+    gl = np.zeros_like(col)
+    sheen = (0.5 + 0.5 * np.sin(X * 5 + Y * 3 + i * 1.3 + rs.uniform(0, 6))) ** 3
+    col = mix(col, IRI, sheen * 0.30)
+    col = mix(col, ROSE, ((0.5 + 0.5 * np.sin(X * 3 - Y * 4 + i)) ** 4) * 0.22)
+    nr = max(3, Wp // 12)
+    near = np.full(X.shape, 99.0, np.float32)
+    for k in range(nr):   # ひれの筋
+        yc = ((k + 0.5) / nr * 2 - 1) * 0.88 * Wp / 2 + 1.4 * np.sin((i + X) * 5 + k * 1.9)
+        d = np.abs(PY - yc); near = np.minimum(near, d)
+        rib = d < 0.75
+        col[rib] = mix(col, MIST, 0.7)[rib]; gl[rib] = G_VEIN
+    veinlet = (((PX + near * 1.3) % 8) < 1.0) & (near > 1.2)   # 葉脈（筋から斜めに出る）
+    col[veinlet] = mix(col, MIST, 0.28)[veinlet]
+    col[..., 3] = 228 - 50 * np.clip(t, 0, 1)
+    return finish(col, gl, mask, rs)
 
-def paint_drape(x, y, w, h, big):
-    for j in range(h):
-        for i in range(w):
-            col = L(DEEP, PERI, (i % 3) / 3 * 0.5 + rnd.random() * 0.3)
-            put(x + i, y + j, col)
-    if big:
-        for i in range(0, w, 3):
-            for j in range(h):
-                put(x + i, y + j, L(PERI, MIST, 0.6), G_VEIN if j % 5 == 0 else None)
-        holes(x, y, w, h, max(1, (w * h) // 45), 0.8, 1.6)
+def paint_lace(Lp, Wp, i, tip, rs, full=False):
+    """骨のような格子：大きな楕円の穴がびっしり並び、太い真珠色のふちだけが残る。"""
+    X, Y, PX, PY = grid(Lp, Wp)
+    if full:
+        mask = np.ones(X.shape, bool)
+    else:
+        env = 0.95 - 0.07 * (0.5 + 0.5 * np.sin((i + X) * math.tau * 1.5 + rs.uniform(0, 6)))
+        if tip:
+            env = env * np.clip(1 - X ** 1.8, 0, 1) ** 0.7
+        mask = np.abs(Y) < env
+    cell = rs.uniform(9, 13)
+    for gx in range(int(Lp / cell) + 1):
+        for gy in range(int(Wp / cell) + 1):
+            if rs.random() < 0.15:
+                continue
+            cx = (gx + 0.5 + rs.uniform(-0.2, 0.2)) * cell + (cell / 2 if gy % 2 else 0)
+            cy = (gy + 0.5 + rs.uniform(-0.2, 0.2)) * cell - Wp / 2
+            ra, rb = cell * rs.uniform(0.28, 0.42), cell * rs.uniform(0.22, 0.36)
+            if rs.random() < 0.5:
+                ra, rb = rb, ra
+            mask &= ~((((PX - cx) / ra) ** 2 + ((PY - cy) / rb) ** 2) < 1)
+    col = mix(MIST, PERI, 0.15 + 0.5 * smooth(Wp, Lp, 8, rs)); col[..., 3] = 225
+    gl = np.zeros_like(col)
+    inner = mask & ~erode(mask, 4)
+    col[inner] = mix(col, PEARL, 0.45)[inner]
+    return finish(col, gl, mask, rs, rim_w=2, sparkle=0.006)
 
-def paint_ribbon(x, y, w, h, big):
-    for j in range(h):
-        for i in range(w):
-            edge = j == 0 or j == h - 1
-            col = PEARL if edge else L(PERI, PALE, rnd.random())
-            put(x + i, y + j, col, G_RIM if edge else (G_STAR if rnd.random() < 0.02 else None))
+def paint_drape(Lp, Wp, i, tip, rs):
+    """縦に垂れる筋の束：細い筋がうねりながら並び、ところどころ横糸と珠でつながる。先はばらばらの長さで終わる。"""
+    X, Y, PX, PY = grid(Lp, Wp)
+    mask = np.zeros(X.shape, bool); bead = np.zeros(X.shape, bool)
+    ns = max(2, Wp // 7)
+    links = [rs.uniform(3, Lp - 3) for _ in range(max(1, Lp // 16))]
+    for k in range(ns):
+        yc = (((k + 0.5) / ns * 2 - 1) * 0.86 + 0.07 * np.sin((i + X) * math.tau * 1.5 + k * 1.7)) * Wp / 2
+        end = rs.uniform(0.55, 1.0) if tip else 2.0
+        mask |= (np.abs(PY - yc) < 1.4) & (X < end)
+        for lx in links:
+            if rs.random() < 0.6:
+                bead |= ((PX - lx) ** 2 + (PY - yc[:, int(min(Lp - 1, lx))][:, None] * 0 - yc[0, int(min(Lp - 1, lx))]) ** 2) < 6.5
+    for lx in links:
+        mask |= (np.abs(PX - lx) < 0.8) & (np.abs(Y) < 0.86)
+    mask |= bead
+    col = mix(DEEP, PERI, 0.2 + 0.7 * smooth(Wp, Lp, 6, rs)); col[..., 3] = 230
+    gl = np.zeros_like(col)
+    col[bead] = PEARL; gl[bead] = G_RIM * np.array([1, 1, 1, 2.0], np.float32)
+    return finish(col, gl, mask, rs, rim_w=1, rim_col=mix(PERI, PEARL, np.float32(0.6)), sparkle=0.004)
 
-def paint_solid(x, y, w, h, a, b, gcol=None, gp=0.0):
-    for j in range(h):
-        for i in range(w):
-            put(x + i, y + j, L(a, b, j / max(1, h - 1) * 0.7 + rnd.random() * 0.3), gcol if (gcol is not None and rnd.random() < gp) else None)
+def paint_ribbon(Lp, Wp, i, tip, rs):
+    """たなびく帯：波打つふち、中央の光る芯、等間隔のひし形の飾り。先へいくほど細く尖る。"""
+    X, Y, PX, PY = grid(Lp, Wp)
+    env = 0.92 - 0.2 * (0.5 + 0.5 * np.sin((i + X) * math.tau))
+    if tip:
+        env = env * np.clip(1 - X, 0, 1) ** 0.6
+    mask = np.abs(Y) < env
+    col = mix(PERI, PALE, smooth(Wp, Lp, 5, rs)); col[..., 3] = 200
+    col = mix(col, IRI, (0.5 + 0.5 * np.sin((i + X) * 4)) ** 3 * 0.35)
+    gl = np.zeros_like(col)
+    core = np.abs(PY) < 0.8
+    col[core] = PEARL; gl[core] = G_VEIN
+    dia = (np.abs(((PX + 6) % 12) - 6) + np.abs(PY)) < 2.6
+    col[dia] = WHITE; gl[dia] = G_STAR * np.array([1, 1, 1, 0.5], np.float32)
+    return finish(col, gl, mask, rs, rim_w=1)
 
-STEEL_HI = C("#e9ecfb"); STEEL = C("#9aa0c8"); STEEL_D = C("#4c5080")
-def paint_face(x, y, w, h, fname, label):
-    paint_solid(x, y, w, h, STEEL_HI, STEEL)
-    if fname in ("north", "east", "west") and h >= 8:
-        for j in range(h):  # 縦の彫り込み
-            if w >= 3:
-                put(x + w // 2, y + j, STEEL_D)
-        for j in range(2, h, 5):
-            for i in range(w):
-                put(x + i, y + j, L(STEEL, STEEL_D, 0.4))
-        put(x, y, WHITE); put(x + w - 1, y, WHITE)
+def paint_leaf(Lp, Wp, rs, petal=False):
+    """葉の形の欠片・襟の花びら：尖った葉の輪郭、中央の葉脈と側脈、楕円の穴。"""
+    X, Y, PX, PY = grid(Lp, Wp)
+    env = np.sin(math.pi * np.clip(X, 0, 1) ** (0.6 if petal else 0.8)) ** 0.75 * 0.95
+    env = env - 0.05 * (0.5 + 0.5 * np.sin(X * math.tau * 3.5))
+    mask = np.abs(Y) < env
+    mask = punch(mask, PX, PY, rs, 2 + (Lp * Wp) // 500, 2.0, 5.5, Lp, Wp, margin=0.45)
+    col = mix(PERI if not petal else VIOL, MIST, X * 0.8 + smooth(Wp, Lp, 6, rs) * 0.3); col[..., 3] = 215
+    gl = np.zeros_like(col)
+    mid = np.abs(PY) < 0.8
+    side = (((PX - np.abs(PY) * 1.1) % 7) < 0.9) & ~mid
+    col[side] = mix(col, PEARL, 0.4)[side]
+    col[mid] = PEARL; gl[mid] = G_VEIN
+    return finish(col, gl, mask, rs, sparkle=0.008)
 
-for k, s in slots.items():
-    u0, v0 = s["uv"]
-    rects = face_rects(u0, v0, s["size"])
-    areas = sorted(rects.items(), key=lambda kv: -kv[1][2] * kv[1][3])
-    bigfaces = {areas[0][0], areas[1][0]}
-    lab = s["labels"][0]
-    for fname, (x, y, w, h) in rects.items():
-        if w <= 0 or h <= 0:
+def paint_steel(w, h, rs, engrave=True):
+    """仮面の金属：縦のグラデーション、面取りのハイライト、中央の溝、山形の彫り、鋲。"""
+    yy = (np.arange(h)[:, None] / max(1, h - 1)) * np.ones((1, w), np.float32)
+    xx = np.arange(w)[None, :] * np.ones((h, 1), np.float32)
+    col = mix(STEEL_HI, STEEL, yy * 0.6 + smooth(h, w, 5, rs) * 0.35)
+    if engrave and w >= 8 and h >= 16:
+        cx = (w - 1) / 2
+        d = np.abs(xx - cx)
+        chev = ((np.arange(h)[:, None] + d * 0.9) % 10) < 1.2
+        col[chev & (d > 1.5) & (d < w / 2 - 2)] = mix(STEEL, STEEL_D, np.float32(0.55))
+        col[(d < 1.2) * np.ones((h, w), bool)] = STEEL_D
+        col[((d >= 1.2) & (d < 2.2)) * np.ones((h, w), bool)] = WHITE
+        riv = (((np.arange(h)[:, None] % 10) == 5) & (np.abs(d - (w / 2 - 2.5)) < 1))
+        col[riv] = WHITE
+    col[0, :] = WHITE; col[:, 0] = mix(col[:, 0], WHITE, np.float32(0.6))
+    col[-1, :] = mix(col[-1, :], STEEL_D, np.float32(0.6)); col[:, -1] = mix(col[:, -1], STEEL_D, np.float32(0.5))
+    col[..., 3] = 255
+    return col, np.zeros_like(col)
+
+def paint_orb(w, h, rs, a, b, gcol, garef):
+    """真珠・宝石：球のような陰影。面の角を透明にして丸く見せる。"""
+    yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
+    r = np.sqrt(((xx + 0.5) / w * 2 - 1) ** 2 + ((yy + 0.5) / h * 2 - 1) ** 2)
+    hl = np.sqrt(((xx + 0.5) / w * 2 - 0.6) ** 2 + ((yy + 0.5) / h * 2 - 0.6) ** 2)
+    col = mix(a, b, r * 0.9); col = mix(col, WHITE, np.clip(1 - hl * 2.2, 0, 1))
+    gl = np.zeros_like(col); gl[...] = gcol; gl[..., 3] = garef * np.clip(1.1 - r, 0, 1)
+    if min(w, h) >= 3:
+        out = r > 1.08
+        col[out] = 0; gl[out] = 0
+    return col, gl
+
+def blit(rect, col, gl):
+    x, y, w, h = rect
+    tex[y:y + h, x:x + w] = col; glow[y:y + h, x:x + w] = gl
+
+import zlib
+for key, s in slots.items():
+    rs = np.random.default_rng(zlib.crc32(repr(key).encode()))
+    parts = s["mat"].split("|"); kind = parts[0]
+    i = int(parts[1]) if len(parts) > 1 else 0
+    tip = len(parts) > 2 and parts[2] == "1"
+    ori = parts[3] if len(parts) > 3 else "u"
+    w, h, d = s["size"]
+    R = face_rects(*s["uv"], s["size"])
+    thin = s["thin"]
+    if kind in PLATES and thin is not None:
+        def P(Lp, Wp):
+            if kind == "fin": return paint_fin(Lp, Wp, i, tip, rs)
+            if kind == "lace": return paint_lace(Lp, Wp, i, tip, rs)
+            if kind == "drape": return paint_drape(Lp, Wp, i, tip, rs)
+            if kind == "ribbon": return paint_ribbon(Lp, Wp, i, tip, rs)
+            return paint_leaf(Lp, Wp, rs, petal=(kind == "petal"))
+        if thin == 1:      # 水平の板：上面と下面（どちらも u = x、v の上 = 後ろ）
+            col, gl = P(w, d)
+            blit(R["up"], col, gl)
+            blit(R["down"], mix(col, DEEP, np.float32(0.12)) * (col[..., 3:4] > 0), gl)
+        elif thin == 2:    # 縦の板：北面と南面（南は左右反転）
+            if ori == "u":
+                col, gl = P(w, h)
+            else:
+                col, gl = P(h, w); col, gl = col.transpose(1, 0, 2), gl.transpose(1, 0, 2)
+                if ori == "b":
+                    col, gl = col[::-1], gl[::-1]
+            blit(R["north"], col, gl); blit(R["south"], col[:, ::-1], gl[:, ::-1])
+        continue
+    for fname, rect in R.items():
+        x, y, fw, fh = rect
+        if fw <= 0 or fh <= 0:
             continue
-        m = s["mat"]; big = fname in bigfaces
-        if m.startswith("fin") and m[3:].isdigit():
-            paint_fin(x, y, w, h, big, int(m[3:]))
-        elif m == "fin":
-            paint_fin(x, y, w, h, big, 6)
-        elif m == "lace":
-            paint_lace(x, y, w, h, big)
-        elif m == "drape":
-            paint_drape(x, y, w, h, big)
-        elif m == "ribbon":
-            paint_ribbon(x, y, w, h, big)
-        elif m == "face":
-            paint_face(x, y, w, h, fname, lab)
-        elif m == "slit":
-            for j in range(h):
-                for i in range(w):
-                    put(x + i, y + j, C("#c8f7ff"), G_CYAN * np.array([1, 1, 1, 0.7]))
-        elif m == "pearl":
-            paint_solid(x, y, w, h, C("#ffffff"), C("#c6c4f4"), C("#eef6ff", 140), 0.5)
-            put(x, y, WHITE, G_STAR)
-        elif m == "gem":
-            paint_solid(x, y, w, h, C("#e8feff"), C("#45b8f0"), G_CYAN, 1.0)
+        if kind == "lace":
+            col, gl = paint_lace(fw, fh, 0, False, rs, full=True)
+        elif kind == "face":
+            col, gl = paint_steel(fw, fh, rs)
+        elif kind == "slit":
+            col = np.zeros((fh, fw, 4), np.float32); col[...] = C("#c8f7ff"); gl = np.zeros_like(col); gl[...] = G_CYAN * np.array([1, 1, 1, 0.7], np.float32)
+        elif kind == "pearl":
+            col, gl = paint_orb(fw, fh, rs, C("#ffffff"), C("#b9b6f0"), C("#eef6ff"), 150)
+        elif kind == "gem":
+            col, gl = paint_orb(fw, fh, rs, C("#e8feff"), C("#3fb2ee"), G_CYAN, 255)
+        elif kind == "thread":
+            col = np.zeros((fh, fw, 4), np.float32); col[...] = mix(PEARL, PALE, np.float32(0.3)); col[..., 3] = 220
+            gl = np.zeros_like(col)
+            if fh > 4:
+                gl[::5, :] = G_STAR * np.array([1, 1, 1, 0.5], np.float32)
+                gl[-2:, :] = G_STAR; col[-2:, :] = WHITE
+        else:
+            col = np.zeros((fh, fw, 4), np.float32); col[...] = PERI; gl = np.zeros_like(col)
+        blit(rect, col, gl)
 
-Image.fromarray(np.clip(tex, 0, 255).astype(np.uint8), "RGBA").save(os.path.join(OUT, "astra_veil.png"))
-Image.fromarray(np.clip(glow, 0, 255).astype(np.uint8), "RGBA").save(os.path.join(OUT, "astra_veil_glowmask.png"))
+Image.fromarray(np.clip(tex, 0, 255).astype(np.uint8), "RGBA").save(os.path.join(OUT, "astra_veil.png"), optimize=True)
+Image.fromarray(np.clip(glow, 0, 255).astype(np.uint8), "RGBA").save(os.path.join(OUT, "astra_veil_glowmask.png"), optimize=True)
 
 # ===========================================================================
 def clean(b):
@@ -459,13 +642,15 @@ def clean(b):
         for c in b["cubes"]:
             nc = {"origin": c["origin"], "size": c["size"]}
             if "rotation" in c: nc["pivot"] = c["pivot"]; nc["rotation"] = c["rotation"]
-            nc["uv"] = c["uv"]; nb["cubes"].append(nc)
+            nc["uv"] = c["uv"]
+            if c.get("mirror"): nc["mirror"] = True
+            nb["cubes"].append(nc)
     return nb
 geo = {"format_version": "1.12.0", "minecraft:geometry": [{
     "description": {"identifier": "geometry.astra_veil", "texture_width": TEX_W, "texture_height": TEX_H,
-                    "visible_bounds_width": 16, "visible_bounds_height": 12, "visible_bounds_offset": [0, 0, 0]},
+                    "visible_bounds_width": 64, "visible_bounds_height": 48, "visible_bounds_offset": [0, 0, 0]},
     "bones": [clean(b) for b in bones]}]}
-json.dump(geo, open(os.path.join(OUT, "astra_veil.geo.json"), "w"), indent="\t", ensure_ascii=False)
+json.dump(geo, open(os.path.join(OUT, "astra_veil.geo.json"), "w"), separators=(",", ":"), ensure_ascii=False)
 ab = {}
 for b in bones:
     a = anims.get(b["name"])
@@ -475,6 +660,6 @@ for b in bones:
     if o:
         ab[b["name"]] = o
 json.dump({"format_version": "1.8.0", "animations": {"animation.astra_veil.idle": {"loop": True, "animation_length": 8.0, "bones": ab}}},
-          open(os.path.join(OUT, "astra_veil.animation.json"), "w"), indent="\t", ensure_ascii=False)
-json.dump({"slots": {str(k): v for k, v in slots.items()}, "tex": [TEX_W, TEX_H]}, open(os.path.join(OUT, "_slots.json"), "w"), ensure_ascii=False, default=str)
-print("tex", TEX_W, TEX_H, "slots", len(slots), "bones", len(bones), "cubes", sum(len(b["cubes"]) for b in bones))
+          open(os.path.join(OUT, "astra_veil.animation.json"), "w"), separators=(",", ":"), ensure_ascii=False)
+json.dump({"slots": {str(k): {kk: vv for kk, vv in v.items()} for k, v in slots.items()}, "tex": [TEX_W, TEX_H]}, open(os.path.join(OUT, "_slots.json"), "w"), ensure_ascii=False, default=str)
+print("tex", TEX_W, TEX_H, "used_h", v + shelf, "slots", len(slots), "bones", len(bones), "cubes", sum(len(b["cubes"]) for b in bones))

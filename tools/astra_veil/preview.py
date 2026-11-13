@@ -5,7 +5,7 @@ from PIL import Image, ImageDraw
 
 geo_path, tex_path, glow_path, out_path = sys.argv[1:5]
 view = sys.argv[5] if len(sys.argv) > 5 else "front"
-RENDER_SCALE = float(os.environ.get('RS', '8'))  # ModConstants.ASTRA_VEIL_RENDER_SCALE と合わせる
+RENDER_SCALE = float(os.environ.get('RS', '2'))  # ModConstants.ASTRA_VEIL_RENDER_SCALE と合わせる
 HOVER = float(sys.argv[6]) if len(sys.argv) > 6 else 52.0  # ModConstants.ASTRA_VEIL_SPAWN_HOVER_HEIGHT
 
 geo = json.load(open(geo_path))["minecraft:geometry"][0]
@@ -57,25 +57,32 @@ for name, b in bones.items():
         if "rotation" in c:
             CM = M @ rot_about(c["pivot"], c["rotation"])
         u, v = c["uv"]
-        w, h, d = [int(math.ceil(q)) for q in (sx, sy, sz)]
-        R = {"up": (u + d, v, w, d), "down": (u + d + w, v, w, d), "east": (u, v + d, d, h),
-             "north": (u + d, v + d, w, h), "west": (u + d + w, v + d, d, h), "south": (u + 2 * d + w, v + d, w, h)}
-        # 各面：4 頂点（左上・右上・右下・左下の順に UV の角へ対応）
-        quads = {
-            "north": [(x1, y1, z0), (x0, y1, z0), (x0, y0, z0), (x1, y0, z0)],
-            "south": [(x0, y1, z1), (x1, y1, z1), (x1, y0, z1), (x0, y0, z1)],
-            "up": [(x1, y1, z1), (x0, y1, z1), (x0, y1, z0), (x1, y1, z0)],
-            "down": [(x1, y0, z0), (x0, y0, z0), (x0, y0, z1), (x1, y0, z1)],
-            "east": [(x0, y1, z0), (x0, y1, z1), (x0, y0, z1), (x0, y0, z0)],
-            "west": [(x1, y1, z1), (x1, y1, z0), (x1, y0, z0), (x1, y0, z1)],
-        }
-        for fn, q in quads.items():
-            P = np.array([[*p, 1] for p in q]).T
+        w, h, d = [int(math.floor(q)) for q in (sx, sy, sz)]
+        mir = bool(c.get("mirror"))
+        # GeckoLib の VertexSet / GeometryQuadUvs と同じ頂点順・UV（x0 = gecko の小さい x）
+        V = {"blb": (x0, y0, z0), "brb": (x0, y0, z1), "tlb": (x0, y1, z0), "trb": (x0, y1, z1),
+             "tlf": (x1, y1, z0), "trf": (x1, y1, z1), "blf": (x1, y0, z0), "brf": (x1, y0, z1)}
+        QW = ["trb", "tlb", "blb", "brb"]; QE = ["tlf", "trf", "brf", "blf"]
+        quads = {"west": QE if mir else QW, "east": QW if mir else QE,
+                 "north": ["tlb", "tlf", "blf", "blb"], "south": ["trf", "trb", "brb", "brf"],
+                 "up": ["trb", "trf", "tlf", "tlb"], "down": ["blb", "blf", "brf", "brb"]}
+        R = {"west": (u + d + w, v + d, d, h), "east": (u, v + d, d, h), "north": (u + d, v + d, w, h),
+             "south": (u + 2 * d + w, v + d, w, h), "up": (u + d, v, w, d), "down": (u + d + w, v + d, w, -d)}
+        for fn, names in quads.items():
+            ru, rv, rw, rh = R[fn]
+            if rw == 0 or rh == 0:
+                continue
+            ya, yb = sorted((rv, rv + rh))
+            if tex[ya:yb, ru:ru + rw, 3].max() <= 0.02:
+                continue
+            U0, U1 = (ru, ru + rw) if mir else (ru + rw, ru)
+            uv4 = [(U0, rv), (U1, rv), (U1, rv + rh), (U0, rv + rh)]
+            P = np.array([[*V[n], 1] for n in names]).T
             W = (cam @ ent @ CM @ P)[:3].T
-            faces.append((W, R[fn]))
+            faces.append((W, uv4))
 
 ALL = np.concatenate([f[0] for f in faces])
-W_IMG, H_IMG = 1600, 1100
+W_IMG, H_IMG = 2000, 1375
 xmin, xmax = ALL[:, 0].min(), ALL[:, 0].max()
 ymin, ymax = min(ALL[:, 1].min(), 0), ALL[:, 1].max()
 pad = 40
@@ -98,13 +105,12 @@ for _ in range(220):
 gbuf = np.zeros((H_IMG, W_IMG, 3), dtype=np.float32)
 LIGHT = np.array([0.3, 0.8, 0.5]); LIGHT /= np.linalg.norm(LIGHT)
 faces.sort(key=lambda f: f[0][:, 2].mean())
-for W, (u, v, w, h) in faces:
+for W, uv4 in faces:
     nrm = np.cross(W[1] - W[0], W[3] - W[0]); nn = np.linalg.norm(nrm)
     shade = 0.62 + 0.38 * abs(float(np.dot(nrm / nn, LIGHT))) if nn > 1e-9 else 0.8
-    if w <= 0 or h <= 0:
-        continue
     P2 = proj(W)
-    uvs = np.array([[u, v], [u + w, v], [u + w, v + h], [u, v + h]], dtype=np.float32)
+    uvs = np.array(uv4, dtype=np.float32)
+    umin, vmin = uvs.min(0).astype(int); umax, vmax = uvs.max(0).astype(int)
     for tri in ((0, 1, 2), (0, 2, 3)):
         p = P2[list(tri)]; t = uvs[list(tri)]
         x0, y0 = np.floor(p.min(0)).astype(int); x1, y1 = np.ceil(p.max(0)).astype(int)
@@ -123,7 +129,7 @@ for W, (u, v, w, h) in faces:
             continue
         uu = a * t[0, 0] + bb * t[1, 0] + c * t[2, 0]
         vv = a * t[0, 1] + bb * t[1, 1] + c * t[2, 1]
-        ui = np.clip(uu.astype(int), u, u + w - 1); vi = np.clip(vv.astype(int), v, v + h - 1)
+        ui = np.clip(np.floor(uu).astype(int), umin, umax - 1); vi = np.clip(np.floor(vv).astype(int), vmin, vmax - 1)
         col = tex[vi, ui]; gl = glow[vi, ui]
         alpha = col[..., 3:4] * inside[..., None]
         region = img[y0:y1 + 1, x0:x1 + 1]
@@ -134,7 +140,7 @@ for W, (u, v, w, h) in faces:
         gb[:] = np.maximum(gb, gl[..., :3] * ga)
 
 from PIL import ImageFilter
-bloom = np.asarray(Image.fromarray((gbuf * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(6))).astype(np.float32) / 255
+bloom = np.asarray(Image.fromarray((gbuf * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(5))).astype(np.float32) / 255
 img = np.clip(img + bloom * 0.7, 0, 1)
 out = Image.fromarray((img * 255).astype(np.uint8))
 d = ImageDraw.Draw(out)

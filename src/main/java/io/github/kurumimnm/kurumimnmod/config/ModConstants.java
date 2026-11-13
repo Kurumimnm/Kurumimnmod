@@ -314,10 +314,11 @@ public final class ModConstants {
     /** ノックバック耐性（1.0 = まったく押されない）。 */
     public static final double ASTRA_VEIL_KNOCKBACK_RESISTANCE = 1.0;
     /**
-     * 描画の倍率。モデル（geo.json）は小さく作ってあり、ここで拡大する。
-     * 8 倍で 翼幅 約 125・渦巻く帯の先まで 約 155・高さ 約 75・前後 約 95 ブロック（当たり判定・画面外判定・浮かぶ高さも合わせて変える）。
+     * 描画の倍率。モデル（geo.json）は 1 ピクセル = 1/8 ブロックの細かさで作ってあり、ここで 2 倍にする
+     * （tools/astra_veil/generate.py の K = 4 と対応：倍率 = 8 / K）。
+     * 翼幅 約 125・渦巻く帯の先まで 約 155・高さ 約 75・前後 約 95 ブロック（当たり判定・画面外判定・浮かぶ高さも合わせて変える）。
      */
-    public static final float ASTRA_VEIL_RENDER_SCALE = 8.0f;
+    public static final float ASTRA_VEIL_RENDER_SCALE = 2.0f;
     /**
      * 当たり判定（ブロック）。巨体全体ではなく「顔」のまわりだけ（エンティティの位置 = 顔の下端）。
      * 幕・触腕は見た目だけで当たり判定はない（部位ごとの判定は攻撃を作るときに検討）。
