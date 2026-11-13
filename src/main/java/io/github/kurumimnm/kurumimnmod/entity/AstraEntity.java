@@ -32,7 +32,7 @@ import org.jspecify.annotations.Nullable;
  *     <li>頭：前へ約 45 ブロック突き出すくさび形の立体（上から見ると三角形。後ろの幅 約 30 ブロック）。体と同じ紫〜藤色の肌、
  *         左右 2 つずつ計 4 つの光る目とつり上がった眉、牙の並ぶ口、後ろへ流れる角、背のとげ。少しうつむいて地上を見下ろす。
  *         下あご（ボーン jaw）は後ろを軸に下へ開く（口を開くアニメを後から付けられる）</li>
- *     <li>胴：顔の後ろから下へ垂れる穴だらけの格子の柱、襟の葉、カーテン、触腕</li>
+ *     <li>胴：頭の後ろから下へ垂れる穴だらけの格子の柱、襟の葉、カーテン、触腕</li>
  *     <li>尾：後ろへ長くたなびく膜と帯（横から見ると前後に長い）。まわりに漂う欠片と星の粒</li>
  *   </ul>
  *   モデル・テクスチャ・アニメは tools/astra/generate.py で生成。
@@ -104,7 +104,7 @@ public class AstraEntity extends Monster implements GeoEntity {
 
     /**
      * 見た目全体を囲む範囲。画面外判定（視錐台カリング）に使う（{@link io.github.kurumimnm.kurumimnmod.client.renderer.AstraRenderer}）。
-     * 当たり判定（顔）だけで判定すると、顔が画面外に出たとたんに巨体全体が消えてしまうため。
+     * 当たり判定だけで判定すると、その箱が画面外に出たとたんに巨体全体が消えてしまうため。
      */
     public static AABB cullingBox(Entity entity) {
         double half = ModConstants.ASTRA_CULL_HALF_WIDTH;

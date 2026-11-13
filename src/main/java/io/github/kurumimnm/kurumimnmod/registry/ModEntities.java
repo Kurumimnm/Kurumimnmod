@@ -153,7 +153,7 @@ public final class ModEntities {
 
     /**
      * アストラ（星幽の巡界者。アストラ・ヴェイルとは別モデルの超大型ボス。全幅 約 500 ブロック）。
-     * 今は見た目のみ（スポーンエッグ・/summon で出す）。当たり判定は顔だけで、見た目はレンダラーで拡大する（ASTRA_RENDER_SCALE）。
+     * 今は見た目のみ（スポーンエッグ・/summon で出す）。当たり判定は頭の付け根と胴の上部だけ（仮）で、見た目はレンダラーで拡大する（ASTRA_RENDER_SCALE）。
      * 炎・溶岩で燃えない。ドロップなし（撃破報酬は後で決める）。
      */
     public static final DeferredHolder<EntityType<?>, EntityType<AstraEntity>> ASTRA =
