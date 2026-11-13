@@ -6,7 +6,7 @@ from PIL import Image, ImageDraw
 geo_path, tex_path, glow_path, out_path = sys.argv[1:5]
 view = sys.argv[5] if len(sys.argv) > 5 else "front"
 RENDER_SCALE = float(os.environ.get('RS', '8'))  # ModConstants.ASTRA_RENDER_SCALE と合わせる
-HOVER = float(sys.argv[6]) if len(sys.argv) > 6 else 150.0  # ModConstants.ASTRA_SPAWN_HOVER_HEIGHT
+HOVER = float(sys.argv[6]) if len(sys.argv) > 6 else 215.0  # ModConstants.ASTRA_SPAWN_HOVER_HEIGHT
 
 geo = json.load(open(geo_path))["minecraft:geometry"][0]
 TW, TH = geo["description"]["texture_width"], geo["description"]["texture_height"]

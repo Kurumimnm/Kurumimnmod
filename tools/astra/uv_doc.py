@@ -7,20 +7,22 @@ TW, TH = d['tex']; slots = d['slots']
 tex = Image.open(out_dir + '/astra.png').convert('RGBA')
 F = '/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc'
 ft = ImageFont.truetype(F, 22); fs = ImageFont.truetype(F, 12); fl = ImageFont.truetype(F, 15); fx = ImageFont.truetype(F, 9)
-W = TW + 760; H = max(TH + 260, 1100)
+SC = 2 if TW > 2048 else 1
+W = TW // SC + 760; H = max(TH // SC + 260, 1100)
 img = Image.new('RGB', (W, H), (32, 34, 44)); dr = ImageDraw.Draw(img)
-dr.text((12, 14), f'astra.png UV配置図（{TW}×{TH} / Box UV / 1マス=1px）', font=ft, fill=(235, 235, 245))
+dr.text((12, 14), f'astra.png UV配置図（{TW}×{TH} / Box UV。この図は 1/{SC} に縮小）', font=ft, fill=(235, 235, 245))
 ox, oy = 0, 60
 bg = Image.new('RGB', (TW, TH)); px = bg.load()
 for y in range(TH):
     for x in range(TW):
         px[x, y] = (58, 60, 72) if (x // 4 + y // 4) % 2 == 0 else (48, 50, 60)
-img.paste(bg, (ox, oy)); img.paste(tex, (ox, oy), tex)
+full = Image.new('RGB', (TW, TH)); full.paste(bg, (0, 0)); full.paste(tex, (0, 0), tex)
+fd = ImageDraw.Draw(full)
 GROUPS = [('膜（上・下の腕／羽、尾。1 枚ずつ別の絵）', (110, 160, 255), ('wing',)),
           ('頭（肌・目・眉・牙・口の中）', (255, 210, 90), ('skin', 'eye', 'ridge', 'fang', 'gullet')),
           ('角・背のとげ・膜の骨', (255, 150, 90), ('horn', 'bone')),
-          ('胴の格子・カーテン', (240, 200, 255), ('lacebox', 'lace', 'drape')),
-          ('葉（襟・羽飾り・膜の裏・欠片）', (150, 230, 160), ('frond', 'shard')),
+          ('レースのカーテン', (240, 200, 255), ('lacebox', 'lace', 'drape')),
+          ('葉（胴の花びら・羽飾り・膜の裏・欠片）', (150, 230, 160), ('frond', 'frondd', 'shard')),
           ('帯・触腕・糸', (120, 230, 200), ('ribbon', 'thread')),
           ('爪・真珠・宝石', (255, 120, 150), ('talon', 'pearl', 'gem'))]
 def group_of(mat):
@@ -38,13 +40,14 @@ for s in slots:
     for fn, (x, y, ww, hh) in rects.items():
         if ww <= 0 or hh <= 0:
             continue
-        dr.rectangle([ox + x, oy + y, ox + x + ww - 1, oy + y + hh - 1], outline=col, width=1)
-        if ww >= 14 and hh >= 14:
-            dr.text((ox + x + 2, oy + y + 1), NAMES[fn], font=fx, fill=col)
+        fd.rectangle([x, y, x + ww - 1, y + hh - 1], outline=col, width=1)
+        if ww >= 30 and hh >= 30:
+            fd.text((x + 2, y + 1), NAMES[fn], font=fl, fill=col)
     labels = s['labels']
     name = labels[0] if len(labels) == 1 else f"{labels[0]} ほか{len(labels) - 1}種"
     listing.setdefault(g[0], []).append((w * h * dd, f"{name}  UV({u},{v})  {w}×{h}×{dd}"))
-lx, ly = TW + 24, 60
+img.paste(full.resize((TW // SC, TH // SC), Image.LANCZOS), (ox, oy))
+lx, ly = TW // SC + 24, 60
 for g in GROUPS:
     items = sorted(listing.get(g[0], []), reverse=True)
     dr.rectangle([lx, ly + 5, lx + 12, ly + 17], fill=g[1]); dr.text((lx + 20, ly), f"{g[0]}：{len(items)} 種類", font=fl, fill=g[1]); ly += 24
@@ -54,13 +57,13 @@ for g in GROUPS:
         dr.text((lx + 20, ly), f'…ほか {len(items) - 9} 種類', font=fs, fill=(170, 170, 185)); ly += 16
     ly += 10
 notes = ['・Box UV：1 つのキューブは「上・下 / 東・北・西・南」の順に並ぶ（枠の中の文字がその面）。モデルの前（顔）は北（-Z）側',
-         '・膜（wing_up / wing_low / tail）は扇全体でつながる絵を短冊ごとに切り分けている。左右の膜は同じ絵を mirror で共有',
+         '・膜（wing_up・wing_low・tail とその 2 層目、傘 bell）は扇全体でつながる絵を短冊ごとに切り分けている。左右の膜は同じ絵を mirror で共有',
          '・膜・葉・帯などの薄い板は上面と下面（または北面と南面）だけ描き、側面は透明。輪郭・穴は透明ピクセルで切り抜き',
          '・頭は厚さ 4px の輪切り（head_upper / head_jaw）を前へ並べたくさび形。目（eye）は 4 つ、口の中（mouth_inside）は暗い紫',
          '・発光は astra_glowmask.png（同じ配置。目・口の中・ふち・筋・爪・星の粒）',
          '・1 ピクセル = 1/2 ブロック（レンダラーで 8 倍。ModConstants.ASTRA_RENDER_SCALE）',
          '・Blockbench：GeckoLib Animated Model で astra.geo.json を読み込むと同じ配置になる']
-ny = oy + TH + 16
+ny = oy + TH // SC + 16
 for n in notes:
     dr.text((12, ny), n, font=fs, fill=(200, 200, 215)); ny += 18
 img.crop((0, 0, W, max(ly, ny) + 16)).save(dst)

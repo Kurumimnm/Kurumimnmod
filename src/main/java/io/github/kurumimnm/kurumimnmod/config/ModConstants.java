@@ -337,7 +337,7 @@ public final class ModConstants {
     /** スポーンエッグ・/summon で出したとき、置いた場所からこれだけ上に浮かべる（ブロック。触腕の先が地面に届くくらい）。 */
     public static final double ASTRA_VEIL_SPAWN_HOVER_HEIGHT = 52.0;
 
-    // ---- アストラ（星幽の巡界者。アストラ・ヴェイルとは別モデルの超大型ボス。全幅 約 500 ブロック） ----
+    // ---- アストラ（星幽の巡界者。アストラ・ヴェイルとは別モデルの超大型ボス。膜の幅 約 520・全体 約 630 ブロック） ----
     // ※ 今は見た目のみ。ステータス・スキル・攻撃・遭遇・空の演出は未実装
     /** 最大 HP（仮）。 */
     public static final double ASTRA_MAX_HEALTH = 1000.0;
@@ -345,13 +345,13 @@ public final class ModConstants {
     public static final double ASTRA_KNOCKBACK_RESISTANCE = 1.0;
     /**
      * 描画の倍率。モデル（geo.json）は 1 ピクセル = 1/2 ブロックで作ってあり、ここで 8 倍にする（tools/astra/generate.py と対応）。
-     * 8 倍で 全幅 約 500・高さ 約 360（下へ 約 135・上へ 約 230）・前後 約 430 ブロック。
+     * 8 倍で 膜の先から先 約 520・帯まで含めて 約 630、高さ 約 460（下へ 約 215・上へ 約 250）、前後 約 460 ブロック。
      * 倍率を変えたら、当たり判定・画面外判定・浮かぶ高さも同じ比率で変える。
      */
     public static final float ASTRA_RENDER_SCALE = 8.0f;
     /**
      * 当たり判定（ブロック。仮）。頭の付け根と胴の上部を囲む箱（エンティティの位置 = 胴の中心の真下）。
-     * 頭は前へ約 22 ブロック突き出していて箱から少しはみ出す。膜・触腕は見た目だけ（部位ごとの判定は攻撃を作るときに決める）。
+     * 胴（重なる葉の塊）は幅 約 250 ブロックあり、箱はその中心部だけ。頭は首の先（前へ約 50 ブロック）にあって箱の外。膜・触腕は見た目だけ（部位ごとの判定は攻撃を作るときに決める）。
      */
     public static final float ASTRA_WIDTH = 50.0f;
     public static final float ASTRA_HEIGHT = 90.0f;
@@ -359,13 +359,13 @@ public final class ModConstants {
     /** クライアントへ同期する距離（チャンク）。サーバーの描画距離が上限になる。 */
     public static final int ASTRA_TRACKING_RANGE = 32;
     /** 描画する最大距離（ブロック）。巨体なのでバニラの判定より遠くまで描く。 */
-    public static final double ASTRA_RENDER_DISTANCE = 768.0;
+    public static final double ASTRA_RENDER_DISTANCE = 1024.0;
     /** 描画の判定に使う範囲（ブロック。エンティティの位置からの横・下・上）。膜・尾・触腕の先まで含める。 */
-    public static final double ASTRA_CULL_HALF_WIDTH = 310.0;
-    public static final double ASTRA_CULL_BELOW = 150.0;
-    public static final double ASTRA_CULL_ABOVE = 250.0;
-    /** スポーンエッグ・/summon で出したとき、置いた場所からこれだけ上に浮かべる（ブロック。触腕の先が地面の少し上に来る高さ）。 */
-    public static final double ASTRA_SPAWN_HOVER_HEIGHT = 150.0;
+    public static final double ASTRA_CULL_HALF_WIDTH = 360.0;
+    public static final double ASTRA_CULL_BELOW = 225.0;
+    public static final double ASTRA_CULL_ABOVE = 260.0;
+    /** スポーンエッグ・/summon で出したとき、置いた場所からこれだけ上に浮かべる（ブロック。帯・触腕の先が地面の少し上に来る高さ）。 */
+    public static final double ASTRA_SPAWN_HOVER_HEIGHT = 215.0;
 
     // ---- ボスの着地点の範囲表示（クライアント） ----
     public static final int BOSS_AOE_COLOR_FILL_CENTER = 0x80FF3020;

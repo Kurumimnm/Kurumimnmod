@@ -25,7 +25,7 @@ os.makedirs(OUT, exist_ok=True)
 rnd = random.Random(41)
 
 bones, bone_index, anims = [], {}, {}
-PLATES = ("wing", "lace", "drape", "ribbon", "shard", "frond", "talon")   # 薄い板（輪郭・穴を透明で切り抜く）
+PLATES = ("wing", "lace", "drape", "ribbon", "shard", "frond", "frondd", "talon")   # 薄い板（輪郭・穴を透明で切り抜く）
 T = "query.anim_time"
 
 def bone(name, parent, pivot, rotation=(0, 0, 0)):
@@ -67,7 +67,7 @@ def chain(prefix, parent, start, segs, side=1, shape="flat", overlap=1, anim_fn=
         name = bone(f"{prefix}_{i}", parent, (x * side, y, z), (s.get("rx", 0), s.get("ry", 0) * side, s.get("rz", 0) * side))
         L, W, H = s["L"], s["W"], s.get("H", 1)
         ox = x if side > 0 else -x - L
-        m = f"{s['mat']}|{i}|{int(i == len(segs) - 1)}|u|{var}"
+        m = f"{s['mat']}|{i}|{int(i == len(segs) - 1)}|u|{var}|{len(segs)}"
         if shape == "flat":
             cube(name, (ox, y - H / 2, z - W / 2), (L, H, W), m, mirror=side < 0)
         else:
@@ -87,7 +87,7 @@ def hang(prefix, parent, start, segs, yaw=0.0, anim_fn=None):
     for i, s in enumerate(segs):
         name = bone(f"{prefix}_{i}", parent, (x, y, z), (s.get("rx", 0), yaw if i == 0 else 0, s.get("rz", 0)))
         W, L, H = s["W"], s["L"], s.get("H", 1)
-        cube(name, (x - W / 2, y - L, z - H / 2), (W, L, H), f"{s['mat']}|{i}|{int(i == len(segs) - 1)}|v|{rnd.randint(0, 1)}")
+        cube(name, (x - W / 2, y - L, z - H / 2), (W, L, H), f"{s['mat']}|{i}|{int(i == len(segs) - 1)}|v|{rnd.randint(0, 1)}|{len(segs)}")
         if anim_fn:
             anim(name, rot=anim_fn(i))
         names.append(name); parent = name
@@ -144,7 +144,7 @@ def build_wing(tag, sides, apex, G, th_back, th_front, n_strips, r0, r_lead, tra
                     cube(name, (ox, y + 0.5, z - th_px / 2), (L, th_px, th_px), f"bone|{min(i, 9)}|{int(last)}", mirror=sd < 0, label=f"{tag}_rib")
                 wing_deco(tag, name, k, q, i, n, ox, y, z, L, s["W"])
                 amp = 1.2 + 0.45 * i
-                anim(name, rot=[wave(i * 34 + k * 19 + phase + 90, 0.8 + 0.18 * i, 45), 0, wave(i * 38 + k * 23 + phase, amp * sd)])
+                anim(name, rot=[wave(i * 34 + k * 7 + phase + 90, 0.6 + 0.12 * i, 45), 0, wave(i * 38 + k * 8 + phase, amp * sd)])
                 names.append(name); parent = name
                 x += L - 1
             strips.append(names)
@@ -155,7 +155,10 @@ def build_wing(tag, sides, apex, G, th_back, th_front, n_strips, r0, r_lead, tra
 def wing_rmax(spec, q):
     """膜の外周（肩からの距離）。wing：前のふちが長く後ろが短い。tail：中央が長い。ふちは波形。"""
     q = np.clip(q, 0, 1)
-    if spec["mode"] == "wing":
+    if spec["mode"] == "bell":      # 傘：左右と後ろが長く、前（顔の上）は短いひさし
+        a = np.sin(np.radians(spec["th_back"] + q * (spec["th_front"] - spec["th_back"])))
+        base = 1.0 - 0.5 * np.maximum(a, 0) ** 1.5 - 0.08 * np.maximum(-a, 0)
+    elif spec["mode"] == "wing":
         base = spec["trail"] + (1 - spec["trail"]) * q ** 0.7
     else:
         base = spec["trail"] + (1 - spec["trail"]) * np.sin(math.pi * q) ** 0.8
@@ -180,43 +183,60 @@ def wing_deco(tag, name, k, q, i, n, ox, y, z, L, W):
 # 上の膜：外上へ伸び、根元で持ち上がって先へいくほどゆるく垂れる。左は前のふちの先が巻き上がり、右は後ろの先が垂れる（左右で表情を変える）
 def up_shape(k, q, i, n, sd):
     if i == 0:
-        return 1.5 * math.sin(k * 0.9), 2 * math.sin(k * 0.8 + 1)
-    rz = -6 + 1.15 * i + 5 * math.sin(i * 0.9 + k * 0.7)
+        return 0, 0
+    rz = -6 + 1.15 * i + 5 * math.sin(i * 0.9 + k * 0.22)
     if sd > 0 and q > 0.55 and i >= n - 4:
         rz -= 8 * (i - (n - 4) + 1)
     if sd < 0 and i >= n - 3:
         rz += 7 * (i - (n - 3) + 1) * (1.2 - q)
     if q < 0.3 and i >= n - 3:
         rz += 9
-    return 4 * math.sin(i * 0.7 + k), rz
+    return 3 * math.sin(i * 0.7 + k * 0.3), rz
 
 # 下の膜（腕）：外下へ伸び、先が下へ巻き込んで鎌のような爪で終わる
 def low_shape(k, q, i, n, sd):
     if i == 0:
-        return 1.5 * math.sin(k * 1.1 + 2), 2 * math.sin(k * 0.9)
-    rz = 1.5 + 0.9 * i + 5 * math.sin(i * 0.8 + k * 0.9 + 1.5)
+        return 0, 0
+    rz = 1.5 + 0.9 * i + 5 * math.sin(i * 0.8 + k * 0.25 + 1.5)
     if i >= n - 4:
         rz += (6 if sd > 0 else 4) * (i - (n - 4) + 1) * (0.5 + 0.5 * q)
-    return 4 * math.sin(i * 0.6 + k * 1.3), rz
+    return 3 * math.sin(i * 0.6 + k * 0.3), rz
 
 # 尾の膜：後ろへ長く流れ、リボンのように波打ちながら垂れる
 def tail_shape(k, q, i, n, sd):
     if i == 0:
-        return 0, 5 * math.sin(k * 1.3)
-    return 5 * math.sin(i * 0.8 + k), 1.2 + 0.7 * i + 7 * math.sin(i * 0.85 + k * 1.1)
+        return 0, 0
+    return 3 * math.sin(i * 0.8 + k * 0.3), 1.2 + 0.7 * i + 7 * math.sin(i * 0.85 + k * 0.3)
 
-build_wing("wing_up", (1, -1), (26, 150, 16), (-60, -6, -16), -30, 16, 10, 14, 450, 0.62, 38, up_shape, ribs={9: 7, 6: 4, 3: 3, 0: 2}, seed=1, phase=0)
-build_wing("wing_low", (1, -1), (24, 60, 6), (34, 14, 8), -16, 20, 8, 14, 410, 0.60, 38, low_shape, ribs={7: 7, 4: 4, 1: 3}, seed=2, phase=140)
-build_wing("tail", (0,), (0, 120, 44), (-10, 0, 0), -118, -62, 8, 20, 470, 0.55, 38, tail_shape, mode="tail", ribs={4: 4, 3: 4}, seed=3, phase=250)
+def up2_shape(k, q, i, n, sd):
+    rx, rz = up_shape(k + 3, q, i, n, -sd)
+    return rx, rz + (2.5 if i else 0)
+def low2_shape(k, q, i, n, sd):
+    rx, rz = low_shape(k + 2, q, i, n, -sd)
+    return rx, rz + (2.0 if i else 0)
+# 傘（頭巾）：頭の上から全方向へ広がって垂れる。前は顔の上のひさしになる
+def bell_shape(k, q, i, n, sd):
+    a = math.sin(math.radians(-180 + q * 360))
+    if a > 0.35:                                   # 前：ひさしのように持ち上がる
+        return 0, (-22 if i == 0 else 5 + 3 * math.sin(i + k))
+    return 3 * math.sin(i * 0.9 + k), (6 if i == 0 else 8.5 + 4 * math.sin(i * 0.8 + k * 0.7))
+
+build_wing("wing_up", (1, -1), (26, 150, 16), (-60, -6, -16), -44, 18, 14, 14, 520, 0.62, 40, up_shape, ribs={13: 8, 10: 5, 7: 4, 4: 3, 1: 2}, seed=1, phase=0)
+build_wing("wing_up2", (1, -1), (30, 128, 24), (-50, -14, -8), -52, 6, 11, 14, 400, 0.66, 40, up2_shape, ribs={10: 5, 5: 3}, seed=4, phase=70)
+build_wing("wing_low", (1, -1), (24, 40, 6), (22, 14, 12), -22, 24, 11, 14, 470, 0.60, 40, low_shape, ribs={10: 8, 7: 5, 4: 4, 1: 3}, seed=2, phase=140)
+build_wing("wing_low2", (1, -1), (28, 10, 14), (16, 2, 20), -30, 14, 9, 14, 360, 0.64, 40, low2_shape, ribs={8: 5, 4: 3}, seed=5, phase=200)
+build_wing("tail", (0,), (0, 120, 44), (-10, 0, 0), -125, -55, 12, 20, 540, 0.55, 40, tail_shape, mode="tail", ribs={6: 5, 5: 5, 2: 3, 9: 3}, seed=3, phase=250)
+build_wing("tail2", (0,), (0, 60, 50), (-24, 0, 0), -120, -60, 9, 20, 400, 0.6, 40, tail_shape, mode="tail", ribs={4: 4}, seed=6, phase=310)
+build_wing("bell", (0,), (0, 178, 14), (0, 0, 0), -180, 180, 40, 10, 210, 1.0, 30, bell_shape, mode="bell", ribs={k: 3 for k in range(0, 40, 4)}, seed=7, phase=30)
 
 # 下の膜の先：鎌のような爪（前の 3 本の短冊の先に 1 枚ずつ。膜の面に沿った三日月の板）
 for t, sd in (("l", 1), ("r", -1)):
-    for j, k in enumerate((7, 6, 5)):
+    for j, k in enumerate((10, 9, 8, 7, 6)):
         tipn = WINGS["wing_low"][t][k][-1]
         b = bone_index[tipn]
         tx = tip_x(tipn) - 10
-        Lt, Wt = (96, 40) if j == 0 else ((76, 32) if j == 1 else (58, 26))
-        nm = bone(f"talon_{t}{j}", tipn, (tx * sd, b["pivot"][1], b["pivot"][2]), (0, (18 - j * 16) * sd, 14 * sd))
+        Lt, Wt = ((120, 50), (100, 42), (84, 36), (68, 30), (56, 24))[j]
+        nm = bone(f"talon_{t}{j}", tipn, (tx * sd, b["pivot"][1], b["pivot"][2]), (0, (22 - j * 12) * sd, 14 * sd))
         cube(nm, (tx if sd > 0 else -tx - Lt, b["pivot"][1] - 0.5, b["pivot"][2] - Wt / 2), (Lt, 1, Wt), f"talon|{j}|1|u|0", mirror=sd < 0, label="talon")
         anim(nm, rot=[0, wave(j * 70, 3 * sd, 45), wave(j * 50 + 30, 4 * sd, 45)])
 
@@ -235,11 +255,11 @@ def curl_ribbon(prefix, parent_name, sd, curl, n=12, L=20):
     tb = bone_index[names[-1]]
     cube(names[-1], (tx if sd > 0 else -tx - 7, tb["pivot"][1] - 3.5, tb["pivot"][2] - 3.5), (7, 7, 7), "pearl", label="curl_orb")
 for t, sd in (("l", 1), ("r", -1)):
-    for j, (k, curl) in enumerate(((8, -1), (2, 1))):
-        curl_ribbon(f"curl_up_{t}{j}", WINGS["wing_up"][t][k][-1], sd, curl)
-    for j, (k, curl) in enumerate(((0, -1),)):
+    for j, (k, curl) in enumerate(((12, -1), (8, 1), (3, 1), (0, -1))):
+        curl_ribbon(f"curl_up_{t}{j}", WINGS["wing_up"][t][k][-1], sd, curl, n=14, L=24)
+    for j, (k, curl) in enumerate(((4, 1), (0, -1))):
         curl_ribbon(f"curl_low_{t}{j}", WINGS["wing_low"][t][k][-1], sd, curl, n=10)
-for j, k in enumerate((0, 3, 4, 7)):
+for j, k in enumerate((0, 3, 5, 8, 11)):
     curl_ribbon(f"curl_tail_{j}", WINGS["tail"]["c"][k][-1], 1, 1 if j % 2 == 0 else -1)
 
 # ---------------------------------------------------------------------------
@@ -247,14 +267,14 @@ for j, k in enumerate((0, 3, 4, 7)):
 #   厚さ 4 ピクセルの輪切りを前へ並べて作る。目は 4 つ（左右 2 つずつ、段差の角から前と横を向く）
 #   下あご（ボーン jaw）は後ろを軸に下へ開く。口の中は暗い紫に光る
 # ---------------------------------------------------------------------------
-H = bone("head", "body", (0, 125, -18), (30, 0, 0))          # うつむいて地上を見下ろす
+H = bone("head", "body", (0, 125, -58), (30, 0, 0))          # うつむいて地上を見下ろす
 anim("head", rot=[wave(200, 1.6), wave(120, 2.0, 45), wave(40, 0.8, 45)])
 NS = 11
 SD = 4                                                        # 輪切りの厚さ（ピクセル）
 def sl(k):
     """k 番目の輪切り（0 = 後ろ）：幅、上の y、口の線の y、後ろ側の z。頭は 後ろの幅 15・長さ 22・厚み 約 7 ブロック。"""
-    return round(30 - 2.5 * k), 134 - 0.75 * k, 123 + 0.15 * k, -20 - SD * k
-J = bone("jaw", H, (0, 123, -22), (4, 0, 0))
+    return round(30 - 2.5 * k), 134 - 0.75 * k, 123 + 0.15 * k, -60 - SD * k
+J = bone("jaw", H, (0, 123, -62), (4, 0, 0))
 anim(J, rot=[wave(0, 2.5, 45), 0, 0])                         # ゆっくり口が開閉する（呼吸）
 for k in range(NS):
     w, top, ym, z0 = sl(k)
@@ -291,17 +311,20 @@ for k, (sx, sy, sz) in ((3, (3, 4, 6)), (6, (2, 3, 5))):
 w, top, ym, z0 = sl(1)
 cube(H, (-1.5, top + 2, z0 - 3.5), (3, 1, 3), "gem", label="forehead_gem")
 # 首（頭と胴をつなぐ）
-cube("body", (-11, 113, -24), (22, 22, 12), "skin|0|0", label="neck")
+for i_ in range(5):                                            # 首：胴から前へ伸びる（先へ細る）
+    wn = 18 - i_
+    cube("body", (-wn / 2, 124 - wn / 2, -24 - i_ * 8 - 8), (wn, wn, 9), f"skin|{i_ + 2}|0", label="neck")
+    cube("body", (-1, 124 + wn / 2, -24 - i_ * 8 - 6), (2, 6 - i_, 3), "horn|2|1", label="neck_spine")
 # 角：後ろへ長く流れる 1 対と、ほおの後ろの短い 1 対
 for sd, t in ((1, "l"), (-1, "r")):
     segs = [dict(L=11, W=w_, H=w_, mat="horn") for w_ in (5, 4, 4, 3, 2, 2, 1)]
     for i, s_ in enumerate(segs):
         s_["rz"] = -30 if i == 0 else -3 + i * 1.5; s_["ry"] = -62 if i == 0 else -3
-    names = chain(f"horn_{t}", H, (10, 132, -23), segs, side=sd, shape="vert")
+    names = chain(f"horn_{t}", H, (10, 132, -63), segs, side=sd, shape="vert")
     segs = [dict(L=9, W=w_, H=w_, mat="horn") for w_ in (3, 2, 2, 1)]
     for i, s_ in enumerate(segs):
         s_["rz"] = 6 if i == 0 else 5; s_["ry"] = -48 if i == 0 else -6
-    chain(f"horn2_{t}", H, (13, 126, -24), segs, side=sd, shape="vert")
+    chain(f"horn2_{t}", H, (13, 126, -64), segs, side=sd, shape="vert")
 # 頭の後ろから立ち上がる羽飾り（葉の扇）
 for sd, t in ((1, "l"), (-1, "r")):
     for k, lean in enumerate((10, 30, 50, 72)):
@@ -315,89 +338,113 @@ for sd, t in ((1, "l"), (-1, "r")):
 for sd in (1, -1):
     for k in range(12):
         sz = rnd.choice([1, 2, 2, 3])
-        px = rnd.uniform(11, 22); py = rnd.uniform(112, 138); pz = rnd.uniform(-24, 2)
+        px = rnd.uniform(11, 22); py = rnd.uniform(112, 138); pz = rnd.uniform(-62, -24)
         cube("body", (px if sd > 0 else -px - sz, py, pz), (sz, sz, sz), "pearl", label="pearl")
 for k in range(10):
-    ln = int(rnd.uniform(10, 36)); zz = rnd.uniform(-58, -28)
+    ln = int(rnd.uniform(10, 36)); zz = rnd.uniform(-98, -68)
     cube(J, (rnd.uniform(-2, 2), 118 - ln, zz), (1, ln, 1), "thread", label="whisker")
 
 # ---------------------------------------------------------------------------
-# 胴：顔の後ろから下へ垂れる、穴だらけの格子の柱
+# 胴：幾重にも重なる葉（花びら・うろこ）の巨大な塊。上から下へ 15 段、肩で大きく張り出し、下へ細りながら流れ落ちる。
+#   肩（上から 2〜3 段目）がいちばん張り出し、そこから滝のように細る。
+#   1 段ごとに葉の鎖（4 節）を輪に並べ、段を詰めて 3〜4 枚が重なるようにする。奥には暗い紫の芯
 # ---------------------------------------------------------------------------
 BZ = 16
-for i, (w, h, d, y) in enumerate([(46, 50, 46, 104), (42, 60, 42, 46), (40, 64, 40, -16), (28, 60, 28, -74), (14, 56, 14, -128)]):
-    cube("body", (-w / 2, y, BZ - d / 2), (w, h, d), "lacebox", label=f"core_{i}")
-# 襟：首のまわりに開く大きな葉（2 段。顔の正面は空ける）
-for tier, (cy, rad, nleaf, ln) in enumerate(((104, 40, 14, 36), (64, 34, 12, 30))):
-    for k in range(nleaf):
-        th = (k + 0.5) / nleaf * math.tau
-        if math.cos(th) < -0.55:
+TIERS = [(70, -66), (110, -58), (128, -48), (124, -38), (112, -30), (100, -24), (88, -20), (78, -16),
+         (68, -14), (58, -12), (50, -10), (42, -8), (34, -8), (28, -6), (22, -4)]      # (半径, 外への開き)
+for ti, (R_, flare) in enumerate(TIERS):
+    ty = 150 - 26 * ti
+    cw, cd = round(R_ * 1.0), round(R_ * 0.9)
+    cube("body", (-cw / 2, ty - 28, BZ - cd / 2), (cw, 30, cd), f"skin|{min(10, ti // 2)}|0", label="core")
+    W0 = 46 if R_ > 60 else 34
+    npet = max(9, round(math.tau * R_ / (W0 * 0.5)))
+    for k in range(npet):
+        th = (k + (0.5 if ti % 2 else 0)) / npet * math.tau
+        if 90 < ty < 150 and math.cos(th) < -0.9:       # 首の通る前側は空ける
             continue
-        cx, cz = math.sin(th) * rad, BZ + math.cos(th) * rad * 0.9
+        cx, cz = math.sin(th) * R_, BZ + math.cos(th) * R_ * 0.88
         segs = []
         for i in range(4):
-            segs.append(dict(W=30 - i * 3, L=ln, rx=(-52 + tier * 14) if i == 0 else 10 + rnd.uniform(-4, 6), rz=rnd.uniform(-7, 7), mat="frond"))
-        hang(f"collar{tier}_{k}", "body", (cx, cy, cz), segs, yaw=-math.degrees(th),
-             anim_fn=lambda i, k=k: [wave(i * 36 + k * 29, 1.5 + i * 0.6, 45), 0, wave(i * 33 + k * 23 + 90, 1.5 + i * 0.5, 22.5, "cos")])
-# カーテン：格子の柱のまわりに垂れる（レースと筋の束）
-for k in range(26):
-    th = k / 26 * math.tau
-    cx, cz = math.sin(th) * (27 + rnd.uniform(-4, 4)), BZ + math.cos(th) * 24
-    n = rnd.choice([4, 5, 5, 6, 7])
+            if i == 0:
+                rx = flare + rnd.uniform(-6, 6)
+            else:
+                rx = (11 if ti < 9 else -9) + rnd.uniform(-5, 5)      # 上の段は外へ出てから垂れ、下の段は先が外へ巻く
+            segs.append(dict(W=W0 - i * 3 + rnd.randint(-3, 3), L=34, rx=rx, rz=rnd.uniform(-7, 7), mat=("frond" if (k + ti) % 3 else "frondd")))
+        hang(f"petal{ti}_{k}", "body", (cx, ty, cz), segs, yaw=-math.degrees(th) + rnd.uniform(-8, 8),
+             anim_fn=lambda i, k=k, ti=ti: [wave(i * 36 + k * 29 + ti * 50, 1.2 + i * 0.6, 45), 0, wave(i * 33 + k * 23 + ti * 31 + 90, 1.0 + i * 0.5, 22.5, "cos")])
+# 下の段から外へ大きく巻き上がる葉（設定画の下のほうで渦を巻く大きな葉）
+for k in range(16):
+    th = (k + 0.5) / 16 * math.tau
+    ty = -120 - (k % 4) * 30
+    segs = []
+    for i in range(8):
+        rx = -34 if i == 0 else (-6 - i * 7.5)
+        segs.append(dict(W=max(12, 52 - i * 5), L=34, rx=rx, rz=rnd.uniform(-7, 7), mat="frond"))
+    hang(f"leaf_{k}", "body", (math.sin(th) * 40, ty, BZ + math.cos(th) * 36), segs, yaw=-math.degrees(th),
+         anim_fn=lambda i, k=k: [wave(i * 40 + k * 37, 2 + i * 0.7, 45), 0, wave(i * 30 + k * 41, 1.5 + i * 0.5, 22.5, "cos")])
+# レースのカーテン：肩のまわりから長く垂れる（葉のすき間から見える）
+for k in range(30):
+    th = k / 30 * math.tau
+    rr = 100 + rnd.uniform(-20, 20)
+    n = rnd.choice([6, 7, 8, 9, 10])
     segs = []
     for i in range(n):
-        segs.append(dict(W=max(8, 24 - i * 1.7), L=30, rx=(rnd.uniform(-10, 4) if i else -10), rz=(8 if i % 2 else -8) + rnd.uniform(-5, 5),
+        segs.append(dict(W=max(10, 34 - i * 2), L=34, rx=(rnd.uniform(-8, 4) if i else -16), rz=(8 if i % 2 else -8) + rnd.uniform(-5, 5),
                          mat=("lace" if (k + i) % 3 else "drape")))
-    hang(f"drape_{k}", "body", (cx, 44 - rnd.uniform(0, 70), cz), segs, yaw=-math.degrees(th),
+    hang(f"drape_{k}", "body", (math.sin(th) * rr, 40 - rnd.uniform(0, 120), BZ + math.cos(th) * rr * 0.88), segs, yaw=-math.degrees(th),
          anim_fn=lambda i, k=k: [wave(i * 36 + k * 29, 1.5 + i * 0.6, 45), 0, wave(i * 33 + k * 23 + 90, 1.5 + i * 0.5, 22.5, "cos")])
-# 下で外へ巻く葉
-for k in range(10):
-    th = (k + 0.5) / 10 * math.tau
-    segs = []
-    for i in range(7):
-        rx = -28 if i == 0 else (-8 - i * 10 if i >= 2 else rnd.uniform(-8, 0))
-        segs.append(dict(W=max(8, 30 - i * 3), L=26, rx=rx, rz=rnd.uniform(-6, 6), mat="lace"))
-    hang(f"leaf_{k}", "body", (math.sin(th) * 15, -60, BZ + math.cos(th) * 15), segs, yaw=-math.degrees(th),
-         anim_fn=lambda i, k=k: [wave(i * 40 + k * 37, 2 + i * 0.7, 45), 0, wave(i * 30 + k * 41, 1.5 + i * 0.5, 22.5, "cos")])
-# 触腕：細く長く垂れる（先に玉が付くものもある）
-for k in range(34):
-    th = rnd.uniform(0, math.tau); rr = rnd.uniform(4, 24)
-    y0 = rnd.uniform(-100, 20)
-    n = rnd.randint(4, 7)
-    w0 = rnd.choice([4, 5, 6, 8])
-    segs = [dict(W=max(2, w0 - i * 0.4), L=26, rx=rnd.uniform(-7, 7) - (6 if i == 0 else 0), rz=6 * math.sin(i * 0.9 + k) + rnd.uniform(-3, 3), mat="ribbon") for i in range(n)]
+# 触腕：細い帯が束になって長く垂れる（先に玉が付くものもある）
+for k in range(80):
+    th = rnd.uniform(0, math.tau); rr = rnd.uniform(4, 60) * (1 if k % 2 else 0.5)
+    y0 = rnd.uniform(-220, -100) if k % 2 else rnd.uniform(-100, 60)
+    n = max(2, min(rnd.randint(5, 11), int((y0 + 350) / 29)))
+    w0 = rnd.choice([4, 5, 6, 8, 10, 12])
+    segs = [dict(W=max(2, w0 - i * 0.6), L=30, rx=rnd.uniform(-7, 7) - (6 if i == 0 else 0), rz=6 * math.sin(i * 0.9 + k) + rnd.uniform(-3, 3), mat="ribbon") for i in range(n)]
     names = hang(f"tendril_{k}", "body", (math.sin(th) * rr, y0, BZ + math.cos(th) * rr), segs, yaw=rnd.uniform(0, 360),
                  anim_fn=lambda i, k=k: [wave(i * 36 + k * 31, 1.5 + i * 0.5, 45), 0, wave(i * 30 + k * 17 + 90, 1.5 + i * 0.6, 22.5, "cos")])
     if k % 3 == 0:
         b = bone_index[names[-1]]
-        cube(names[-1], (b["pivot"][0] - 3, b["pivot"][1] - 26 - 5, b["pivot"][2] - 3), (6, 6, 6), "pearl", label="tendril_orb")
-# 後ろへたなびく帯
-for k in range(12):
+        cube(names[-1], (b["pivot"][0] - 4, b["pivot"][1] - 30 - 7, b["pivot"][2] - 4), (8, 8, 8), "pearl", label="tendril_orb")
+# 肩から上・後ろへ流れる長い帯（設定画の右上にたなびく帯）
+for k in range(10):
     sd = 1 if k % 2 == 0 else -1
     j = k // 2
-    n = 13 + rnd.randint(-2, 3)
+    n = 18
     segs = []
     for i in range(n):
-        segs.append(dict(L=30, W=max(5, 15 - i * 0.6), ry=(-90 + j * 5) if i == 0 else rnd.uniform(-6, 6),
+        segs.append(dict(L=32, W=max(6, 30 - i * 1.3), ry=(-30 - j * 26) if i == 0 else 7 * math.sin(i * 0.7 + k),
+                         rz=(-34 + j * 8) if i == 0 else 3.5 + 8 * math.sin(i * 0.8 + k * 1.3), rx=rnd.uniform(-10, 10), mat="ribbon"))
+    names = chain(f"scarf_{k}", "body", (40 + j * 6, 150 - j * 14, BZ + j * 8), segs, side=sd, shape="vert",
+                  anim_fn=lambda i, s_, k=k: [wave(i * 30 + k * 40, 2 + i * 0.3, 45), wave(i * 28 + k * 33, 2 * s_), wave(i * 32 + k * 27 + 60, (2 + i * 0.45) * s_, 45)])
+    tx = tip_x(names[-1]) + 1; tb = bone_index[names[-1]]
+    cube(names[-1], (tx if sd > 0 else -tx - 9, tb["pivot"][1] - 4.5, tb["pivot"][2] - 4.5), (9, 9, 9), "pearl", label="scarf_orb")
+# 後ろへたなびく帯
+for k in range(16):
+    sd = 1 if k % 2 == 0 else -1
+    j = k // 2
+    n = 15 + rnd.randint(-2, 4)
+    segs = []
+    for i in range(n):
+        segs.append(dict(L=30, W=max(6, 22 - i * 0.8), ry=(-90 + j * 5) if i == 0 else rnd.uniform(-6, 6),
                          rz=(10 if i == 0 else 3 + 7 * math.sin(i * 0.9 + k)), rx=rnd.uniform(-8, 8), mat="ribbon"))
-    chain(f"trail_{k}", "body", (4 + j * 7, 96 - j * 30, BZ + 26), segs, side=sd, shape="vert",
+    chain(f"trail_{k}", "body", (10 + j * 9, 110 - j * 44, BZ + 60), segs, side=sd, shape="vert",
           anim_fn=lambda i, s_, k=k: [wave(i * 36 + k * 30, 2 + i * 0.3, 45), wave(i * 30 + k * 25, 2 * s_), wave(i * 34 + k * 27 + 60, (2 + i * 0.5) * s_, 45)])
 
 # ---------------------------------------------------------------------------
 # まわりに漂う欠片（穴の開いた葉のかけら）と星の粒
 # ---------------------------------------------------------------------------
-for k in range(64):
-    ang = rnd.uniform(0, math.tau); rr = rnd.uniform(70, 500)
+for k in range(150):
+    ang = rnd.uniform(0, math.tau); rr = rnd.uniform(120, 580)
     px, pz = math.cos(ang) * rr, math.sin(ang) * rr * 0.65 + 40
-    py = rnd.uniform(-200, 300)
+    py = rnd.uniform(-380, 340)
     name = bone(f"shard_{k}", "body", (px, py, pz), (rnd.uniform(-60, 60), rnd.uniform(0, 360), rnd.uniform(-60, 60)))
-    w, h = rnd.choice([(8, 16), (10, 22), (14, 30), (18, 40), (24, 52)])
+    w, h = rnd.choice([(10, 22), (14, 30), (18, 40), (24, 52), (30, 66), (38, 84)])
     cube(name, (px - w / 2, py - h / 2, pz), (w, h, 1), f"shard|0|1|v|{k % 4}")
     anim(name, rot=[wave(k * 47, 10), wave(k * 31, 16), wave(k * 53, 8, 45)], pos=[0, wave(k * 41, 8, 45), 0])
-for k in range(180):
-    ang = rnd.uniform(0, math.tau); rr = rnd.uniform(30, 500)
+for k in range(320):
+    ang = rnd.uniform(0, math.tau); rr = rnd.uniform(30, 580)
     sz = rnd.choice([1, 2, 2, 3])
-    cube("body", (math.cos(ang) * rr, rnd.uniform(-220, 320), math.sin(ang) * rr * 0.7 + 40), (sz, sz, sz), "pearl", label="mote")
+    cube("body", (math.cos(ang) * rr, rnd.uniform(-400, 360), math.sin(ang) * rr * 0.7 + 40), (sz, sz, sz), "pearl", label="mote")
 
 # ===========================================================================
 # Box UV の割り付け（同じ大きさ・同じ材質は UV を共有。膜と顔は 1 枚ずつ別の絵。左右は mirror で反転）
@@ -413,7 +460,7 @@ for b in bones:
         if c["_label"] not in s["labels"]:
             s["labels"].append(c["_label"])
         c["_key"] = key
-TEX_W = 2048
+TEX_W = 4096
 order = sorted(slots, key=lambda k: (-foot(slots[k]["size"])[1], -foot(slots[k]["size"])[0]))
 u = v = shelf = 0
 for k in order:
@@ -511,12 +558,17 @@ def paint_wing(Lp, Wp, art):
     rho = R / Rm
     arc = R * span                                                       # その半径での扇の弧の長さ
     q_lo = 0.012 + 0.016 * np.sin(R / 7.0 + seed) + 0.01 * np.sin(R / 2.9)   # 後ろのふち（細かい波形）
-    inside = (np.abs(t) <= R * math.radians(art["dth"]) / 2 + 0.5) & (rho < 1) & (q > q_lo) & (q < 1.0)
+    bell = sp["mode"] == "bell"
+    inside = (np.abs(t) <= R * math.radians(art["dth"]) / 2 + 1.2) & (rho < 1)
+    if not bell:
+        inside &= (q > q_lo) & (q < 1.0)
     if not art["last"]:
         inside &= (np.arange(Lp) < Lp - 1)[None, :]
     # 穴の多さ：外周と後ろのふちへ向かって増える（根元と前のふちは詰まっている）
     def holeyness(rho_, q_):
-        return np.clip(np.maximum((rho_ - 0.42) / 0.5, (0.42 - q_) / 0.42 * np.clip(rho_ * 2.5, 0, 1)), 0, 1)
+        if bell:
+            return np.clip((rho_ - 0.5) / 0.45, 0, 1)
+        return np.clip(np.maximum((rho_ - 0.48) / 0.48, (0.36 - q_) / 0.36 * np.clip(rho_ * 2.5, 0, 1)), 0, 1)
     g = holeyness(rho, q)
     cs = 22.0
     j0 = np.floor(R / cs)
@@ -549,7 +601,9 @@ def paint_wing(Lp, Wp, art):
     col = mix(col, DEEP, np.clip(0.55 - rho * 3.2, 0, 1) * 0.8)
     gl = np.zeros_like(col)
     # 傘の骨（太い筋）と、そのあいだの細い筋・同心の弧（くもの巣のような網目）
-    NR = 5
+    NR = 20 if bell else 6
+    crease = (0.5 + 0.5 * np.sin(q * NR * 1.5 * math.tau + 2.2 * vnoise(R / 60.0, q * 5, seed + 9))) ** 6   # ひだの影（布のしわ）
+    col = mix(col, DEEP, crease * 0.38 * np.clip(1.2 - rho, 0, 1))
     qr = (np.floor(q * NR) + 0.5) / NR
     d_rib = np.abs(q - qr) * arc
     rib = d_rib < (1.3 - 0.6 * rho)
@@ -561,9 +615,9 @@ def paint_wing(Lp, Wp, art):
     col[ring] = mix(col, MIST, 0.28)[ring]
     node = ring & (np.abs(q - qf) * arc < 1.2)
     col[node] = PEARL; gl[node] = G_STAR * np.array([1, 1, 1, 0.55], np.float32)
-    col[..., 3] = 236 - 60 * g
+    col[..., 3] = 246 - 62 * g
     # 真珠色のふち（外周・後ろのふち・穴のまわり）
-    edge = ((Rm - R) < 2.6) | ((q - q_lo) * arc < 2.6)
+    edge = ((Rm - R) < 3.2) | ((not bell) & ((q - q_lo) * arc < 3.2))
     col[hole_rim | edge] = PEARL; gl[hole_rim | edge] = G_RIM
     star = (hash2(np.floor(R), np.floor(t) + art["th"] * 31, seed) < 0.004)
     col[star] = WHITE; gl[star] = G_STAR
@@ -637,7 +691,7 @@ def paint_ribbon(Lp, Wp, i, tip, rs):
         col[dia] = WHITE; gl[dia] = G_STAR * np.array([1, 1, 1, 0.5], np.float32)
     return finish(col, gl, mask, rs, rim_w=1)
 
-def paint_frond(Lp, Wp, i, tip, rs, n=None):
+def paint_frond(Lp, Wp, i, tip, rs, n=None, dark=False):
     """葉：尖った輪郭、中央の葉脈と側脈、楕円の穴。鎖のときは節をまたいで 1 枚の葉の形になる（n = 節の数）。"""
     X, Y, PX, PY = grid(Lp, Wp)
     if n:
@@ -651,14 +705,18 @@ def paint_frond(Lp, Wp, i, tip, rs, n=None):
     env = env - 0.06 * (0.5 + 0.5 * np.sin((i + X) * math.tau * 3.5))
     mask = np.abs(Y) < env
     mask = punch(mask, PX, PY, rs, 2 + (Lp * Wp) // 260, 1.8, 5.0, Lp, Wp, margin=0.4)
-    col = mix(VIOL, MIST, tt * 0.75 + smooth(Wp, Lp, 6, rs) * 0.3); col[..., 3] = 218
+    if dark:
+        col = mix(DEEP, PERI, tt * 0.8 + smooth(Wp, Lp, 6, rs) * 0.3); col[..., 3] = 238
+    else:
+        col = mix(VIOL, MIST, tt * 0.75 + smooth(Wp, Lp, 6, rs) * 0.3); col[..., 3] = 228
+    col = mix(col, DEEP, np.clip(0.5 - np.abs(Y) / np.maximum(env, 0.05), 0, 1) * 0.0 + np.clip(0.3 - tt, 0, 1) * 0.6)   # 付け根は影になる
     col = mix(col, IRI, (0.5 + 0.5 * np.sin(PX / 9.0 + PY / 5.0 + i)) ** 3 * 0.25)
     gl = np.zeros_like(col)
     mid = np.abs(PY) < 0.9
     side = (((PX - np.abs(PY) * 1.1) % 7) < 0.9) & ~mid
     col[side] = mix(col, PEARL, 0.4)[side]
-    col[mid] = PEARL; gl[mid] = G_VEIN
-    return finish(col, gl, mask, rs, sparkle=0.008)
+    col[mid] = mix(PALE, PEARL, np.float32(0.5)); gl[mid] = G_VEIN * np.array([1, 1, 1, 0.5], np.float32)
+    return finish(col, gl, mask, rs, rim_w=1, rim_col=mix(PALE, PEARL, np.float32(0.6)), rim_glow=G_RIM * np.array([1, 1, 1, 0.5], np.float32), sparkle=0.003)
 
 def paint_talon(Lp, Wp, rs):
     """鎌のような爪：付け根が太く、前へ反りながら尖る三日月。"""
@@ -757,9 +815,8 @@ for key, s in slots.items():
             if kind == "drape": return paint_drape(Lp, Wp, i, tip, rs)
             if kind == "ribbon": return paint_ribbon(Lp, Wp, i, tip, rs)
             if kind == "talon": return paint_talon(Lp, Wp, rs)
-            if kind == "frond" and ori != "v": return paint_frond(Lp, Wp, i, tip, rs, n=5)
-            if kind == "frond" and len(parts) > 4 and thin == 2 and tip and i == 0: return paint_frond(Lp, Wp, 0, True, rs)
-            if kind == "frond": return paint_frond(Lp, Wp, i, tip, rs, n=4)
+            nseg = int(parts[5]) if len(parts) > 5 else None
+            if kind in ("frond", "frondd") and nseg: return paint_frond(Lp, Wp, i, tip, rs, n=nseg, dark=(kind == "frondd"))
             return paint_frond(Lp, Wp, 0, True, rs)
         if thin == 1:
             col, gl = P(w, d)
