@@ -96,14 +96,9 @@ public class AstraVeilEntity extends Monster implements GeoEntity {
     }
 
     /**
-     * 画面外判定（視錐台カリング）に使う範囲。当たり判定（顔のまわり）ではなく、幕・触腕の先まで含めた範囲を返す。
-     * （バージョンによって呼ばれる場所が違うので @Override を付けない。レンダラー側でも同じ範囲を返している）
+     * 見た目全体を囲む範囲。画面外判定（視錐台カリング）に使う（{@link io.github.kurumimnm.kurumimnmod.client.renderer.AstraVeilRenderer}）。
+     * 当たり判定（顔のまわり）だけで判定すると、顔が画面外に出たとたんに巨体全体が消えてしまうため。
      */
-    public AABB getBoundingBoxForCulling() {
-        return cullingBox(this);
-    }
-
-    /** 見た目全体を囲む範囲（レンダラーからも使う）。 */
     public static AABB cullingBox(Entity entity) {
         double half = ModConstants.ASTRA_VEIL_CULL_HALF_WIDTH;
         return new AABB(entity.getX() - half, entity.getY() - ModConstants.ASTRA_VEIL_CULL_BELOW, entity.getZ() - half,

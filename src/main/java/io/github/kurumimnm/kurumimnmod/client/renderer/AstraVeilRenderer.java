@@ -39,11 +39,9 @@ public class AstraVeilRenderer<R extends EntityRenderState & GeoRenderState> ext
         return RenderTypes.entityTranslucentCull(texture);
     }
 
-    /**
-     * 画面外判定に使う範囲。巨体の一部（幕の先など）が画面に入っていれば描く。
-     * （バージョンによってエンティティ側・レンダラー側のどちらで判定するかが違うので両方に置き、@Override は付けない）
-     */
-    public AABB getBoundingBoxForCulling(AstraVeilEntity entity) {
+    /** 画面外判定に使う範囲。当たり判定（顔のまわり）ではなく、幕・触腕の先まで含めた見た目全体で判定する。 */
+    @Override
+    protected AABB getBoundingBoxForCulling(AstraVeilEntity entity, float partialTick) {
         return AstraVeilEntity.cullingBox(entity);
     }
 }
