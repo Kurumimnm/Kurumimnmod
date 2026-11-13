@@ -2,6 +2,7 @@ package io.github.kurumimnm.kurumimnmod.registry;
 
 import io.github.kurumimnm.kurumimnmod.Kurumimnmod;
 import io.github.kurumimnm.kurumimnmod.config.ModConstants;
+import io.github.kurumimnm.kurumimnmod.entity.AstraVeilEntity;
 import io.github.kurumimnm.kurumimnmod.entity.GarouEntity;
 import io.github.kurumimnm.kurumimnmod.entity.GriffinEntity;
 import io.github.kurumimnm.kurumimnmod.entity.KoboldEntity;
@@ -136,6 +137,19 @@ public final class ModEntities {
                             .clientTrackingRange(ModConstants.KOBOLD_LORD_TRACKING_RANGE)
                             .noLootTable());
 
+    /**
+     * アストラ・ヴェイル（星幽の巡界者。フィールドにランダムエンカウントする超大型ボス）。
+     * 今は見た目のみ（スポーンエッグ・/summon で出す）。当たり判定は顔のまわりだけで、見た目はレンダラーで 10 倍にする。
+     * 炎・溶岩で燃えない。ドロップなし（撃破報酬は後で決める）。
+     */
+    public static final DeferredHolder<EntityType<?>, EntityType<AstraVeilEntity>> ASTRA_VEIL =
+            ENTITY_TYPES.registerEntityType("astra_veil", AstraVeilEntity::new, MobCategory.MONSTER,
+                    builder -> builder.sized(ModConstants.ASTRA_VEIL_WIDTH, ModConstants.ASTRA_VEIL_HEIGHT)
+                            .eyeHeight(ModConstants.ASTRA_VEIL_EYE_HEIGHT)
+                            .clientTrackingRange(ModConstants.ASTRA_VEIL_TRACKING_RANGE)
+                            .fireImmune()
+                            .noLootTable());
+
     // =====================================================================
     // 魔法の弾
     // =====================================================================
@@ -161,5 +175,6 @@ public final class ModEntities {
         event.put(GAROU.get(), GarouEntity.createAttributes().build());
         event.put(KOBOLD.get(), KoboldEntity.createAttributes().build());
         event.put(KOBOLD_LORD.get(), KoboldLordEntity.createAttributes().build());
+        event.put(ASTRA_VEIL.get(), AstraVeilEntity.createAttributes().build());
     }
 }
