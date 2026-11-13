@@ -50,5 +50,6 @@ public class ModModelProvider extends ModelProvider {
         itemModels.generateFlatItem(ModItems.KOBOLD_SPAWN_EGG.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(ModItems.KOBOLD_LORD_SPAWN_EGG.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(ModItems.ASTRA_VEIL_SPAWN_EGG.get(), ModelTemplates.FLAT_ITEM);
+        itemModels.generateFlatItem(ModItems.ASTRA_SPAWN_EGG.get(), ModelTemplates.FLAT_ITEM);
     }
 }

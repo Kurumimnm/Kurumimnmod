@@ -78,4 +78,7 @@ public final class ModItems {
     /** アストラ・ヴェイルのスポーンエッグ（見た目の確認用。置いた場所の 52 ブロック上に浮かぶ）。 */
     public static final DeferredItem<SpawnEggItem> ASTRA_VEIL_SPAWN_EGG =
             ITEMS.registerItem("astra_veil_spawn_egg", SpawnEggItem::new, p -> p.spawnEgg(ModEntities.ASTRA_VEIL.get()));
+    /** アストラのスポーンエッグ（見た目の確認用。置いた場所の 150 ブロック上に浮かぶ）。 */
+    public static final DeferredItem<SpawnEggItem> ASTRA_SPAWN_EGG =
+            ITEMS.registerItem("astra_spawn_egg", SpawnEggItem::new, p -> p.spawnEgg(ModEntities.ASTRA.get()));
 }

@@ -48,6 +48,7 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         addItem(ModItems.KOBOLD_SPAWN_EGG, "Kobold Spawn Egg");
         addItem(ModItems.KOBOLD_LORD_SPAWN_EGG, "Kobold Lord Spawn Egg");
         addItem(ModItems.ASTRA_VEIL_SPAWN_EGG, "Astra Veil Spawn Egg");
+        addItem(ModItems.ASTRA_SPAWN_EGG, "Astra Spawn Egg");
 
         // ---- ブロック ----
 
@@ -60,6 +61,7 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         addEntityType(ModEntities.KOBOLD, "Kobold");
         addEntityType(ModEntities.KOBOLD_LORD, "Kobold Lord");
         addEntityType(ModEntities.ASTRA_VEIL, "Astra Veil");
+        addEntityType(ModEntities.ASTRA, "Astra");
 
 
         addEntityType(ModEntities.ICE_ICICLE, "Icicle");

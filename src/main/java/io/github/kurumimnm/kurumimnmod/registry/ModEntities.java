@@ -2,6 +2,7 @@ package io.github.kurumimnm.kurumimnmod.registry;
 
 import io.github.kurumimnm.kurumimnmod.Kurumimnmod;
 import io.github.kurumimnm.kurumimnmod.config.ModConstants;
+import io.github.kurumimnm.kurumimnmod.entity.AstraEntity;
 import io.github.kurumimnm.kurumimnmod.entity.AstraVeilEntity;
 import io.github.kurumimnm.kurumimnmod.entity.GarouEntity;
 import io.github.kurumimnm.kurumimnmod.entity.GriffinEntity;
@@ -150,6 +151,19 @@ public final class ModEntities {
                             .fireImmune()
                             .noLootTable());
 
+    /**
+     * アストラ（星幽の巡界者。アストラ・ヴェイルとは別モデルの超大型ボス。全幅 約 500 ブロック）。
+     * 今は見た目のみ（スポーンエッグ・/summon で出す）。当たり判定は顔だけで、見た目はレンダラーで拡大する（ASTRA_RENDER_SCALE）。
+     * 炎・溶岩で燃えない。ドロップなし（撃破報酬は後で決める）。
+     */
+    public static final DeferredHolder<EntityType<?>, EntityType<AstraEntity>> ASTRA =
+            ENTITY_TYPES.registerEntityType("astra", AstraEntity::new, MobCategory.MONSTER,
+                    builder -> builder.sized(ModConstants.ASTRA_WIDTH, ModConstants.ASTRA_HEIGHT)
+                            .eyeHeight(ModConstants.ASTRA_EYE_HEIGHT)
+                            .clientTrackingRange(ModConstants.ASTRA_TRACKING_RANGE)
+                            .fireImmune()
+                            .noLootTable());
+
     // =====================================================================
     // 魔法の弾
     // =====================================================================
@@ -176,5 +190,6 @@ public final class ModEntities {
         event.put(KOBOLD.get(), KoboldEntity.createAttributes().build());
         event.put(KOBOLD_LORD.get(), KoboldLordEntity.createAttributes().build());
         event.put(ASTRA_VEIL.get(), AstraVeilEntity.createAttributes().build());
+        event.put(ASTRA.get(), AstraEntity.createAttributes().build());
     }
 }

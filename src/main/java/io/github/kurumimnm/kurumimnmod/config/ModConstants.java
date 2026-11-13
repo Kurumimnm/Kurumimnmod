@@ -337,6 +337,33 @@ public final class ModConstants {
     /** スポーンエッグ・/summon で出したとき、置いた場所からこれだけ上に浮かべる（ブロック。触腕の先が地面に届くくらい）。 */
     public static final double ASTRA_VEIL_SPAWN_HOVER_HEIGHT = 52.0;
 
+    // ---- アストラ（星幽の巡界者。アストラ・ヴェイルとは別モデルの超大型ボス。全幅 約 500 ブロック） ----
+    // ※ 今は見た目のみ。ステータス・スキル・攻撃・遭遇・空の演出は未実装
+    /** 最大 HP（仮）。 */
+    public static final double ASTRA_MAX_HEALTH = 1000.0;
+    /** ノックバック耐性（1.0 = まったく押されない）。 */
+    public static final double ASTRA_KNOCKBACK_RESISTANCE = 1.0;
+    /**
+     * 描画の倍率。モデル（geo.json）は 1 ピクセル = 1/2 ブロックで作ってあり、ここで 8 倍にする（tools/astra/generate.py と対応）。
+     * 8 倍で 全幅 約 500・高さ 約 360（下へ 約 135・上へ 約 230）・前後 約 430 ブロック。
+     * 倍率を変えたら、当たり判定・画面外判定・浮かぶ高さも同じ比率で変える。
+     */
+    public static final float ASTRA_RENDER_SCALE = 8.0f;
+    /** 当たり判定（ブロック）。顔だけ（エンティティの位置 = あごの先）。膜・胴・触腕は見た目だけで当たり判定はない。 */
+    public static final float ASTRA_WIDTH = 36.0f;
+    public static final float ASTRA_HEIGHT = 100.0f;
+    public static final float ASTRA_EYE_HEIGHT = 70.0f;
+    /** クライアントへ同期する距離（チャンク）。サーバーの描画距離が上限になる。 */
+    public static final int ASTRA_TRACKING_RANGE = 32;
+    /** 描画する最大距離（ブロック）。巨体なのでバニラの判定より遠くまで描く。 */
+    public static final double ASTRA_RENDER_DISTANCE = 768.0;
+    /** 描画の判定に使う範囲（ブロック。エンティティの位置からの横・下・上）。膜・尾・触腕の先まで含める。 */
+    public static final double ASTRA_CULL_HALF_WIDTH = 310.0;
+    public static final double ASTRA_CULL_BELOW = 150.0;
+    public static final double ASTRA_CULL_ABOVE = 250.0;
+    /** スポーンエッグ・/summon で出したとき、置いた場所からこれだけ上に浮かべる（ブロック。触腕の先が地面の少し上に来る高さ）。 */
+    public static final double ASTRA_SPAWN_HOVER_HEIGHT = 150.0;
+
     // ---- ボスの着地点の範囲表示（クライアント） ----
     public static final int BOSS_AOE_COLOR_FILL_CENTER = 0x80FF3020;
     public static final int BOSS_AOE_COLOR_FILL_EDGE = 0x30FF3020;
