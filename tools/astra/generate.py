@@ -11,7 +11,7 @@
   - まわりに漂う欠片と星の粒
 
 単位：1 ピクセル = 1/2 ブロック（レンダラーで 8 倍。ModConstants.ASTRA_RENDER_SCALE）。座標は Bedrock / Blockbench 形式（前は北 -Z）。
-原点（エンティティの位置）= 胴の中心の真下。頭は y = 110〜150 ピクセルあたりで、前（-z）へ約 45 ブロック突き出す。
+原点（エンティティの位置）= 胴の中心の真下。頭は y = 115〜140 ピクセルあたりで、前（-z）へ約 22 ブロック突き出す。
 回転の向き：ry 正 = +x の先が前（-z）へ、rz 正 = +x の先が下へ、rx 正 = +z の先が上へ。左右反転は x・ry・rz の符号を反転。
 """
 import json, math, os, random, sys, zlib
@@ -244,87 +244,88 @@ for j, k in enumerate((0, 3, 4, 7)):
 
 # ---------------------------------------------------------------------------
 # 頭：前へ突き出すくさび形（上から見ると三角形。後ろが広く、鼻先へ細る）。体と同じ紫〜藤色の肌。
-#   厚さ 8 ピクセルの輪切りを前へ並べて作る。目は 4 つ（左右 2 つずつ、段差の角から前と横を向く）
+#   厚さ 4 ピクセルの輪切りを前へ並べて作る。目は 4 つ（左右 2 つずつ、段差の角から前と横を向く）
 #   下あご（ボーン jaw）は後ろを軸に下へ開く。口の中は暗い紫に光る
 # ---------------------------------------------------------------------------
-H = bone("head", "body", (0, 125, -18), (30, 0, 0))          # 少しうつむいて地上を見下ろす
+H = bone("head", "body", (0, 125, -18), (30, 0, 0))          # うつむいて地上を見下ろす
 anim("head", rot=[wave(200, 1.6), wave(120, 2.0, 45), wave(40, 0.8, 45)])
 NS = 11
+SD = 4                                                        # 輪切りの厚さ（ピクセル）
 def sl(k):
-    """k 番目の輪切り（0 = 後ろ）：幅、上の y、口の線の y、後ろ側の z。"""
-    return 60 - 5 * k, 143 - 1.5 * k, 121 + 0.3 * k, -20 - 8 * k
-J = bone("jaw", H, (0, 121, -24), (4, 0, 0))
+    """k 番目の輪切り（0 = 後ろ）：幅、上の y、口の線の y、後ろ側の z。頭は 後ろの幅 15・長さ 22・厚み 約 7 ブロック。"""
+    return round(30 - 2.5 * k), 134 - 0.75 * k, 123 + 0.15 * k, -20 - SD * k
+J = bone("jaw", H, (0, 123, -22), (4, 0, 0))
 anim(J, rot=[wave(0, 2.5, 45), 0, 0])                         # ゆっくり口が開閉する（呼吸）
 for k in range(NS):
     w, top, ym, z0 = sl(k)
-    cube(H, (-w / 2, ym, z0 - 8), (w, top - ym, 8), f"skin|{k}|0", label="head_upper")
-    cap = 3 if k <= 8 else 0                                   # 頭の上の盛り上がり（断面を台形に近づける）
+    cube(H, (-w / 2, ym, z0 - SD), (w, top - ym, SD), f"skin|{k}|0", label="head_upper")
+    cap = 2 if k <= 8 else 0                                   # 頭の上の盛り上がり（断面を台形に近づける）
     if cap:
         cw = round(w * 0.6)
-        cube(H, (-cw / 2, top, z0 - 8), (cw, cap, 8), f"skin|{k}|0", label="head_cap")
-    cube(H, (-1.5, top + cap, z0 - 6), (3, round(3 + (10 - k) * 0.9), 4), "horn|2|1", rotation=(-24, 0, 0), pivot=(0, top + cap, z0 - 4), label="head_spine")
+        cube(H, (-cw / 2, top, z0 - SD), (cw, cap, SD), f"skin|{k}|0", label="head_cap")
+    cube(H, (-1, top + cap, z0 - 3), (2, round(2 + (10 - k) * 0.45), 2), "horn|2|1", rotation=(-24, 0, 0), pivot=(0, top + cap, z0 - 2), label="head_spine")
     if k >= 1:
-        wj, hj = w - 6, max(3, round(10 - 0.7 * k))
-        cube(J, (-wj / 2, ym - 1 - hj, z0 - 8), (wj, hj, 8), f"skin|{k}|1", label="head_jaw")
-        if w - 8 >= 2:
-            cube(H, (-(w - 8) / 2, ym - 2, z0 - 8), (w - 8, 3, 8), "gullet", label="mouth_inside")
+        wj, hj = w - 3, max(2, round(5 - 0.35 * k))
+        cube(J, (-wj / 2, ym - 1 - hj, z0 - SD), (wj, hj, SD), f"skin|{k}|1", label="head_jaw")
+        if w - 4 >= 2:
+            cube(H, (-(w - 4) / 2, ym - 1.5, z0 - SD), (w - 4, 2, SD), "gullet", label="mouth_inside")
     if k >= 2:   # 牙：上あごから下がる牙（外から見える）と、下あごから上がる牙（口を開くと見える）
-        fl = 5 if k < 8 else 7
+        fl = 3 if k < 8 else 4
         for sd in (1, -1):
-            x = w / 2 - 2.5
-            cube(H, (x if sd > 0 else -x - 2, ym - fl, z0 - 5), (2, fl, 2), "fang", label="fang_upper")
-            xj = (w - 6) / 2 - 2
-            cube(J, (xj if sd > 0 else -xj - 2, ym - 1, z0 - 8), (2, 4, 2), "fang", label="fang_lower")
+            x = w / 2 - 1.2
+            cube(H, (x if sd > 0 else -x - 1, ym - fl, z0 - 2.5), (1, fl, 1), "fang", label="fang_upper")
+            xj = (w - 3) / 2 - 1
+            cube(J, (xj if sd > 0 else -xj - 1, ym - 1, z0 - SD), (1, 2, 1), "fang", label="fang_lower")
 w, top, ym, z0 = sl(NS - 1)
 for sd in (1, -1):                                             # 鼻先の長い牙
-    cube(H, (1.5 if sd > 0 else -3.5, ym - 9, z0 - 8), (2, 9, 2), "fang", label="fang_front")
-cube(H, (-1.5, top, z0 - 7), (3, 7, 3), "horn|5|1", rotation=(28, 0, 0), pivot=(0, top, z0 - 5), label="nose_horn")
+    cube(H, (0.8 if sd > 0 else -1.8, ym - 5, z0 - SD), (1, 5, 1), "fang", label="fang_front")
+cube(H, (-1, top, z0 - 3.5), (2, 4, 2), "horn|5|1", rotation=(28, 0, 0), pivot=(0, top, z0 - 2.5), label="nose_horn")
 # 目 4 つと、その上のつり上がった眉
-for k, (sx, sy, sz) in ((3, (5, 7, 12)), (6, (4, 5, 9))):
+for k, (sx, sy, sz) in ((3, (3, 4, 6)), (6, (2, 3, 5))):
     w, top, ym, z0 = sl(k)
     for sd in (1, -1):
-        x = w / 2 - 2
-        cube(H, (x if sd > 0 else -x - sx, top - sy - 3, z0 - sz + 1), (sx, sy, sz), "eye", label="eye")
-        cube(H, (x - 3 if sd > 0 else -x - sx - 1, top - 3, z0 - sz - 1), (sx + 4, 2, sz + 3), "ridge",
-             rotation=(-10, 0, 14 * sd), pivot=(x * sd, top - 2, z0 - sz / 2), label="brow")
+        x = w / 2 - 1.2
+        cube(H, (x if sd > 0 else -x - sx, top - sy - 1.5, z0 - sz + 1), (sx, sy, sz), "eye", label="eye")
+        cube(H, (x - 1.5 if sd > 0 else -x - sx - 0.5, top - 1.5, z0 - sz - 0.5), (sx + 2, 1, sz + 2), "ridge",
+             rotation=(-10, 0, 14 * sd), pivot=(x * sd, top - 1, z0 - sz / 2), label="brow")
 w, top, ym, z0 = sl(1)
-cube(H, (-3, top + 3, z0 - 7), (6, 2, 6), "gem", label="forehead_gem")
+cube(H, (-1.5, top + 2, z0 - 3.5), (3, 1, 3), "gem", label="forehead_gem")
 # 首（頭と胴をつなぐ）
-cube("body", (-20, 106, -22), (40, 36, 24), "skin|0|0", label="neck")
+cube("body", (-11, 113, -24), (22, 22, 12), "skin|0|0", label="neck")
 # 角：後ろへ長く流れる 1 対と、ほおの後ろの短い 1 対
 for sd, t in ((1, "l"), (-1, "r")):
-    segs = [dict(L=22, W=w_, H=w_, mat="horn") for w_ in (9, 8, 7, 6, 5, 3, 2)]
+    segs = [dict(L=11, W=w_, H=w_, mat="horn") for w_ in (5, 4, 4, 3, 2, 2, 1)]
     for i, s_ in enumerate(segs):
         s_["rz"] = -30 if i == 0 else -3 + i * 1.5; s_["ry"] = -62 if i == 0 else -3
-    names = chain(f"horn_{t}", H, (20, 138, -26), segs, side=sd, shape="vert")
-    segs = [dict(L=18, W=w_, H=w_, mat="horn") for w_ in (6, 5, 4, 2)]
+    names = chain(f"horn_{t}", H, (10, 132, -23), segs, side=sd, shape="vert")
+    segs = [dict(L=9, W=w_, H=w_, mat="horn") for w_ in (3, 2, 2, 1)]
     for i, s_ in enumerate(segs):
         s_["rz"] = 6 if i == 0 else 5; s_["ry"] = -48 if i == 0 else -6
-    chain(f"horn2_{t}", H, (27, 127, -28), segs, side=sd, shape="vert")
+    chain(f"horn2_{t}", H, (13, 126, -24), segs, side=sd, shape="vert")
 # 頭の後ろから立ち上がる羽飾り（葉の扇）
 for sd, t in ((1, "l"), (-1, "r")):
     for k, lean in enumerate((10, 30, 50, 72)):
         segs = []
         for i in range(5):
-            segs.append(dict(L=30, W=26 - i * 2, ry=(-24 - k * 6) if i == 0 else rnd.uniform(-4, 4),
+            segs.append(dict(L=20, W=16 - i * 1.5, ry=(-24 - k * 6) if i == 0 else rnd.uniform(-4, 4),
                              rz=(-(90 - lean)) if i == 0 else 7 + i * 2.5 + rnd.uniform(-3, 3), rx=rnd.uniform(-6, 6), mat="frond"))
-        chain(f"crest_{t}{k}", "body", (6 + k * 5, 144 - k * 5, -6 + k * 4), segs, side=sd, shape="vert",
+        chain(f"crest_{t}{k}", "body", (4 + k * 3, 136 - k * 3, -8 + k * 3), segs, side=sd, shape="vert",
               anim_fn=lambda i, s_, k=k: [wave(i * 35 + k * 40, 1.5 + i * 0.4, 45), 0, wave(i * 38 + k * 30 + 20, (1.5 + i * 0.6) * s_)])
 # 首まわりの真珠の粒、下あごから垂れるひげの糸
 for sd in (1, -1):
-    for k in range(16):
-        sz = rnd.choice([2, 3, 3, 4, 5])
-        px = rnd.uniform(18, 34); py = rnd.uniform(104, 146); pz = rnd.uniform(-24, 8)
+    for k in range(12):
+        sz = rnd.choice([1, 2, 2, 3])
+        px = rnd.uniform(11, 22); py = rnd.uniform(112, 138); pz = rnd.uniform(-24, 2)
         cube("body", (px if sd > 0 else -px - sz, py, pz), (sz, sz, sz), "pearl", label="pearl")
-for k in range(12):
-    ln = int(rnd.uniform(20, 70)); zz = rnd.uniform(-96, -34)
-    cube(J, (rnd.uniform(-4, 4), 112 - ln, zz), (1, ln, 1), "thread", label="whisker")
+for k in range(10):
+    ln = int(rnd.uniform(10, 36)); zz = rnd.uniform(-58, -28)
+    cube(J, (rnd.uniform(-2, 2), 118 - ln, zz), (1, ln, 1), "thread", label="whisker")
 
 # ---------------------------------------------------------------------------
 # 胴：顔の後ろから下へ垂れる、穴だらけの格子の柱
 # ---------------------------------------------------------------------------
 BZ = 16
-for i, (w, h, d, y) in enumerate([(64, 58, 60, 104), (52, 60, 50, 46), (40, 64, 40, -16), (28, 60, 28, -74), (14, 56, 14, -128)]):
+for i, (w, h, d, y) in enumerate([(46, 50, 46, 104), (42, 60, 42, 46), (40, 64, 40, -16), (28, 60, 28, -74), (14, 56, 14, -128)]):
     cube("body", (-w / 2, y, BZ - d / 2), (w, h, d), "lacebox", label=f"core_{i}")
 # 襟：首のまわりに開く大きな葉（2 段。顔の正面は空ける）
 for tier, (cy, rad, nleaf, ln) in enumerate(((104, 40, 14, 36), (64, 34, 12, 30))):

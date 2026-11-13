@@ -56,7 +56,7 @@ for g in GROUPS:
 notes = ['・Box UV：1 つのキューブは「上・下 / 東・北・西・南」の順に並ぶ（枠の中の文字がその面）。モデルの前（顔）は北（-Z）側',
          '・膜（wing_up / wing_low / tail）は扇全体でつながる絵を短冊ごとに切り分けている。左右の膜は同じ絵を mirror で共有',
          '・膜・葉・帯などの薄い板は上面と下面（または北面と南面）だけ描き、側面は透明。輪郭・穴は透明ピクセルで切り抜き',
-         '・頭は厚さ 8px の輪切り（head_upper / head_jaw）を前へ並べたくさび形。目（eye）は 4 つ、口の中（mouth_inside）は暗い紫',
+         '・頭は厚さ 4px の輪切り（head_upper / head_jaw）を前へ並べたくさび形。目（eye）は 4 つ、口の中（mouth_inside）は暗い紫',
          '・発光は astra_glowmask.png（同じ配置。目・口の中・ふち・筋・爪・星の粒）',
          '・1 ピクセル = 1/2 ブロック（レンダラーで 8 倍。ModConstants.ASTRA_RENDER_SCALE）',
          '・Blockbench：GeckoLib Animated Model で astra.geo.json を読み込むと同じ配置になる']

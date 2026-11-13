@@ -351,9 +351,9 @@ public final class ModConstants {
     public static final float ASTRA_RENDER_SCALE = 8.0f;
     /**
      * 当たり判定（ブロック。仮）。頭の付け根と胴の上部を囲む箱（エンティティの位置 = 胴の中心の真下）。
-     * 頭は前へ約 45 ブロック突き出していて箱からはみ出す。膜・触腕は見た目だけ（部位ごとの判定は攻撃を作るときに決める）。
+     * 頭は前へ約 22 ブロック突き出していて箱から少しはみ出す。膜・触腕は見た目だけ（部位ごとの判定は攻撃を作るときに決める）。
      */
-    public static final float ASTRA_WIDTH = 60.0f;
+    public static final float ASTRA_WIDTH = 50.0f;
     public static final float ASTRA_HEIGHT = 90.0f;
     public static final float ASTRA_EYE_HEIGHT = 62.0f;
     /** クライアントへ同期する距離（チャンク）。サーバーの描画距離が上限になる。 */
