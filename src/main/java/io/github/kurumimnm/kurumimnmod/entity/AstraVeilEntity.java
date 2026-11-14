@@ -18,42 +18,48 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 /**
- * アストラ・ヴェイル（星幽の巡界者）。フィールドをめぐる超大型のボス。
+ * アストラ・ヴェイル：空を漂う規格外の超巨大生命体（ボス）。1 体のエンティティとして存在する。
  * <p>
- * 【見た目】設定画（星幽の巡界者のデザインシート）に合わせた形（キューブ 約 1650 個、テクスチャ 2048×1280、1 ピクセル = 1/8 ブロック）。
- *   膜のふち・穴・葉の輪郭はテクスチャの透明で切り抜いている（板の形そのままの四角い輪郭にならない）。
+ * 【大きさ】静止時：幅 約 400・高さ 約 280・奥行 約 300 ブロック（細い帯の先まで含む）。
+ *   移動時は触腕が後ろへ流れ、渦がほどけて奥行 約 450 ブロックになる。
+ *   モデルは 1 ピクセル = 1/2 ブロックで作り、レンダラーで {@link ModConstants#ASTRA_VEIL_RENDER_SCALE} 倍にする。
+ * 【構造】（モデル・テクスチャ・待機アニメ・リグは tools/astra_veil/generate.py で生成。部位とボーン名は {@link AstraVeilPart}）
  *   <ul>
- *     <li>全体：水平に大きく広がる布のような膜。地上から見上げると、膜の裏面（ひれの筋・穴）が空を覆う。
- *         横から見ると前後に長く、帯と触腕が後ろへたなびく</li>
- *     <li>翼：肩から扇形に放射する「ひれ」を並べた 2 層の膜（上 12 本・下 8 本ずつ）。波打ち、前の先は巻き上がり、後ろは垂れる。
- *         頭の左右からも膜が立ち上がって外へ巻き下りる</li>
- *     <li>顔：細長い V 字の銀の仮面（2 本の柱が下で合わさる）、光る稜線、触角、真珠の粒の房、花びらのような襟</li>
- *     <li>胴：穴だらけの骨のような格子が縦に垂れるカーテン。下で大きな葉が外へ巻く</li>
- *     <li>後ろへたなびく帯 10 本、翼のふちから渦を巻く帯（先に玉）、まわりに漂う葉の欠片 64 個と星の粒</li>
- *     <li>細部：膜のひれの筋と葉脈・虹色のつや、裏から垂れる細い糸、真珠の粒、仮面の彫りととげ、垂れ下がる珠の連なり</li>
+ *     <li>頭部：横に大きく広がる傘。前面中央に顔（仮面・くちばし・冠のとげ・琥珀色の発光器官・青い宝玉）</li>
+ *     <li>胴体：傘の中央から下へ伸びる首と胴。下へ細る房、内部で光る器官</li>
+ *     <li>大型触腕：左右 12・上 6・後ろ 8・前 4・下 5 本と、帯状の長い触腕 10 本</li>
+ *     <li>小型触腕：傘のふち・胴のまわりの細い触腕、口腕、触角、あごひげ</li>
+ *     <li>発光・装飾：発光器官（不規則に明滅）、光の筋、星雲の模様、まわりに漂う星屑</li>
  *   </ul>
- *   モデル・テクスチャ・アニメは tools/astra_veil/generate.py で生成。
- * 【大きさ】モデルは小さく作り、レンダラーで {@link ModConstants#ASTRA_VEIL_RENDER_SCALE} 倍にする
- *   （2 倍で 翼幅 約 125・帯の先まで 約 155・高さ 約 75・前後 約 95 ブロック）。
- * 【当たり判定】顔のまわりだけ（{@link ModConstants#ASTRA_VEIL_WIDTH} × {@link ModConstants#ASTRA_VEIL_HEIGHT}）。
- *   エンティティの位置 = 顔の下端。幕・触腕はエンティティの位置より下・横に大きくはみ出す。
- * 【今の状態：見た目のみ】
+ * 【役割の分担】
  *   <ul>
- *     <li>重力・当たり判定による押し合いなし。その場に浮かんで待機アニメ（8 秒ループ）を続ける</li>
- *     <li>AI・攻撃・ボスバー・遭遇（フィールドの屋外にランダム出現、3 分で帰る）・空の演出は、攻撃の内容が決まってから作る</li>
- *     <li>スポーンエッグ・/summon のみ。置いた場所から {@link ModConstants#ASTRA_VEIL_SPAWN_HOVER_HEIGHT} ブロック上に浮かぶ</li>
+ *     <li>このクラス：エンティティの基本（属性・保存・バニラの挙動の無効化・描画の範囲）</li>
+ *     <li>{@link AstraVeilFlightController}：空中移動（サーバー側。向き・速さを少しずつ変えて漂う）</li>
+ *     <li>{@link AstraVeilMotion}：動きに合わせた見た目の状態（クライアント側。触腕のたなびき・傾き・静止 ⇔ 移動の切り替え）</li>
+ *     <li>client/renderer/AstraVeilRenderer：描画（拡大・半透明・発光・画面外判定）</li>
+ *     <li>client/renderer/AstraVeilAnimationController：ボーンへ動きを当てはめる</li>
  *   </ul>
+ * 【今の状態】モデル・空中移動・静止／移動アニメまで。攻撃・戦闘 AI・ダメージ処理・ボスバー・ドロップは未実装
+ *   （registerGoals は空。攻撃を作るときは Goal を足し、移動は {@link AstraVeilFlightController#hold}・flyTo で制御する）。
+ * 【当たり判定】胴の上半分〜傘の中心だけ（仮）。エンティティの位置 = 胴の中心。
+ * 【出現】スポーンエッグ・/summon のみ。置いた場所から {@link ModConstants#ASTRA_VEIL_SPAWN_HOVER_HEIGHT} ブロック上に浮かぶ。
  */
 public class AstraVeilEntity extends Monster implements GeoEntity {
 
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.astra_veil.idle");
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
+    /** 空中移動（サーバー側）。 */
+    private final AstraVeilFlightController flight = new AstraVeilFlightController(this);
+    /** 動きに合わせた見た目の状態（クライアント側）。 */
+    private final AstraVeilMotion motion = new AstraVeilMotion();
 
     public AstraVeilEntity(EntityType<? extends AstraVeilEntity> type, Level level) {
         super(type, level);
@@ -70,27 +76,76 @@ public class AstraVeilEntity extends Monster implements GeoEntity {
     }
 
     // =====================================================================
-    // 動き（今は浮かんでいるだけ）
+    // 動き
     // =====================================================================
 
     @Override
     protected void registerGoals() {
-        // 見た目のみの段階なので AI なし（攻撃の内容が決まったら追加する）
+        // 攻撃・戦闘 AI は未実装（移動は AstraVeilFlightController が行う）
     }
 
     @Override
     public void tick() {
         super.tick();
-        // 押されたり流されたりしないように、毎 tick 速度を 0 にする
+        // バニラの物理（押される・流される・摩擦）は使わない。位置は AstraVeilFlightController だけが動かす
         setDeltaMovement(Vec3.ZERO);
+        if (level().isClientSide()) {
+            // 見た目の状態を更新（位置・向きの変化から、触腕のたなびき・傾きを求める）
+            this.motion.tick(getX(), getY(), getZ(), getYRot());
+        } else if (isAlive()) {
+            this.flight.tick();
+        }
     }
 
-    /** スポーンエッグ・/summon で出したときは、触腕の先が地面に届くくらいの高さへ浮かべる。 */
+    /** {@link AstraVeilFlightController} が決めた位置・向きを反映する（体・頭の向きも同じにそろえる）。 */
+    void applyFlight(double x, double y, double z, float yaw) {
+        setPos(x, y, z);
+        setYRot(yaw);
+        setXRot(0f);
+        setYBodyRot(yaw);
+        setYHeadRot(yaw);
+    }
+
+    /** 空中移動の制御（将来の攻撃・演出から、止める・向かわせるのに使う）。 */
+    public AstraVeilFlightController flight() {
+        return this.flight;
+    }
+
+    /** 動きに合わせた見た目の状態（レンダラーが使う）。 */
+    public AstraVeilMotion motion() {
+        return this.motion;
+    }
+
+    /** 移動中か（false = 空中で静止して漂っている）。クライアント側では見た目の状態から、サーバー側では速さから判定する。 */
+    public boolean isDrifting() {
+        if (level().isClientSide()) {
+            return this.motion.moveAmount() > ModConstants.ASTRA_VEIL_ANIM_MOVING_THRESHOLD;
+        }
+        return this.flight.speed() > ModConstants.ASTRA_VEIL_ANIM_FULL_SPEED * ModConstants.ASTRA_VEIL_ANIM_MOVING_THRESHOLD;
+    }
+
+    /** スポーンエッグ・/summon で出したときは、触腕の先が地面の少し上に来る高さへ浮かべる。 */
     @Override
     public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty,
                                                   EntitySpawnReason spawnReason, @Nullable SpawnGroupData groupData) {
         setPos(getX(), getY() + ModConstants.ASTRA_VEIL_SPAWN_HOVER_HEIGHT, getZ());
         return super.finalizeSpawn(level, difficulty, spawnReason, groupData);
+    }
+
+    // =====================================================================
+    // 保存・読み込み（うろつく範囲の中心）
+    // =====================================================================
+
+    @Override
+    protected void addAdditionalSaveData(ValueOutput output) {
+        super.addAdditionalSaveData(output);
+        this.flight.save(output);
+    }
+
+    @Override
+    protected void readAdditionalSaveData(ValueInput input) {
+        super.readAdditionalSaveData(input);
+        this.flight.load(input);
     }
 
     // =====================================================================
@@ -106,7 +161,7 @@ public class AstraVeilEntity extends Monster implements GeoEntity {
 
     /**
      * 見た目全体を囲む範囲。画面外判定（視錐台カリング）に使う（{@link io.github.kurumimnm.kurumimnmod.client.renderer.AstraVeilRenderer}）。
-     * 当たり判定（顔のまわり）だけで判定すると、顔が画面外に出たとたんに巨体全体が消えてしまうため。
+     * 当たり判定（胴・傘の中心）だけで判定すると、そこが画面外に出たとたんに巨体全体が消えてしまうため。
      */
     public static AABB cullingBox(Entity entity) {
         double half = ModConstants.ASTRA_VEIL_CULL_HALF_WIDTH;
@@ -170,7 +225,10 @@ public class AstraVeilEntity extends Monster implements GeoEntity {
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        // 待機：幕がゆっくり波打ち、帯と触腕がたなびく（8 秒ループ）
+        // 土台の動き（48 秒ループ）：全身の上下・胴の呼吸・触腕 1 本ごとの波・発光器官の明滅・星屑。静止時も移動時も常に流す。
+        // 移動に合わせた動き（触腕が後ろへ流れる・波が大きくなる・渦がほどける）は、レンダラーが速さに応じて上から足す
+        // （AstraVeilAnimationController）。アニメーションを切り替えないので、静止 ⇔ 移動で姿勢が飛ばない。
+        // 攻撃アニメを作るときは、ここへ 2 つ目のコントローラー（triggerAnim 用）を足す。
         controllers.add(new AnimationController<>("main", test -> test.setAndContinue(IDLE)));
     }
 

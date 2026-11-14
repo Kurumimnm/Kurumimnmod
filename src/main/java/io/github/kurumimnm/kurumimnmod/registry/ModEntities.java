@@ -139,11 +139,12 @@ public final class ModEntities {
                             .noLootTable());
 
     /**
-     * アストラ・ヴェイル（星幽の巡界者。フィールドにランダムエンカウントする超大型ボス）。
-     * 今は見た目のみ（スポーンエッグ・/summon で出す）。当たり判定は顔のまわりだけで、見た目はレンダラーで拡大する（ASTRA_VEIL_RENDER_SCALE）。
+     * アストラ・ヴェイル（空を漂う規格外の超巨大生命体。幅 約 384・高さ 約 256 ブロック）。
+     * モデル・空中移動・静止／移動アニメまで実装（攻撃・ダメージ処理は未実装）。スポーンエッグ・/summon で出す。
+     * 当たり判定は胴の上半分〜傘の中心だけ（仮）で、見た目はレンダラーで拡大する（ASTRA_VEIL_RENDER_SCALE）。
      * 炎・溶岩で燃えない。ドロップなし（撃破報酬は後で決める）。
      */
-    public static final DeferredHolder<EntityType<?>, EntityType<AstraVeilEntity>> ASTRA_VEIL =
+public static final DeferredHolder<EntityType<?>, EntityType<AstraVeilEntity>> ASTRA_VEIL =
             ENTITY_TYPES.registerEntityType("astra_veil", AstraVeilEntity::new, MobCategory.MONSTER,
                     builder -> builder.sized(ModConstants.ASTRA_VEIL_WIDTH, ModConstants.ASTRA_VEIL_HEIGHT)
                             .eyeHeight(ModConstants.ASTRA_VEIL_EYE_HEIGHT)

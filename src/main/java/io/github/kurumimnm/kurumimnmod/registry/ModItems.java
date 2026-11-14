@@ -75,7 +75,7 @@ public final class ModItems {
             ITEMS.registerItem("kobold_spawn_egg", SpawnEggItem::new, p -> p.spawnEgg(ModEntities.KOBOLD.get()));
     public static final DeferredItem<SpawnEggItem> KOBOLD_LORD_SPAWN_EGG =
             ITEMS.registerItem("kobold_lord_spawn_egg", SpawnEggItem::new, p -> p.spawnEgg(ModEntities.KOBOLD_LORD.get()));
-    /** アストラ・ヴェイルのスポーンエッグ（見た目の確認用。置いた場所の 52 ブロック上に浮かぶ）。 */
+    /** アストラ・ヴェイルのスポーンエッグ（動作確認用。置いた場所の 150 ブロック上に浮かび、まわりを漂い始める）。 */
     public static final DeferredItem<SpawnEggItem> ASTRA_VEIL_SPAWN_EGG =
             ITEMS.registerItem("astra_veil_spawn_egg", SpawnEggItem::new, p -> p.spawnEgg(ModEntities.ASTRA_VEIL.get()));
     /** アストラのスポーンエッグ（見た目の確認用。置いた場所の 215 ブロック上に浮かぶ）。 */
