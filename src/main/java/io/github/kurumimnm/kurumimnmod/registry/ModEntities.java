@@ -2,6 +2,8 @@ package io.github.kurumimnm.kurumimnmod.registry;
 
 import io.github.kurumimnm.kurumimnmod.Kurumimnmod;
 import io.github.kurumimnm.kurumimnmod.config.ModConstants;
+import io.github.kurumimnm.kurumimnmod.entity.AstraEntity;
+import io.github.kurumimnm.kurumimnmod.entity.AstraVeilEntity;
 import io.github.kurumimnm.kurumimnmod.entity.GarouEntity;
 import io.github.kurumimnm.kurumimnmod.entity.GriffinEntity;
 import io.github.kurumimnm.kurumimnmod.entity.KoboldEntity;
@@ -136,6 +138,33 @@ public final class ModEntities {
                             .clientTrackingRange(ModConstants.KOBOLD_LORD_TRACKING_RANGE)
                             .noLootTable());
 
+    /**
+     * アストラ・ヴェイル（空を漂う規格外の超巨大生命体。幅 約 384・高さ 約 256 ブロック）。
+     * モデル・空中移動・静止／移動アニメまで実装（攻撃・ダメージ処理は未実装）。スポーンエッグ・/summon で出す。
+     * 当たり判定は胴の上半分〜傘の中心だけ（仮）で、見た目はレンダラーで拡大する（ASTRA_VEIL_RENDER_SCALE）。
+     * 炎・溶岩で燃えない。ドロップなし（撃破報酬は後で決める）。
+     */
+public static final DeferredHolder<EntityType<?>, EntityType<AstraVeilEntity>> ASTRA_VEIL =
+            ENTITY_TYPES.registerEntityType("astra_veil", AstraVeilEntity::new, MobCategory.MONSTER,
+                    builder -> builder.sized(ModConstants.ASTRA_VEIL_WIDTH, ModConstants.ASTRA_VEIL_HEIGHT)
+                            .eyeHeight(ModConstants.ASTRA_VEIL_EYE_HEIGHT)
+                            .clientTrackingRange(ModConstants.ASTRA_VEIL_TRACKING_RANGE)
+                            .fireImmune()
+                            .noLootTable());
+
+    /**
+     * アストラ（星幽の巡界者。アストラ・ヴェイルとは別モデルの超大型ボス。膜の幅 約 520 ブロック）。
+     * 今は見た目のみ（スポーンエッグ・/summon で出す）。当たり判定は頭の付け根と胴の上部だけ（仮）で、見た目はレンダラーで拡大する（ASTRA_RENDER_SCALE）。
+     * 炎・溶岩で燃えない。ドロップなし（撃破報酬は後で決める）。
+     */
+    public static final DeferredHolder<EntityType<?>, EntityType<AstraEntity>> ASTRA =
+            ENTITY_TYPES.registerEntityType("astra", AstraEntity::new, MobCategory.MONSTER,
+                    builder -> builder.sized(ModConstants.ASTRA_WIDTH, ModConstants.ASTRA_HEIGHT)
+                            .eyeHeight(ModConstants.ASTRA_EYE_HEIGHT)
+                            .clientTrackingRange(ModConstants.ASTRA_TRACKING_RANGE)
+                            .fireImmune()
+                            .noLootTable());
+
     // =====================================================================
     // 魔法の弾
     // =====================================================================
@@ -161,5 +190,7 @@ public final class ModEntities {
         event.put(GAROU.get(), GarouEntity.createAttributes().build());
         event.put(KOBOLD.get(), KoboldEntity.createAttributes().build());
         event.put(KOBOLD_LORD.get(), KoboldLordEntity.createAttributes().build());
+        event.put(ASTRA_VEIL.get(), AstraVeilEntity.createAttributes().build());
+        event.put(ASTRA.get(), AstraEntity.createAttributes().build());
     }
 }

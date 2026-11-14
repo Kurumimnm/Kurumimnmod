@@ -185,6 +185,10 @@
   "item.kurumimnmod.kobold_spawn_egg": "コボルトのスポーンエッグ",
   "entity.kurumimnmod.kobold_lord": "コボルトロード",
   "item.kurumimnmod.kobold_lord_spawn_egg": "コボルトロードのスポーンエッグ",
+  "entity.kurumimnmod.astra_veil": "アストラ・ヴェイル",
+  "entity.kurumimnmod.astra": "アストラ",
+  "item.kurumimnmod.astra_veil_spawn_egg": "アストラ・ヴェイルのスポーンエッグ",
+  "item.kurumimnmod.astra_spawn_egg": "アストラのスポーンエッグ",
 
   "message.kurumimnmod.scarecrow.op_only": "OP権限が必要です",
   "message.kurumimnmod.scarecrow.no_space": "ここにはカカシを召喚できません（スペースが足りません）",

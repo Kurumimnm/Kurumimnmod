@@ -2,6 +2,8 @@ package io.github.kurumimnm.kurumimnmod.client;
 
 import io.github.kurumimnm.kurumimnmod.Kurumimnmod;
 import io.github.kurumimnm.kurumimnmod.client.scarecrow.ScarecrowRenderer;
+import io.github.kurumimnm.kurumimnmod.client.renderer.AstraRenderer;
+import io.github.kurumimnm.kurumimnmod.client.renderer.AstraVeilRenderer;
 import io.github.kurumimnm.kurumimnmod.client.renderer.GarouRenderer;
 import io.github.kurumimnm.kurumimnmod.client.renderer.GriffinRenderer;
 import io.github.kurumimnm.kurumimnmod.client.renderer.KoboldLordRenderer;
@@ -47,6 +49,10 @@ public final class ModEntityRenderers {
         event.registerEntityRenderer(ModEntities.GAROU.get(), context -> new GarouRenderer<>(context));
         event.registerEntityRenderer(ModEntities.KOBOLD.get(), context -> new KoboldRenderer<>(context));
         event.registerEntityRenderer(ModEntities.KOBOLD_LORD.get(), context -> new KoboldLordRenderer<>(context));
+
+        // アストラ・ヴェイル（拡大・半透明・発光・画面外判定の拡大・動きに合わせた触腕のたなびきを行う専用レンダラー）
+        event.registerEntityRenderer(ModEntities.ASTRA_VEIL.get(), context -> new AstraVeilRenderer<>(context));
+        event.registerEntityRenderer(ModEntities.ASTRA.get(), context -> new AstraRenderer<>(context));
 
 
         // 氷柱の杖の氷柱（飛ぶ方向に向けて回転させる専用レンダラー）

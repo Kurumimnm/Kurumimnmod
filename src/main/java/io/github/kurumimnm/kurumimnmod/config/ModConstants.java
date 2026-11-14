@@ -307,6 +307,123 @@ public final class ModConstants {
     /** 通常攻撃が当たったときの火花（クリティカルのパーティクル）の数。 */
     public static final int KOBOLD_LORD_HIT_SPARKS = 10;
 
+    // ---- アストラ・ヴェイル（規格外の超巨大生命体。幅 約 384・高さ 約 256・奥行 約 256（移動時 約 450）ブロック） ----
+    // ※ 今は「モデル・空中移動・静止／移動アニメ」まで。攻撃・戦闘 AI・ダメージ処理・ボスバー・ドロップは未実装。
+    //    HP などは Mod 独自ステータスが決まったら差し替える
+    /** 最大 HP（仮）。 */
+    public static final double ASTRA_VEIL_MAX_HEALTH = 1000.0;
+    /** ノックバック耐性（1.0 = まったく押されない）。 */
+    public static final double ASTRA_VEIL_KNOCKBACK_RESISTANCE = 1.0;
+    /**
+     * 描画の倍率。モデル（geo.json）は 1 ピクセル = 1/2 ブロックで作ってあり、ここで 8 倍にする
+     * （tools/astra_veil/generate.py の U = 2 と対応：倍率 = 16 / U）。
+     * 倍率を変えたら、当たり判定・画面外判定・浮かぶ高さも同じ比率で変える。
+     */
+    public static final float ASTRA_VEIL_RENDER_SCALE = 8.0f;
+    /**
+     * 当たり判定（ブロック。仮）。胴の上半分〜傘（頭部）の中心を囲む箱（エンティティの位置 = 胴の中心）。
+     * 傘・触腕は箱の外まで大きく広がる（見た目だけ）。部位ごとの判定は攻撃を作るときに追加する（{@code AstraVeilPart}）。
+     */
+    public static final float ASTRA_VEIL_WIDTH = 64.0f;
+    public static final float ASTRA_VEIL_HEIGHT = 100.0f;
+    public static final float ASTRA_VEIL_EYE_HEIGHT = 76.0f;
+    /** クライアントへ同期する距離（チャンク）。サーバーの描画距離が上限になる。 */
+    public static final int ASTRA_VEIL_TRACKING_RANGE = 32;
+    /** 描画する最大距離（ブロック）。巨体なのでバニラの判定より遠くまで描く。 */
+    public static final double ASTRA_VEIL_RENDER_DISTANCE = 1024.0;
+    /** 画面外判定に使う範囲（ブロック。エンティティの位置からの横・下・上）。移動中に後ろへ流れる触腕の先まで含める。 */
+    public static final double ASTRA_VEIL_CULL_HALF_WIDTH = 440.0;
+    public static final double ASTRA_VEIL_CULL_BELOW = 300.0;
+    public static final double ASTRA_VEIL_CULL_ABOVE = 200.0;
+    /** スポーンエッグ・/summon で出したとき、置いた場所からこれだけ上に浮かべる（ブロック。触腕の先が地面の少し上に来る高さ）。 */
+    public static final double ASTRA_VEIL_SPAWN_HOVER_HEIGHT = 150.0;
+
+    // ---- アストラ・ヴェイル：空中移動（AstraVeilFlightController） ----
+    /** 巡航の速さ（ブロック / tick。0.45 = 秒速 9 ブロック）。 */
+    public static final double ASTRA_VEIL_CRUISE_SPEED = 0.45;
+    /** 加速・減速の大きさ（ブロック / tick²）。小さいほど重々しく動き出し、ゆっくり止まる。 */
+    public static final double ASTRA_VEIL_ACCELERATION = 0.0035;
+    /** 向きを変える速さの上限（度 / tick）。小さいほど大回りになる。 */
+    public static final float ASTRA_VEIL_MAX_TURN_RATE = 0.28f;
+    /** 向きを変える速さの変化（度 / tick²）。小さいほど、ゆっくり曲がり始めてゆっくり曲がり終わる。 */
+    public static final float ASTRA_VEIL_TURN_ACCELERATION = 0.005f;
+    /** 進みたい向きとのずれ 1 度あたりの、向きを変える速さ（度 / tick）。 */
+    public static final float ASTRA_VEIL_TURN_GAIN = 0.008f;
+    /** 上昇・下降の速さの上限（ブロック / tick）と、その変化（ブロック / tick²）。 */
+    public static final double ASTRA_VEIL_VERTICAL_SPEED = 0.16;
+    public static final double ASTRA_VEIL_VERTICAL_ACCELERATION = 0.0025;
+    /** 地面からエンティティの位置（胴の中心）までの高さの範囲（ブロック）。目的地ごとにこの範囲で高さを変える。 */
+    public static final double ASTRA_VEIL_FLIGHT_HEIGHT_MIN = 150.0;
+    public static final double ASTRA_VEIL_FLIGHT_HEIGHT_MAX = 210.0;
+    /** うろつく範囲（出現した場所からの半径。ブロック）と、次の目的地までの最短距離。 */
+    public static final double ASTRA_VEIL_WANDER_RADIUS = 320.0;
+    public static final double ASTRA_VEIL_WAYPOINT_MIN_DISTANCE = 140.0;
+    /** 目的地にこの距離まで近づいたら到着とみなす（ブロック）。 */
+    public static final double ASTRA_VEIL_ARRIVE_DISTANCE = 56.0;
+    /** 止まる目的地の手前、この距離から速さを落とし始める（ブロック）。 */
+    public static final double ASTRA_VEIL_BRAKE_DISTANCE = 150.0;
+    /** 目的地で止まって漂う確率（残りは止まらずに次の目的地へ向かう）。 */
+    public static final float ASTRA_VEIL_HOVER_CHANCE = 0.5f;
+    /** 止まって漂う時間（tick。最短〜最長）。 */
+    public static final int ASTRA_VEIL_HOVER_MIN_TICKS = 300;
+    public static final int ASTRA_VEIL_HOVER_MAX_TICKS = 800;
+    /** まっすぐ進まないよう、進む向きをゆらす幅（度）と周期（tick）。 */
+    public static final float ASTRA_VEIL_MEANDER_DEGREES = 14.0f;
+    public static final float ASTRA_VEIL_MEANDER_PERIOD_TICKS = 520.0f;
+
+    // ---- アストラ・ヴェイル：動きに合わせたアニメーション（AstraVeilMotion・AstraVeilAnimationController） ----
+    /** この速さ（ブロック / tick）で、触腕が最も後ろへ流れる（巡航の速さと同じにしておく）。 */
+    public static final double ASTRA_VEIL_ANIM_FULL_SPEED = 0.45;
+    /** 触腕が動きに追いつくまでの時間（tick）。短い触腕（速い）・大型触腕（中）・長い触腕の先（遅い）。 */
+    public static final float ASTRA_VEIL_ANIM_LAG_FAST = 14.0f;
+    public static final float ASTRA_VEIL_ANIM_LAG_MID = 40.0f;
+    public static final float ASTRA_VEIL_ANIM_LAG_SLOW = 95.0f;
+    /** 静止 ⇔ 移動のアニメーションが切り替わるのにかかる時間（tick）。 */
+    public static final float ASTRA_VEIL_ANIM_BLEND_TICKS = 50.0f;
+    /** 旋回のとき、触腕が外側へ振られる量（向きを変える速さ 1 度 / tick あたり）。 */
+    public static final float ASTRA_VEIL_ANIM_TURN_SWING = 1.1f;
+    /** 胴が頭より遅れて向きを変える：追いつくまでの時間（tick）と、ずれの上限（度）。 */
+    public static final float ASTRA_VEIL_ANIM_BODY_LAG_TICKS = 34.0f;
+    public static final float ASTRA_VEIL_ANIM_BODY_LAG_MAX_DEGREES = 14.0f;
+    /** 頭が進む向きを先に向く量（向きを変える速さ 1 度 / tick あたりの度）と上限（度）。 */
+    public static final float ASTRA_VEIL_ANIM_HEAD_LEAD = 14.0f;
+    public static final float ASTRA_VEIL_ANIM_HEAD_LEAD_MAX_DEGREES = 8.0f;
+    /** 上昇・下降のときに全身が傾く角度の上限（度）と、旋回のときに全身が内側へ傾く角度の上限（度）。 */
+    public static final float ASTRA_VEIL_ANIM_MAX_PITCH_DEGREES = 9.0f;
+    public static final float ASTRA_VEIL_ANIM_MAX_BANK_DEGREES = 7.0f;
+    /** 「移動中」とみなす移動の強さ（0〜1）。状態の判定に使う（{@code AstraVeilEntity#isDrifting}）。 */
+    public static final float ASTRA_VEIL_ANIM_MOVING_THRESHOLD = 0.12f;
+
+    // ---- アストラ（星幽の巡界者。アストラ・ヴェイルとは別モデルの超大型ボス。膜の幅 約 520・全体 約 630 ブロック） ----
+    // ※ 今は見た目のみ。ステータス・スキル・攻撃・遭遇・空の演出は未実装
+    /** 最大 HP（仮）。 */
+    public static final double ASTRA_MAX_HEALTH = 1000.0;
+    /** ノックバック耐性（1.0 = まったく押されない）。 */
+    public static final double ASTRA_KNOCKBACK_RESISTANCE = 1.0;
+    /**
+     * 描画の倍率。モデル（geo.json）は 1 ピクセル = 1/2 ブロックで作ってあり、ここで 8 倍にする（tools/astra/generate.py と対応）。
+     * 8 倍で 膜の先から先 約 520・帯まで含めて 約 630、高さ 約 460（下へ 約 215・上へ 約 250）、前後 約 460 ブロック。
+     * 倍率を変えたら、当たり判定・画面外判定・浮かぶ高さも同じ比率で変える。
+     */
+    public static final float ASTRA_RENDER_SCALE = 8.0f;
+    /**
+     * 当たり判定（ブロック。仮）。頭の付け根と胴の上部を囲む箱（エンティティの位置 = 胴の中心の真下）。
+     * 胴（重なる葉の塊）は幅 約 250 ブロックあり、箱はその中心部だけ。頭は首の先（前へ約 50 ブロック）にあって箱の外。膜・触腕は見た目だけ（部位ごとの判定は攻撃を作るときに決める）。
+     */
+    public static final float ASTRA_WIDTH = 50.0f;
+    public static final float ASTRA_HEIGHT = 90.0f;
+    public static final float ASTRA_EYE_HEIGHT = 62.0f;
+    /** クライアントへ同期する距離（チャンク）。サーバーの描画距離が上限になる。 */
+    public static final int ASTRA_TRACKING_RANGE = 32;
+    /** 描画する最大距離（ブロック）。巨体なのでバニラの判定より遠くまで描く。 */
+    public static final double ASTRA_RENDER_DISTANCE = 1024.0;
+    /** 描画の判定に使う範囲（ブロック。エンティティの位置からの横・下・上）。膜・尾・触腕の先まで含める。 */
+    public static final double ASTRA_CULL_HALF_WIDTH = 360.0;
+    public static final double ASTRA_CULL_BELOW = 225.0;
+    public static final double ASTRA_CULL_ABOVE = 260.0;
+    /** スポーンエッグ・/summon で出したとき、置いた場所からこれだけ上に浮かべる（ブロック。帯・触腕の先が地面の少し上に来る高さ）。 */
+    public static final double ASTRA_SPAWN_HOVER_HEIGHT = 215.0;
+
     // ---- ボスの着地点の範囲表示（クライアント） ----
     public static final int BOSS_AOE_COLOR_FILL_CENTER = 0x80FF3020;
     public static final int BOSS_AOE_COLOR_FILL_EDGE = 0x30FF3020;
