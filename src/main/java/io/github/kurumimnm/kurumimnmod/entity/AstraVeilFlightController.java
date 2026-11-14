@@ -107,8 +107,8 @@ public final class AstraVeilFlightController {
                 // 止まる目的地の手前では、距離に合わせて速さを落とす
                 targetSpeed *= Mth.clamp(distance / ModConstants.ASTRA_VEIL_BRAKE_DISTANCE, 0.12, 1.0);
             }
-            // 大きく向きを変える間は少し速さを落とす（その場で回るような動きにしない程度に）
-            targetSpeed *= 1.0 - 0.35 * Math.min(1.0, Math.abs(error) / 120.0);
+            // 大きく向きを変える間は速さを落とす（大回りしすぎて、目的地のまわりを回り続けないように）
+            targetSpeed *= 1.0 - 0.6 * Math.min(1.0, Math.abs(error) / 120.0);
         }
 
         // ---- 向き・速さを少しずつ目標へ ----

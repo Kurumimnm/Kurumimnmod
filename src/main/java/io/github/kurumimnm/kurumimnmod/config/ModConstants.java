@@ -344,11 +344,11 @@ public final class ModConstants {
     /** 加速・減速の大きさ（ブロック / tick²）。小さいほど重々しく動き出し、ゆっくり止まる。 */
     public static final double ASTRA_VEIL_ACCELERATION = 0.0035;
     /** 向きを変える速さの上限（度 / tick）。小さいほど大回りになる。 */
-    public static final float ASTRA_VEIL_MAX_TURN_RATE = 0.45f;
+    public static final float ASTRA_VEIL_MAX_TURN_RATE = 0.28f;
     /** 向きを変える速さの変化（度 / tick²）。小さいほど、ゆっくり曲がり始めてゆっくり曲がり終わる。 */
-    public static final float ASTRA_VEIL_TURN_ACCELERATION = 0.008f;
+    public static final float ASTRA_VEIL_TURN_ACCELERATION = 0.005f;
     /** 進みたい向きとのずれ 1 度あたりの、向きを変える速さ（度 / tick）。 */
-    public static final float ASTRA_VEIL_TURN_GAIN = 0.012f;
+    public static final float ASTRA_VEIL_TURN_GAIN = 0.008f;
     /** 上昇・下降の速さの上限（ブロック / tick）と、その変化（ブロック / tick²）。 */
     public static final double ASTRA_VEIL_VERTICAL_SPEED = 0.16;
     public static final double ASTRA_VEIL_VERTICAL_ACCELERATION = 0.0025;
@@ -359,7 +359,7 @@ public final class ModConstants {
     public static final double ASTRA_VEIL_WANDER_RADIUS = 320.0;
     public static final double ASTRA_VEIL_WAYPOINT_MIN_DISTANCE = 140.0;
     /** 目的地にこの距離まで近づいたら到着とみなす（ブロック）。 */
-    public static final double ASTRA_VEIL_ARRIVE_DISTANCE = 36.0;
+    public static final double ASTRA_VEIL_ARRIVE_DISTANCE = 56.0;
     /** 止まる目的地の手前、この距離から速さを落とし始める（ブロック）。 */
     public static final double ASTRA_VEIL_BRAKE_DISTANCE = 150.0;
     /** 目的地で止まって漂う確率（残りは止まらずに次の目的地へ向かう）。 */
