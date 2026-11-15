@@ -1,6 +1,0 @@
-{
-  "parent": "minecraft:item/generated",
-  "textures": {
-    "layer0": "kurumimnmod:item/astra_spawn_egg"
-  }
-}
