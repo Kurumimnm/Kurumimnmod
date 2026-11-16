@@ -562,6 +562,8 @@ public final class ModConstants {
      * 倍率を変えたら、当たり判定・画面外判定・浮かぶ高さも同じ比率で変える。
      */
     public static final float ASTRA_VEIL_RENDER_SCALE = 8.0f;
+    /** 描画するときのブロックの明るさ（0〜15）。15 = 夜・暗い場所でも暗くならない（体そのものが光る）。 */
+    public static final int ASTRA_VEIL_BLOCK_LIGHT = 15;
     /**
      * 当たり判定（ブロック。仮）。胸・首〜傘（頭部）の中心を囲む箱（エンティティの位置 = 胸の下）。
      * 傘・胴の後ろ半分・触腕は箱の外まで大きく広がる（見た目だけ）。部位ごとの判定は攻撃を作るときに追加する（{@code AstraVeilPart}）。
