@@ -29,7 +29,7 @@ for cx in range(-512, 512, 256):
     for cz in range(-512, 512, 256):
         run(f"forceload add {cx} {cz} {cx + 255} {cz + 255}")
 time.sleep(20)
-run("time set 18000"); run("weather clear")
+run("gamerule doDaylightCycle false"); run("gamerule advance_time false"); run("time set 18000"); run("weather clear")
 run("gamemode spectator @a")
 run("summon kurumimnmod:astra_veil 0.5 -60 0.5")
 SEL = "@e[type=kurumimnmod:astra_veil,limit=1]"
