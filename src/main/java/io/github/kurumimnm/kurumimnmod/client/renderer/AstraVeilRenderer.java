@@ -15,6 +15,7 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.AABB;
@@ -32,6 +33,8 @@ import org.jspecify.annotations.Nullable;
  *   <li>発光：astra_veil_glowmask.png（発光器官・光の筋・星の粒）を明るさに関係なく光らせる</li>
  *   <li>向き・傾き：エンティティの向きに、上昇・下降・旋回の傾きを足す（{@link AstraVeilMotion}）</li>
  *   <li>動きに合わせたボーンの回転：{@link AstraVeilAnimationController}</li>
+ *   <li>明るさ：体そのものが光る生命体なので、夜・暗い場所でも暗くならない（ブロックの明るさを常に最大の
+ *       {@link ModConstants#ASTRA_VEIL_BLOCK_LIGHT} として描く）</li>
  *   <li>影は出さない（空に浮かんでいるため）</li>
  * </ul>
  * R は「EntityRenderState かつ GeoRenderState」（他の GeckoLib レンダラーと同じ書き方）。
@@ -81,6 +84,12 @@ public class AstraVeilRenderer<R extends EntityRenderState & GeoRenderState> ext
     @Override
     public @Nullable RenderType getRenderType(R renderState, Identifier texture) {
         return RenderTypes.entityTranslucentCull(texture);
+    }
+
+    /** 明るさ：夜でも暗くならないよう、ブロックの明るさを固定する（空の明るさはワールドのまま）。 */
+    @Override
+    protected int getBlockLightLevel(AstraVeilEntity entity, BlockPos pos) {
+        return ModConstants.ASTRA_VEIL_BLOCK_LIGHT;
     }
 
     /** 画面外判定に使う範囲。当たり判定ではなく、触腕の先まで含めた見た目全体で判定する。 */
