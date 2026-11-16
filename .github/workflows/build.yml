@@ -5,7 +5,7 @@ permissions:
 jobs:
   probe:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -19,8 +19,8 @@ jobs:
         run: |
           mkdir -p run run-client
           echo "eula=true" > run/eula.txt
-          printf 'level-type=minecraft\\:flat\nonline-mode=false\nenable-rcon=true\nrcon.password=probe\nrcon.port=25575\npause-when-empty-seconds=0\nview-distance=16\nsimulation-distance=8\nspawn-protection=0\nwhite-list=false\nenforce-whitelist=false\n' > run/server.properties
-          printf 'renderDistance:16\nsimulationDistance:8\nonboardAccessibility:false\nskipMultiplayerWarning:true\ntutorialStep:none\njoinedFirstServer:true\nsoundCategory_master:0.0\npauseOnLostFocus:false\nfov:0.25\nhideServerAddress:true\n' > run-client/options.txt
+          printf 'level-type=minecraft\\:flat\nonline-mode=false\nenable-rcon=true\nrcon.password=probe\nrcon.port=25575\npause-when-empty-seconds=0\nview-distance=24\nsimulation-distance=8\nspawn-protection=0\nwhite-list=false\nenforce-whitelist=false\n' > run/server.properties
+          printf 'renderDistance:24\nsimulationDistance:8\nonboardAccessibility:false\nskipMultiplayerWarning:true\ntutorialStep:none\njoinedFirstServer:true\nsoundCategory_master:0.0\npauseOnLostFocus:false\nfov:0.25\nhideServerAddress:true\n' > run-client/options.txt
           ./gradlew compileJava -q
       - name: Run server, client and take screenshots
         run: |
@@ -33,7 +33,7 @@ jobs:
           for i in $(seq 1 120); do sleep 5; if grep -q "Done (" server_out.txt; then echo "SERVER STARTED"; break; fi; done
           ./gradlew runClient > client_out.txt 2>&1 &
           sleep 30
-          timeout 1500 python3 .github/render_probe.py || true
+          timeout 2100 python3 .github/render_probe.py || true
           import -window root shots/99_last.png || true
           pkill -f runClient || true; pkill -f runServer || true; sleep 3; pkill -f java || true
           echo "---- server log ----"; grep -nE "ERROR|Exception|Caused by|astra|Done \(|joined" server_out.txt | head -60
