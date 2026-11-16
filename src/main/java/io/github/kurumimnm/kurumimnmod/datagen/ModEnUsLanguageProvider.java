@@ -47,6 +47,7 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         addItem(ModItems.GAROU_SPAWN_EGG, "Garou Spawn Egg");
         addItem(ModItems.KOBOLD_SPAWN_EGG, "Kobold Spawn Egg");
         addItem(ModItems.KOBOLD_LORD_SPAWN_EGG, "Kobold Lord Spawn Egg");
+        addItem(ModItems.ASTRA_VEIL_SPAWN_EGG, "Astra Veil Spawn Egg");
 
         // ---- ブロック ----
 
@@ -58,6 +59,7 @@ public class ModEnUsLanguageProvider extends LanguageProvider {
         addEntityType(ModEntities.GAROU, "Garou");
         addEntityType(ModEntities.KOBOLD, "Kobold");
         addEntityType(ModEntities.KOBOLD_LORD, "Kobold Lord");
+        addEntityType(ModEntities.ASTRA_VEIL, "Astra Veil");
 
 
         addEntityType(ModEntities.ICE_ICICLE, "Icicle");
