@@ -24,6 +24,7 @@ jobs:
         run: |
           Xvfb :99 -screen 0 1280x720x24 &
           export DISPLAY=:99
+          sleep 3
           export LIBGL_ALWAYS_SOFTWARE=1
           glxinfo -B | head -20 || true
           ./gradlew runServer > server_out.txt 2>&1 &
@@ -34,7 +35,8 @@ jobs:
           import -window root shots/99_last.png || true
           pkill -f runClient || true; pkill -f runServer || true; sleep 3; pkill -f java || true
           echo "---- server log ----"; grep -nE "ERROR|Exception|Caused by|astra|Done \(|joined" server_out.txt | head -60
-          echo "---- client log ----"; grep -nE "ERROR|Exception|Caused by|astra|OpenGL|GL_|Backend|Renderer|Vulkan" client_out.txt | head -100
+          echo "---- client log ----"; grep -nE "ERROR|Exception|Caused by|astra|Backend|Connecting|quickPlay|Quick" client_out.txt | head -60
+          echo "---- client log tail ----"; tail -120 client_out.txt | cut -c1-400
           mkdir -p shots; cp client_out.txt server_out.txt shots/ || true
       - uses: actions/upload-artifact@v4
         if: always()

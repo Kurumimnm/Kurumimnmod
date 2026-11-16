@@ -16,6 +16,8 @@ def shot(name, wait=12):
     subprocess.run(["import", "-window", "root", f"shots/{name}.png"], check=False)
     print("shot", name); sys.stdout.flush()
 for i in range(90):
+    if i % 6 == 0:
+        shot(f"wait_{i:02d}", 0)
     r = run("list")
     if "1 of" in r or ": " in r and r.strip().split(": ")[-1]:
         if "0 of" not in r:
