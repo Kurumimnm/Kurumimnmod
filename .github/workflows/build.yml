@@ -19,7 +19,7 @@ jobs:
         run: |
           mkdir -p run run-client
           echo "eula=true" > run/eula.txt
-          printf 'level-type=minecraft\\:flat\nonline-mode=false\nenable-rcon=true\nrcon.password=probe\nrcon.port=25575\npause-when-empty-seconds=0\nview-distance=16\nsimulation-distance=8\nspawn-protection=0\n' > run/server.properties
+          printf 'level-type=minecraft\\:flat\nonline-mode=false\nenable-rcon=true\nrcon.password=probe\nrcon.port=25575\npause-when-empty-seconds=0\nview-distance=16\nsimulation-distance=8\nspawn-protection=0\nwhite-list=false\nenforce-whitelist=false\n' > run/server.properties
           printf 'renderDistance:16\nsimulationDistance:8\nonboardAccessibility:false\nskipMultiplayerWarning:true\ntutorialStep:none\njoinedFirstServer:true\nsoundCategory_master:0.0\npauseOnLostFocus:false\nfov:0.25\nhideServerAddress:true\n' > run-client/options.txt
           ./gradlew compileJava -q
       - name: Run server, client and take screenshots
