@@ -1,5 +1,7 @@
 name: Probe
 on: [push]
+permissions:
+  contents: write
 jobs:
   probe:
     runs-on: ubuntu-latest
@@ -38,6 +40,15 @@ jobs:
           echo "---- client log ----"; grep -nE "ERROR|Exception|Caused by|astra|Backend|Connecting|quickPlay|Quick" client_out.txt | head -60
           echo "---- client log tail ----"; tail -120 client_out.txt | cut -c1-400
           mkdir -p shots; cp client_out.txt server_out.txt shots/ || true
+      - name: Push screenshots to a branch
+        if: always()
+        run: |
+          mkdir -p /tmp/shots && cp shots/*.png /tmp/shots/ 2>/dev/null || true
+          tail -400 client_out.txt > /tmp/shots/client_tail.txt 2>/dev/null || true
+          cd /tmp/shots && git init -q && git checkout -q -b probe/astra-veil-shots
+          git config user.name ci && git config user.email ci@example.com
+          git add -A && git commit -q -m "probe: screenshots ${GITHUB_RUN_ID}"
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git" probe/astra-veil-shots
       - uses: actions/upload-artifact@v4
         if: always()
         with:
